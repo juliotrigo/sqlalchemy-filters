@@ -4,6 +4,7 @@ SQLAlchemy-filters
 .. pull-quote::
 
     Filter, sort and paginate SQLALquemy query objects.
+    Ideal for exposing these actions over a REST API.
 
 Usage
 -----
