@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from collections import namedtuple
+
 from .exceptions import (
     BadFilterFormat,
     InvalidOperator,
@@ -11,14 +13,15 @@ from .query import get_query_entities
 
 class Operator(object):
 
-    # (arity, function)
+    OperatorFunction = namedtuple('OperatorFunction', ['arity', 'function'])
+
     OPERATORS = {
-        'is_null': (1, lambda f: f.is_(None)),
-        'is_not_null': (1, lambda f: f.isnot(None)),
-        '==': (2, lambda f, a: f == a),
-        'eq': (2, lambda f, a: f == a),
-        '!=': (2, lambda f, a: f != a),
-        'ne': (2, lambda f, a: f != a),
+        'is_null': OperatorFunction(1, lambda f: f.is_(None)),
+        'is_not_null': OperatorFunction(1, lambda f: f.isnot(None)),
+        '==': OperatorFunction(2, lambda f, a: f == a),
+        'eq': OperatorFunction(2, lambda f, a: f == a),
+        '!=': OperatorFunction(2, lambda f, a: f != a),
+        'ne': OperatorFunction(2, lambda f, a: f != a),
     }
 
     def __init__(self, operator):
@@ -28,13 +31,11 @@ class Operator(object):
         try:
             op = self.OPERATORS[operator]
         except KeyError:
-            raise InvalidOperator(
-                'Operator `{}` not valid.'.format(operator)
-            )
+            raise InvalidOperator('Operator `{}` not valid.'.format(operator))
 
         self.operator = operator
-        self.arity = op[0]
-        self.function = op[1]
+        self.arity = op.arity
+        self.function = op.function
 
 
 class Filter(object):
