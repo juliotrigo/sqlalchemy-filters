@@ -83,11 +83,11 @@ Example of usage:
 
 .. code-block:: shell
 
-    $ # using default values
+    $ # using default settings (sqlite)
     $ make test
     $ make coverage
 
-    $ # or overridding some parameters
-    $ DB_SERVER=192.168.99.100 DB_PORT=3340 make test
-    $ DB_SERVER=192.168.99.100 DB_PORT=3340 make coverage
+    $ # or overridding the database parameters
+    $ DB_SERVER=192.168.99.100 DB_PORT=3340 DB_DIALECT=mysql DB_DRIVER=mysqlconnector make test
+    $ DB_SERVER=192.168.99.100 DB_PORT=3340 DB_DIALECT=mysql DB_DRIVER=mysqlconnector make coverage
 
