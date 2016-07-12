@@ -9,7 +9,7 @@ SQLAlchemy-filters
 Usage
 -----
 
-Assuming that we have a `Foo` model and a `session` object.
+Assuming that we have a ``Foo`` model and a ``session`` object.
 
 .. code-block:: python
 
@@ -31,13 +31,14 @@ Assuming that we have a `Foo` model and a `session` object.
         __tablename__ = 'foo'
 
 
-Then we can create a SQLAlchemy `query` object:
+Then we can create a SQLAlchemy ``query`` object:
 
 .. code-block:: python
 
     from sqlalchemy_filters import create_query
 
 
+    # It is just `query = session.query(Foo)` in the single-model case
     query = create_query(session, Foo)
 
 And we can filter this or any other SQLAlchemy query object multiple
@@ -68,15 +69,15 @@ afterwards.
 These are the default configuration values, that can be
 overridden when executing the Makefile targets:
 
-.. code-block:: Makefile
+.. code-block:: shell
 
-    DB_USER ?= root
-    DB_PASS ?=
-    DB_SERVER ?= localhost
-    DB_PORT ?= 3306
-    DB_NAME ?= test_sqlalchemy_filters
-    DB_DIALECT ?= mysql
-    DB_DRIVER ?= mysqlconnector
+    DB_USER = root
+    DB_PASS =
+    DB_SERVER = localhost
+    DB_PORT = 3306
+    DB_NAME = test_sqlalchemy_filters
+    DB_DIALECT = mysql
+    DB_DRIVER = mysqlconnector
 
 Example of usage:
 
@@ -87,6 +88,6 @@ Example of usage:
     $ make coverage
 
     $ # or overridding some parameters
-    $ make test DB_SERVER=192.168.99.100 DB_PORT=3340
-    $ make coverage DB_SERVER=192.168.99.100 DB_PORT=3340
+    $ DB_SERVER=192.168.99.100 DB_PORT=3340 make test
+    $ DB_SERVER=192.168.99.100 DB_PORT=3340 make coverage
 
