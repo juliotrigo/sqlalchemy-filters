@@ -68,7 +68,7 @@ class Filter(object):
             else None
         )  # TODO: finish implementation
 
-    def create_sqlalchemy_filter(self):
+    def format_for_sqlalchemy(self):
         func = self.operator.function
         arity = self.operator.arity
 
@@ -116,15 +116,10 @@ def apply_filters(query, filters):
     if not models:
         raise ModelNotFound('The query should contain some entities.')
 
-    filters = _create_sqlalchemy_filters(models, filters)
-    if filters:
-        query = query.filter(*filters)
+    sqlalchemy_filters = [
+        Filter(filter_, models).format_for_sqlalchemy() for filter_ in filters
+    ]
+    if sqlalchemy_filters:
+        query = query.filter(*sqlalchemy_filters)
 
     return query
-
-
-def _create_sqlalchemy_filters(models, filters):
-    return [
-        Filter(_filter, models).create_sqlalchemy_filter()
-        for _filter in filters
-    ]
