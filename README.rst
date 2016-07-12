@@ -76,8 +76,9 @@ overridden when executing the Makefile targets:
     DB_SERVER = localhost
     DB_PORT = 3306
     DB_NAME = test_sqlalchemy_filters
-    DB_DIALECT = mysql
-    DB_DRIVER = mysqlconnector
+    SQLITE_DB_FILE = /test_sqlalchemy_filters.db
+    DB_DIALECT = sqlite
+    DB_DRIVER = pysqlite
 
 Example of usage:
 
