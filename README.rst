@@ -56,6 +56,11 @@ Example of usage:
 
 .. code-block:: shell
 
-    $ make test DB_SERVER=192.168.99.100 DB_PORT=3340
+    $ # using default values
+    $ make test
+    $ make coverage
 
+    $ # or overridding some parameters
+    $ make test DB_SERVER=192.168.99.100 DB_PORT=3340
     $ make coverage DB_SERVER=192.168.99.100 DB_PORT=3340
+

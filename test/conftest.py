@@ -13,10 +13,10 @@ def pytest_addoption(parser):
         '--test_db_uri',
         action='store',
         dest='TEST_DB_URI',
-        default='root:password@localhost:3306/test_sqlalchemy_filters',
+        default='root:@localhost:3306/test_sqlalchemy_filters',
         help=(
             'DB uri for testing (e.g. '
-            '"root:password@localhost:3306/test_sqlalchemy_filters")'
+            '"username:password@localhost:3306/test_sqlalchemy_filters")'
         )
     )
 
