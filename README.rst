@@ -9,20 +9,45 @@ SQLAlchemy-filters
 Usage
 -----
 
+Assuming that we have a `Foo` model and a `session` object.
+
 .. code-block:: python
 
-    from sqlalchemy_filters import apply_filters, create_query
+    from sqlalchemy import Column, Integer, String
+    from sqlalchemy.ext.declarative import declarative_base
 
-    # a SQLAlchemy `session` alrady exists
 
-    # `Foo` model:
-    # class Foo(Base):
-    #     __tablename__ = 'foo'
-    #     id = Column(Integer, primary_key=True)
-    #     name = Column(String(50), nullable=False)
-    #     count = Column(Integer, nullable=True)
+    class Base(object):
+        id = Column(Integer, primary_key=True)
+        name = Column(String(50), nullable=False)
+        count = Column(Integer, nullable=True)
+
+
+    Base = declarative_base(cls=Base)
+
+
+    class Foo(Base):
+
+        __tablename__ = 'foo'
+
+
+Then we can create a SQLAlchemy `query` object:
+
+.. code-block:: python
+
+    from sqlalchemy_filters import create_query
+
 
     query = create_query(session, Foo)
+
+And we can filter this or any other SQLAlchemy query object multiple
+times:
+
+.. code-block:: python
+
+    from sqlalchemy_filters import apply_filters
+
+    # `query` should be a SQLAlchemy query object
 
     filters = [{'field': 'name', 'op': '==', 'value': 'name_1'}]
     filtered_query = apply_filters(query, filters)
