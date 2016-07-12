@@ -45,12 +45,12 @@ overridden when executing the Makefile targets:
 .. code-block:: Makefile
 
     DB_USER ?= root
-    DB_PASS ?= password
+    DB_PASS ?=
     DB_SERVER ?= localhost
     DB_PORT ?= 3306
     DB_NAME ?= test_sqlalchemy_filters
-    DB_DIALECT ?= 'mysql'
-    DB_DRIVER ?= 'mysqlconnector'
+    DB_DIALECT ?= mysql
+    DB_DRIVER ?= mysqlconnector
 
 Example of usage:
 
