@@ -6,11 +6,12 @@ from sqlalchemy_filters.exceptions import (
     BadFilterFormat,
     InvalidOperator,
     ModelNotFound,
+    ModelFieldNotFound,
 )
-from test.models import Bar
+from test.models import Bar, Qux
 
 
-class TestNoModelsProvided(object):
+class TestProvidedModels(object):
 
     def test_query_with_no_models(self, session):
         query = session.query()
@@ -20,6 +21,20 @@ class TestNoModelsProvided(object):
             apply_filters(query, filters)
 
         assert 'The query should contain some entities.' == err.value.args[0]
+
+    # TODO: replace this test once we support multiple models
+    def test_multiple_models(self, session):
+        query = session.query(Bar, Qux)
+        filters = [{'field': 'name', 'op': '==', 'value': 'name_1'}]
+
+        with pytest.raises(ModelNotFound) as err:
+            apply_filters(query, filters)
+
+        expected_error = (
+            'The query has multiple models and `name` is ambiguous. '
+            'Please also provide the model.'
+        )
+        assert expected_error == err.value.args[0]
 
 
 class TestProvidedFilters(object):
@@ -70,33 +85,28 @@ class TestProvidedFilters(object):
 
         assert '`field` is a mandatory filter attribute.' == err.value.args[0]
 
-    def test_provide_both_value_and_other_field(self, session):
+    # TODO: replace this test once we add the option to compare against
+    # another field
+    def test_no_value_provided(self, session):
         query = session.query(Bar)
-        filters = [{
-            'field': 'name',
-            'op': '==',
-            'value': 'name_1',
-            'other_field': 'count'
-        }]
+        filters = [{'field': 'name', 'op': '==', }]
 
         with pytest.raises(BadFilterFormat) as err:
             apply_filters(query, filters)
 
-        err_value = err.value.args[0]
-        assert 'Both `value` and `other_field` were provided.' == err_value
+        assert '`value` must be provided.' == err.value.args[0]
 
-    def test_provide_neither_value_nor_other_field(self, session):
+    def test_invalid_field(self, session):
         query = session.query(Bar)
-        filters = [{
-            'field': 'name',
-            'op': '==',  # Binary operator
-        }]
+        filters = [{'field': 'invalid_field', 'op': '==', 'value': 'name_1'}]
 
-        with pytest.raises(BadFilterFormat) as err:
+        with pytest.raises(ModelFieldNotFound) as err:
             apply_filters(query, filters)
 
-        err_value = err.value.args[0]
-        assert 'Either `value` or `other_field` must be provided.' == err_value
+        expected_error = (
+            "Model <class 'test.models.Bar'> has no attribute `invalid_field`."
+        )
+        assert expected_error == err.value.args[0]
 
 
 class TestFixtures(object):
