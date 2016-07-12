@@ -19,6 +19,17 @@ class Operator(object):
         'eq': (2, lambda f, a: f == a),
         '!=': (2, lambda f, a: f != a),
         'ne': (2, lambda f, a: f != a),
+        '>': (2, lambda f, a: f > a),
+        'gt': (2, lambda f, a: f > a),
+        '<': (2, lambda f, a: f < a),
+        'lt': (2, lambda f, a: f < a),
+        '>=': (2, lambda f, a: f >= a),
+        'ge': (2, lambda f, a: f >= a),
+        '<=': (2, lambda f, a: f <= a),
+        'le': (2, lambda f, a: f <= a),
+        'like': (2, lambda f, a: f.like(a)),
+        'in': (2, lambda f, a: f.in_(a)),
+        'not_in': (2, lambda f, a: ~f.in_(a)),
     }
 
     def __init__(self, operator):
