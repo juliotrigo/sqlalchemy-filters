@@ -57,6 +57,37 @@ times:
 
     result = filtered_query.all()
 
+Filters format
+--------------
+
+Filters must be provided in a list and will be applied sequentially.
+Each filter will be a dictionary element in that list, using the
+following format:
+
+.. code-block:: python
+
+    filters = [
+        {'field': 'field_name', 'op': '==', 'value': 'field_value'},
+        {'field': 'field_2_name', 'op': '==', 'value': 'field_2_value'},
+        # ...
+    ]
+
+Where ``field`` is the name of the field that will be filtered with
+``value``, using the operator provided in ``op``.
+
+This is the list of operators that can be used:
+
+- ``is_null``
+- ``is_not_null``
+- ``==``, ``eq``
+- ``!=``, ``ne``
+- ``>``, ``gt``
+- ``<``, ``lt``
+- ``>=``, ``ge``
+- ``<=``, ``le``
+- ``like``
+- ``in``
+- ``not_in``
 
 Running tests
 -------------
