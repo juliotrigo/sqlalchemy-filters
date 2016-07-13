@@ -9,24 +9,8 @@ SQLAlchemy-filters
 Usage
 -----
 
-We can apply filters to a SQLAlchemy ``query`` object multiple times:
-
-.. code-block:: python
-
-    from sqlalchemy_filters import apply_filters
-
-    # `query` should be a SQLAlchemy query object
-
-    filters = [{'field': 'name', 'op': '==', 'value': 'name_1'}]
-    filtered_query = apply_filters(query, filters)
-
-    more_filters = [{'field': 'id', 'op': '==', 'value': 3}]
-    filtered_query = apply_filters(filtered_query, more_filters)
-
-    result = filtered_query.all()
-
-
-Assuming that `query` only contains a single SQLAlchemy model:
+Assuming that we have a SQLAlchemy `query` that only contains a single
+model:
 
 .. code-block:: python
 
@@ -47,6 +31,25 @@ Assuming that `query` only contains a single SQLAlchemy model:
 
         __tablename__ = 'foo'
 
+    # ...
+
+    query = self.session.query(Foo)
+
+Then we can apply filters to that ``query`` object multiple times:
+
+.. code-block:: python
+
+    from sqlalchemy_filters import apply_filters
+
+    # `query` should be a SQLAlchemy query object
+
+    filters = [{'field': 'name', 'op': '==', 'value': 'name_1'}]
+    filtered_query = apply_filters(query, filters)
+
+    more_filters = [{'field': 'id', 'op': '==', 'value': 3}]
+    filtered_query = apply_filters(filtered_query, more_filters)
+
+    result = filtered_query.all()
 
 Running tests
 -------------
@@ -80,4 +83,3 @@ Example of usage:
     $ # or overridding the database parameters
     $ DB_SERVER=192.168.99.100 DB_PORT=3340 DB_DIALECT=mysql DB_DRIVER=mysqlconnector make test
     $ DB_SERVER=192.168.99.100 DB_PORT=3340 DB_DIALECT=mysql DB_DRIVER=mysqlconnector make coverage
-
