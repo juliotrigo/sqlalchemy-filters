@@ -82,7 +82,7 @@ class Filter(object):
                 )
             if self.value:
                 return func(self.field, self.value)
-            elif self.other_field:
+            if self.other_field:
                 return func(self.field, self.other_field)
 
         raise BadFilterFormat(
