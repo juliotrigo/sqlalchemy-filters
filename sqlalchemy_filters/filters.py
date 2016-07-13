@@ -62,6 +62,7 @@ class Filter(object):
 
         self.field = self.get_model_field(field, models)
         self.operator = Operator(filter_.get('op'))
+        self.value_present = True if 'value' in filter_ else False
         self.value = filter_.get('value')
 
     def create_sqlalchemy_filter(self):
@@ -72,7 +73,7 @@ class Filter(object):
             return func(self.field)
 
         if arity == 2:
-            if not self.value:
+            if not self.value_present:
                 raise BadFilterFormat('`value` must be provided.')
             return func(self.field, self.value)
 
