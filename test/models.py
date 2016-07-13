@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -35,3 +35,6 @@ class Baz(Base):
 class Qux(Base):
 
     __tablename__ = 'qux'
+
+    created_at = Column(Date)
+    execution_time = Column(DateTime)

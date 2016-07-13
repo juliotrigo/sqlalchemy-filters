@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import datetime
+
 import pytest
 from sqlalchemy_filters import apply_filters
 from sqlalchemy_filters.exceptions import (
@@ -475,3 +477,93 @@ class TestApplyNotInFilter(TestFixtures):
         assert len(result) == 2
         assert result[0].id == 1
         assert result[1].id == 2
+
+
+class TestDateFields(object):
+
+    @pytest.fixture
+    def multiple_quxs_inserted(self, session):
+        qux_1 = Qux(
+            id=1, name='name_1', count=5,
+            created_at=datetime.date(2016, 7, 12),
+            execution_time=datetime.datetime(2016, 7, 12, 1, 5, 9, 2)
+        )
+        qux_2 = Qux(
+            id=2, name='name_2', count=10,
+            created_at=datetime.date(2016, 7, 13),
+            execution_time=datetime.datetime(2016, 7, 13, 2, 5, 9, 2)
+        )
+        qux_3 = Qux(
+            id=3, name='name_1', count=None,
+            created_at=None, execution_time=None
+            )
+        qux_4 = Qux(
+            id=4, name='name_4', count=15,
+            created_at=datetime.date(2016, 7, 14),
+            execution_time=datetime.datetime(2016, 7, 14, 3, 5, 9, 2)
+            )
+        session.add(qux_1)
+        session.add(qux_2)
+        session.add(qux_3)
+        session.add(qux_4)
+        session.commit()
+
+    @pytest.mark.parametrize(
+        'date_filter',
+        [
+            datetime.date(2016, 7, 14),
+            datetime.date(2016, 7, 14).isoformat()
+        ]
+    )
+    @pytest.mark.usefixtures('multiple_quxs_inserted')
+    def test_filter_date_equality(self, session, date_filter):
+        query = session.query(Qux)
+        filters = [{
+            'field': 'created_at',
+            'op': '==',
+            'value': date_filter
+        }]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 1
+        assert result[0].id == 4
+        assert result[0].created_at == datetime.date(2016, 7, 14)
+
+    @pytest.mark.parametrize(
+        'date_filter',
+        [
+            datetime.date(2016, 7, 13),
+            datetime.date(2016, 7, 13).isoformat()
+        ]
+    )
+    @pytest.mark.usefixtures('multiple_quxs_inserted')
+    def test_filter_multiple_dates(self, session, date_filter):
+        query = session.query(Qux)
+        filters = [{
+            'field': 'created_at',
+            'op': '>=',
+            'value': date_filter
+        }]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 2
+        assert result[0].id == 2
+        assert result[0].created_at == datetime.date(2016, 7, 13)
+        assert result[1].id == 4
+        assert result[1].created_at == datetime.date(2016, 7, 14)
+
+    @pytest.mark.usefixtures('multiple_quxs_inserted')
+    def test_null_date(self, session):
+        query = session.query(Qux)
+        filters = [{'field': 'created_at', 'op': 'is_null'}]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 1
+        assert result[0].id == 3
+        assert result[0].created_at is None
