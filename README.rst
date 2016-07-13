@@ -9,7 +9,24 @@ SQLAlchemy-filters
 Usage
 -----
 
-Assuming that we have a ``Foo`` model and a ``session`` object.
+We can apply filters to a SQLAlchemy ``query`` object multiple times:
+
+.. code-block:: python
+
+    from sqlalchemy_filters import apply_filters
+
+    # `query` should be a SQLAlchemy query object
+
+    filters = [{'field': 'name', 'op': '==', 'value': 'name_1'}]
+    filtered_query = apply_filters(query, filters)
+
+    more_filters = [{'field': 'id', 'op': '==', 'value': 3}]
+    filtered_query = apply_filters(filtered_query, more_filters)
+
+    result = filtered_query.all()
+
+
+Assuming that `query` only contains a single SQLAlchemy model:
 
 .. code-block:: python
 
@@ -29,34 +46,6 @@ Assuming that we have a ``Foo`` model and a ``session`` object.
     class Foo(Base):
 
         __tablename__ = 'foo'
-
-
-Then we can create a SQLAlchemy ``query`` object:
-
-.. code-block:: python
-
-    from sqlalchemy_filters import create_query
-
-
-    # It is just `query = session.query(Foo)` in the single-model case
-    query = create_query(session, Foo)
-
-And we can filter this or any other SQLAlchemy query object multiple
-times:
-
-.. code-block:: python
-
-    from sqlalchemy_filters import apply_filters
-
-    # `query` should be a SQLAlchemy query object
-
-    filters = [{'field': 'name', 'op': '==', 'value': 'name_1'}]
-    filtered_query = apply_filters(query, filters)
-
-    more_filters = [{'field': 'id', 'op': '==', 'value': 3}]
-    filtered_query = apply_filters(filtered_query, more_filters)
-
-    result = filtered_query.all()
 
 
 Running tests
