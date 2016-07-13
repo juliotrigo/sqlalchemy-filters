@@ -1,13 +1,44 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-from sqlalchemy_filters import apply_filters
+from sqlalchemy_filters import apply_filters, get_query_entities
 from sqlalchemy_filters.exceptions import (
     BadFilterFormat,
     InvalidOperator,
     ModelNotFound,
 )
-from test.models import Bar
+from test.models import Bar, Qux
+
+
+class TestGetQueryEntities(object):
+
+    def test_query_with_no_models(self, session):
+        query = session.query()
+
+        entities = get_query_entities(query)
+
+        assert {} == entities
+
+    def test_query_with_one_model(self, session):
+        query = session.query(Bar)
+
+        entities = get_query_entities(query)
+
+        assert {'Bar': Bar} == entities
+
+    def test_query_with_multiple_models(self, session):
+        query = session.query(Bar, Qux)
+
+        entities = get_query_entities(query)
+
+        assert {'Bar': Bar, 'Qux': Qux} == entities
+
+    def test_query_with_duplicated_models(self, session):
+        query = session.query(Bar, Qux, Bar)
+
+        entities = get_query_entities(query)
+
+        assert {'Bar': Bar, 'Qux': Qux} == entities
 
 
 class TestNoModelsProvided(object):

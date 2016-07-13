@@ -8,7 +8,6 @@ from .exceptions import (
     ModelNotFound,
     ModelFieldNotFound,
 )
-from .query import get_query_entities
 
 
 class Operator(object):
@@ -123,3 +122,10 @@ def apply_filters(query, filters):
         query = query.filter(*sqlalchemy_filters)
 
     return query
+
+
+def get_query_entities(query):
+    return {
+        entity['type'].__name__: entity['type']
+        for entity in query.column_descriptions
+    }
