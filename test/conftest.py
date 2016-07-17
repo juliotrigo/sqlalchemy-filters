@@ -13,7 +13,7 @@ def pytest_addoption(parser):
         '--test_db_uri',
         action='store',
         dest='TEST_DB_URI',
-        default='root:@localhost:3306/test_sqlalchemy_filters',
+        default='/test_sqlalchemy_filters.db',
         help=(
             'DB uri for testing (e.g. '
             '"username:password@localhost:3306/test_sqlalchemy_filters")'
@@ -24,7 +24,7 @@ def pytest_addoption(parser):
         '--test_db_dialect',
         action='store',
         dest='TEST_DB_DIALECT',
-        default='mysql',
+        default='sqlite',
         help='Dialect implementation (e.g. "mysql")'
     )
 
@@ -32,7 +32,7 @@ def pytest_addoption(parser):
         '--test_db_driver',
         action='store',
         dest='TEST_DB_DRIVER',
-        default='mysqlconnector',
+        default='pysqlite',
         help='DBAPI used to connect to the database (e.g. "mysqlconnector")'
     )
 

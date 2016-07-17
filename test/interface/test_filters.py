@@ -3,14 +3,40 @@
 import datetime
 
 import pytest
-from sqlalchemy_filters import apply_filters
-from sqlalchemy_filters.exceptions import (
-    BadFilterFormat,
-    InvalidOperator,
-    ModelNotFound,
-    ModelFieldNotFound,
-)
+from sqlalchemy_filters import apply_filters, get_query_models
+from sqlalchemy_filters.exceptions import BadFilterFormat, BadQuery
 from test.models import Bar, Qux
+
+
+class TestGetQueryModels(object):
+
+    def test_query_with_no_models(self, session):
+        query = session.query()
+
+        entities = get_query_models(query)
+
+        assert {} == entities
+
+    def test_query_with_one_model(self, session):
+        query = session.query(Bar)
+
+        entities = get_query_models(query)
+
+        assert {'Bar': Bar} == entities
+
+    def test_query_with_multiple_models(self, session):
+        query = session.query(Bar, Qux)
+
+        entities = get_query_models(query)
+
+        assert {'Bar': Bar, 'Qux': Qux} == entities
+
+    def test_query_with_duplicated_models(self, session):
+        query = session.query(Bar, Qux, Bar)
+
+        entities = get_query_models(query)
+
+        assert {'Bar': Bar, 'Qux': Qux} == entities
 
 
 class TestProvidedModels(object):
@@ -19,22 +45,21 @@ class TestProvidedModels(object):
         query = session.query()
         filters = [{'field': 'name', 'op': '==', 'value': 'name_1'}]
 
-        with pytest.raises(ModelNotFound) as err:
+        with pytest.raises(BadQuery) as err:
             apply_filters(query, filters)
 
-        assert 'The query should contain some entities.' == err.value.args[0]
+        assert 'The query does not contain any models.' == err.value.args[0]
 
     # TODO: replace this test once we support multiple models
     def test_multiple_models(self, session):
         query = session.query(Bar, Qux)
         filters = [{'field': 'name', 'op': '==', 'value': 'name_1'}]
 
-        with pytest.raises(ModelNotFound) as err:
+        with pytest.raises(BadQuery) as err:
             apply_filters(query, filters)
 
         expected_error = (
-            'The query has multiple models and `name` is ambiguous. '
-            'Please also provide the model.'
+            'The query should contain only one model.'
         )
         assert expected_error == err.value.args[0]
 
@@ -57,14 +82,16 @@ class TestProvidedFilters(object):
         with pytest.raises(BadFilterFormat) as err:
             apply_filters(query, filters)
 
-        expected_query = 'Filter `{}` is not a dictionary.'.format(filter_)
-        assert expected_query == err.value.args[0]
+        expected_error = 'Filter `{}` should be a dictionary.'.format(
+            filter_
+        )
+        assert expected_error == err.value.args[0]
 
     def test_invalid_operator(self, session):
         query = session.query(Bar)
         filters = [{'field': 'name', 'op': 'op_not_valid', 'value': 'name_1'}]
 
-        with pytest.raises(InvalidOperator) as err:
+        with pytest.raises(BadFilterFormat) as err:
             apply_filters(query, filters)
 
         assert 'Operator `op_not_valid` not valid.' == err.value.args[0]
@@ -73,10 +100,11 @@ class TestProvidedFilters(object):
         query = session.query(Bar)
         filters = [{'field': 'name', 'value': 'name_1'}]
 
-        with pytest.raises(InvalidOperator) as err:
+        with pytest.raises(BadFilterFormat) as err:
             apply_filters(query, filters)
 
-        assert 'Operator not provided.' == err.value.args[0]
+        expected_error = '`field` and `op` are mandatory filter attributes.'
+        assert expected_error == err.value.args[0]
 
     def test_no_field_provided(self, session):
         query = session.query(Bar)
@@ -85,7 +113,8 @@ class TestProvidedFilters(object):
         with pytest.raises(BadFilterFormat) as err:
             apply_filters(query, filters)
 
-        assert '`field` is a mandatory filter attribute.' == err.value.args[0]
+        expected_error = '`field` and `op` are mandatory filter attributes.'
+        assert expected_error == err.value.args[0]
 
     # TODO: replace this test once we add the option to compare against
     # another field
@@ -102,7 +131,7 @@ class TestProvidedFilters(object):
         query = session.query(Bar)
         filters = [{'field': 'invalid_field', 'op': '==', 'value': 'name_1'}]
 
-        with pytest.raises(ModelFieldNotFound) as err:
+        with pytest.raises(BadFilterFormat) as err:
             apply_filters(query, filters)
 
         expected_error = (
