@@ -140,7 +140,7 @@ class TestProvidedFilters(object):
         assert expected_error == err.value.args[0]
 
 
-class TestFixtures(object):
+class TestFiltersMixin(object):
 
     @pytest.fixture
     def multiple_bars_inserted(self, session):
@@ -155,7 +155,7 @@ class TestFixtures(object):
         session.commit()
 
 
-class TestApplyIsNullFilter(TestFixtures):
+class TestApplyIsNullFilter(TestFiltersMixin):
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_filter_field_with_null_values(self, session):
@@ -179,7 +179,7 @@ class TestApplyIsNullFilter(TestFixtures):
         assert len(result) == 0
 
 
-class TestApplyIsNotNullFilter(TestFixtures):
+class TestApplyIsNotNullFilter(TestFiltersMixin):
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_filter_field_with_null_values(self, session):
@@ -209,7 +209,7 @@ class TestApplyIsNotNullFilter(TestFixtures):
         assert result[3].id == 4
 
 
-class TestApplyFiltersMultipleTimes(TestFixtures):
+class TestApplyFiltersMultipleTimes(TestFiltersMixin):
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_concatenate_queries(self, session):
@@ -235,7 +235,7 @@ class TestApplyFiltersMultipleTimes(TestFixtures):
         assert result[0].name == 'name_1'
 
 
-class TestApplyEqualToFilter(TestFixtures):
+class TestApplyEqualToFilter(TestFiltersMixin):
 
     @pytest.mark.parametrize('operator', ['==', 'eq'])
     @pytest.mark.usefixtures('multiple_bars_inserted')
@@ -271,7 +271,7 @@ class TestApplyEqualToFilter(TestFixtures):
         assert result[0].name == 'name_1'
 
 
-class TestApplyNotEqualToFilter(TestFixtures):
+class TestApplyNotEqualToFilter(TestFiltersMixin):
 
     @pytest.mark.parametrize('operator', ['!=', 'ne'])
     @pytest.mark.usefixtures('multiple_bars_inserted')
@@ -309,7 +309,7 @@ class TestApplyNotEqualToFilter(TestFixtures):
         assert result[1].name == 'name_4'
 
 
-class TestApplyGreaterThanFilter(TestFixtures):
+class TestApplyGreaterThanFilter(TestFiltersMixin):
 
     @pytest.mark.parametrize('operator', ['>', 'gt'])
     @pytest.mark.usefixtures('multiple_bars_inserted')
@@ -342,7 +342,7 @@ class TestApplyGreaterThanFilter(TestFixtures):
         assert result[0].id == 4
 
 
-class TestApplyLessThanFilter(TestFixtures):
+class TestApplyLessThanFilter(TestFiltersMixin):
 
     @pytest.mark.parametrize('operator', ['<', 'lt'])
     @pytest.mark.usefixtures('multiple_bars_inserted')
@@ -373,7 +373,7 @@ class TestApplyLessThanFilter(TestFixtures):
         assert len(result) == 0
 
 
-class TestApplyGreaterOrEqualThanFilter(TestFixtures):
+class TestApplyGreaterOrEqualThanFilter(TestFiltersMixin):
 
     @pytest.mark.parametrize('operator', ['>=', 'ge'])
     @pytest.mark.usefixtures('multiple_bars_inserted')
@@ -407,7 +407,7 @@ class TestApplyGreaterOrEqualThanFilter(TestFixtures):
         assert result[0].id == 4
 
 
-class TestApplyLessOrEqualThanFilter(TestFixtures):
+class TestApplyLessOrEqualThanFilter(TestFiltersMixin):
 
     @pytest.mark.parametrize('operator', ['<=', 'le'])
     @pytest.mark.usefixtures('multiple_bars_inserted')
@@ -441,7 +441,7 @@ class TestApplyLessOrEqualThanFilter(TestFixtures):
         assert result[0].id == 1
 
 
-class TestApplyLikeFilter(TestFixtures):
+class TestApplyLikeFilter(TestFiltersMixin):
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_one_filter_applied_to_a_single_model(self, session):
@@ -456,7 +456,7 @@ class TestApplyLikeFilter(TestFixtures):
         assert result[1].id == 3
 
 
-class TestApplyInFilter(TestFixtures):
+class TestApplyInFilter(TestFiltersMixin):
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_field_not_in_value_list(self, session):
@@ -480,7 +480,7 @@ class TestApplyInFilter(TestFixtures):
         assert result[0].id == 4
 
 
-class TestApplyNotInFilter(TestFixtures):
+class TestApplyNotInFilter(TestFiltersMixin):
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_field_not_in_value_list(self, session):
@@ -508,19 +508,19 @@ class TestApplyNotInFilter(TestFixtures):
         assert result[1].id == 2
 
 
-class TestDateFields(object):
+class TestFilterDatesMixin(object):
 
     @pytest.fixture
     def multiple_quxs_inserted(self, session):
         qux_1 = Qux(
             id=1, name='name_1', count=5,
             created_at=datetime.date(2016, 7, 12),
-            execution_time=datetime.datetime(2016, 7, 12, 1, 5, 9, 2)
+            execution_time=datetime.datetime(2016, 7, 12, 1, 5, 9)
         )
         qux_2 = Qux(
             id=2, name='name_2', count=10,
             created_at=datetime.date(2016, 7, 13),
-            execution_time=datetime.datetime(2016, 7, 13, 2, 5, 9, 2)
+            execution_time=datetime.datetime(2016, 7, 13, 2, 5, 9)
         )
         qux_3 = Qux(
             id=3, name='name_1', count=None,
@@ -529,7 +529,7 @@ class TestDateFields(object):
         qux_4 = Qux(
             id=4, name='name_4', count=15,
             created_at=datetime.date(2016, 7, 14),
-            execution_time=datetime.datetime(2016, 7, 14, 3, 5, 9, 2)
+            execution_time=datetime.datetime(2016, 7, 14, 3, 5, 9)
             )
         session.add(qux_1)
         session.add(qux_2)
@@ -537,20 +537,23 @@ class TestDateFields(object):
         session.add(qux_4)
         session.commit()
 
+
+class TestDateFields(TestFilterDatesMixin):
+
     @pytest.mark.parametrize(
-        'date_filter',
+        'value',
         [
             datetime.date(2016, 7, 14),
             datetime.date(2016, 7, 14).isoformat()
         ]
     )
     @pytest.mark.usefixtures('multiple_quxs_inserted')
-    def test_filter_date_equality(self, session, date_filter):
+    def test_filter_date_equality(self, session, value):
         query = session.query(Qux)
         filters = [{
             'field': 'created_at',
             'op': '==',
-            'value': date_filter
+            'value': value
         }]
 
         filtered_query = apply_filters(query, filters)
@@ -561,19 +564,19 @@ class TestDateFields(object):
         assert result[0].created_at == datetime.date(2016, 7, 14)
 
     @pytest.mark.parametrize(
-        'date_filter',
+        'value',
         [
             datetime.date(2016, 7, 13),
             datetime.date(2016, 7, 13).isoformat()
         ]
     )
     @pytest.mark.usefixtures('multiple_quxs_inserted')
-    def test_filter_multiple_dates(self, session, date_filter):
+    def test_filter_multiple_dates(self, session, value):
         query = session.query(Qux)
         filters = [{
             'field': 'created_at',
             'op': '>=',
-            'value': date_filter
+            'value': value
         }]
 
         filtered_query = apply_filters(query, filters)
@@ -596,3 +599,72 @@ class TestDateFields(object):
         assert len(result) == 1
         assert result[0].id == 3
         assert result[0].created_at is None
+
+
+class TestDateTimeFields(TestFilterDatesMixin):
+
+    @pytest.mark.parametrize(
+        'value',
+        [
+            datetime.datetime(2016, 7, 14, 3, 5, 9),
+            datetime.datetime(2016, 7, 14, 3, 5, 9).isoformat()
+        ]
+    )
+    @pytest.mark.usefixtures('multiple_quxs_inserted')
+    def test_filter_datetime_equality(self, session, value):
+        query = session.query(Qux)
+        filters = [{
+            'field': 'execution_time',
+            'op': '==',
+            'value': value
+        }]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 1
+        assert result[0].id == 4
+        assert result[0].execution_time == datetime.datetime(
+            2016, 7, 14, 3, 5, 9
+        )
+
+    @pytest.mark.parametrize(
+        'value',
+        [
+            datetime.datetime(2016, 7, 13, 2, 5, 9),
+            datetime.datetime(2016, 7, 13, 2, 5, 9).isoformat()
+        ]
+    )
+    @pytest.mark.usefixtures('multiple_quxs_inserted')
+    def test_filter_multiple_datetimes(self, session, value):
+        query = session.query(Qux)
+        filters = [{
+            'field': 'execution_time',
+            'op': '>=',
+            'value': value
+        }]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 2
+        assert result[0].id == 2
+        assert result[0].execution_time == datetime.datetime(
+            2016, 7, 13, 2, 5, 9
+        )
+        assert result[1].id == 4
+        assert result[1].execution_time == datetime.datetime(
+            2016, 7, 14, 3, 5, 9
+        )
+
+    @pytest.mark.usefixtures('multiple_quxs_inserted')
+    def test_null_datetime(self, session):
+        query = session.query(Qux)
+        filters = [{'field': 'execution_time', 'op': 'is_null'}]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 1
+        assert result[0].id == 3
+        assert result[0].execution_time is None
