@@ -84,6 +84,9 @@ class Filter(object):
         self.value = filter_.get('value')
         self.value_present = True if 'value' in filter_ else False
 
+        if not self.value_present and self.operator.arity == 2:
+            raise BadFilterFormat('`value` must be provided.')
+
     def format_for_sqlalchemy(self):
         function = self.operator.function
         arity = self.operator.arity
@@ -93,9 +96,6 @@ class Filter(object):
             return function(field)
 
         if arity == 2:
-            if not self.value_present:
-                raise BadFilterFormat('`value` must be provided.')
-
             return function(field, self.value)
 
 
