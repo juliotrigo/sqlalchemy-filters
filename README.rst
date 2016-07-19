@@ -46,7 +46,7 @@ Then we can apply filters to that ``query`` object (multiple times):
     filters = [{'field': 'name', 'op': '==', 'value': 'name_1'}]
     filtered_query = apply_filters(query, filters)
 
-    more_filters = [{'field': 'id', 'op': '==', 'value': 3}]
+    more_filters = [{'field': 'foo_id', 'op': 'is_not_null'}]
     filtered_query = apply_filters(filtered_query, more_filters)
 
     result = filtered_query.all()
@@ -62,12 +62,13 @@ following format:
 
     filters = [
         {'field': 'field_name', 'op': '==', 'value': 'field_value'},
-        {'field': 'field_2_name', 'op': '==', 'value': 'field_2_value'},
+        {'field': 'field_2_name', 'op': '!=', 'value': 'field_2_value'},
         # ...
     ]
 
-Where ``field`` is the name of the field that will be filtered with
-``value``, using the operator provided in ``op``.
+Where ``field`` is the name of the field that will be filtered using the
+operator provided in ``op`` and (optionally, depending on the operator)
+the provided ``value``.
 
 This is the list of operators that can be used:
 
