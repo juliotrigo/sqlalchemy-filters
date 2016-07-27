@@ -2,6 +2,7 @@
 
 from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 
 
 class Base(object):
@@ -18,11 +19,13 @@ class Foo(Base):
     __tablename__ = 'foo'
 
     bar_id = Column(Integer, ForeignKey('bar.id'), nullable=True)
+    bar = relationship('Bar', back_populates='foos')
 
 
 class Bar(Base):
 
     __tablename__ = 'bar'
+    foos = relationship('Foo', back_populates='bar')
 
 
 class Baz(Base):

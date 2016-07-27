@@ -135,7 +135,25 @@ class TestProvidedFilters(object):
             apply_filters(query, filters)
 
         expected_error = (
-            "Model <class 'test.models.Bar'> has no attribute `invalid_field`."
+            "Model <class 'test.models.Bar'> has no column `invalid_field`."
+        )
+        assert expected_error == err.value.args[0]
+
+    @pytest.mark.parametrize('attr_name', [
+        'metadata',  # model attribute
+        'foos',  # model relationship
+    ])
+    def test_invalid_field_but_valid_model_attribute(self, session, attr_name):
+        query = session.query(Bar)
+        filters = [{'field': attr_name, 'op': '==', 'value': 'name_1'}]
+
+        with pytest.raises(BadFilterFormat) as err:
+            apply_filters(query, filters)
+
+        expected_error = (
+            "Model <class 'test.models.Bar'> has no column `{}`.".format(
+                attr_name
+            )
         )
         assert expected_error == err.value.args[0]
 

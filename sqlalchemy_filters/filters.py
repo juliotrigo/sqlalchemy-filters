@@ -2,6 +2,8 @@
 
 from inspect import signature
 
+from sqlalchemy.inspection import inspect
+
 from .exceptions import BadFilterFormat, BadQuery
 
 
@@ -51,14 +53,13 @@ class Field(object):
         return [v for (k, v) in models.items()][0]  # first (and only) model
 
     def get_sqlalchemy_field(self):
-        try:
-            return getattr(self.model, self.field_name)
-        except AttributeError:
+        if self.field_name not in inspect(self.model).columns.keys():
             raise BadFilterFormat(
-                'Model {} has no attribute `{}`.'.format(
+                'Model {} has no column `{}`.'.format(
                     self.model, self.field_name
                 )
             )
+        return getattr(self.model, self.field_name)
 
 
 class Filter(object):
