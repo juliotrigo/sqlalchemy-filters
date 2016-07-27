@@ -1,21 +1,9 @@
 # -*- coding: utf-8 -*-
 
 
-class SqlAlchemyFiltersError(Exception):
+class BadFilterFormat(Exception):
     pass
 
 
-class InvalidOperator(SqlAlchemyFiltersError):
-    pass
-
-
-class ModelNotFound(SqlAlchemyFiltersError):
-    pass
-
-
-class ModelFieldNotFound(SqlAlchemyFiltersError):
-    pass
-
-
-class BadFilterFormat(SqlAlchemyFiltersError):
+class BadQuery(Exception):
     pass

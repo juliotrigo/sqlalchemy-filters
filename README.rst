@@ -35,7 +35,7 @@ model:
 
     query = self.session.query(Foo)
 
-Then we can apply filters to that ``query`` object multiple times:
+Then we can apply filters to that ``query`` object (multiple times):
 
 .. code-block:: python
 
@@ -46,10 +46,43 @@ Then we can apply filters to that ``query`` object multiple times:
     filters = [{'field': 'name', 'op': '==', 'value': 'name_1'}]
     filtered_query = apply_filters(query, filters)
 
-    more_filters = [{'field': 'id', 'op': '==', 'value': 3}]
+    more_filters = [{'field': 'foo_id', 'op': 'is_not_null'}]
     filtered_query = apply_filters(filtered_query, more_filters)
 
     result = filtered_query.all()
+
+Filters format
+--------------
+
+Filters must be provided in a list and will be applied sequentially.
+Each filter will be a dictionary element in that list, using the
+following format:
+
+.. code-block:: python
+
+    filters = [
+        {'field': 'field_name', 'op': '==', 'value': 'field_value'},
+        {'field': 'field_2_name', 'op': '!=', 'value': 'field_2_value'},
+        # ...
+    ]
+
+Where ``field`` is the name of the field that will be filtered using the
+operator provided in ``op`` and (optionally, depending on the operator)
+the provided ``value``.
+
+This is the list of operators that can be used:
+
+- ``is_null``
+- ``is_not_null``
+- ``==``, ``eq``
+- ``!=``, ``ne``
+- ``>``, ``gt``
+- ``<``, ``lt``
+- ``>=``, ``ge``
+- ``<=``, ``le``
+- ``like``
+- ``in``
+- ``not_in``
 
 Running tests
 -------------

@@ -1,119 +1,106 @@
 # -*- coding: utf-8 -*-
 
-from collections import namedtuple
+from inspect import signature
 
-from .exceptions import (
-    BadFilterFormat,
-    InvalidOperator,
-    ModelNotFound,
-    ModelFieldNotFound,
-)
+from sqlalchemy.inspection import inspect
+
+from .exceptions import BadFilterFormat, BadQuery
 
 
 class Operator(object):
 
-    OperatorFunction = namedtuple('OperatorFunction', ['arity', 'function'])
-
     OPERATORS = {
-        'is_null': OperatorFunction(1, lambda f: f.is_(None)),
-        'is_not_null': OperatorFunction(1, lambda f: f.isnot(None)),
-        '==': OperatorFunction(2, lambda f, a: f == a),
-        'eq': OperatorFunction(2, lambda f, a: f == a),
-        '!=': OperatorFunction(2, lambda f, a: f != a),
-        'ne': OperatorFunction(2, lambda f, a: f != a),
+        'is_null': lambda f: f.is_(None),
+        'is_not_null': lambda f: f.isnot(None),
+        '==': lambda f, a: f == a,
+        'eq': lambda f, a: f == a,
+        '!=': lambda f, a: f != a,
+        'ne': lambda f, a: f != a,
+        '>': lambda f, a: f > a,
+        'gt': lambda f, a: f > a,
+        '<': lambda f, a: f < a,
+        'lt': lambda f, a: f < a,
+        '>=': lambda f, a: f >= a,
+        'ge': lambda f, a: f >= a,
+        '<=': lambda f, a: f <= a,
+        'le': lambda f, a: f <= a,
+        'like': lambda f, a: f.like(a),
+        'in': lambda f, a: f.in_(a),
+        'not_in': lambda f, a: ~f.in_(a),
     }
 
     def __init__(self, operator):
-        if not operator:
-            raise InvalidOperator('Operator not provided.')
-
-        try:
-            op = self.OPERATORS[operator]
-        except KeyError:
-            raise InvalidOperator('Operator `{}` not valid.'.format(operator))
+        if operator not in self.OPERATORS:
+            raise BadFilterFormat('Operator `{}` not valid.'.format(operator))
 
         self.operator = operator
-        self.arity = op.arity
-        self.function = op.function
+        self.function = self.OPERATORS[operator]
+        self.arity = len(signature(self.function).parameters)
+
+
+class Field(object):
+
+    def __init__(self, models, field_name):
+        # TODO: remove this check once we start supporing multiple models
+        if len(models) > 1:
+            raise BadQuery('The query should contain only one model.')
+
+        self.model = self._get_model(models)
+        self.field_name = field_name
+
+    def _get_model(self, models):
+        # TODO: add model_name argument once we start supporing multiple models
+        return [v for (k, v) in models.items()][0]  # first (and only) model
+
+    def get_sqlalchemy_field(self):
+        if self.field_name not in inspect(self.model).columns.keys():
+            raise BadFilterFormat(
+                'Model {} has no column `{}`.'.format(
+                    self.model, self.field_name
+                )
+            )
+        return getattr(self.model, self.field_name)
 
 
 class Filter(object):
 
-    delimiter = '__'
-
     def __init__(self, filter_, models):
-        if not isinstance(filter_, dict):
+        try:
+            field_name = filter_['field']
+            op = filter_['op']
+        except KeyError:
             raise BadFilterFormat(
-                'Filter `{}` is not a dictionary.'.format(filter_)
+                '`field` and `op` are mandatory filter attributes.'
+            )
+        except TypeError:
+            raise BadFilterFormat(
+                'Filter `{}` should be a dictionary.'.format(filter_)
             )
 
-        self.operator = Operator(filter_.get('op'))
+        self.field = Field(models, field_name)
+        self.operator = Operator(op)
         self.value = filter_.get('value')
-        field = filter_.get('field')
-        other_field = filter_.get('other_field')  # TODO: finish implementation
+        self.value_present = True if 'value' in filter_ else False
 
-        if not field:
-            raise BadFilterFormat('`field` is a mandatory filter attribute.')
-
-        # TODO: finish implementation
-        if self.value and other_field:
-            raise BadFilterFormat(
-                'Both `value` and `other_field` were provided.'
-            )
-
-        self.field = self._get_model_field(field, models)
-        self.other_field = (
-            self._get_model_field(other_field, models) if other_field
-            else None
-        )  # TODO: finish implementation
+        if not self.value_present and self.operator.arity == 2:
+            raise BadFilterFormat('`value` must be provided.')
 
     def format_for_sqlalchemy(self):
-        func = self.operator.function
+        function = self.operator.function
         arity = self.operator.arity
+        field = self.field.get_sqlalchemy_field()
 
         if arity == 1:
-            return func(self.field)
+            return function(field)
 
         if arity == 2:
-            # TODO: finish implementation
-            if not self.value and not self.other_field:
-                raise BadFilterFormat(
-                    'Either `value` or `other_field` must be provided.'
-                )
-            if self.value:
-                return func(self.field, self.value)
-            if self.other_field:
-                return func(self.field, self.other_field)
-
-        raise BadFilterFormat(
-            'Incorrect number of filter arguments.'
-        )
-
-    @classmethod
-    def _get_model_field(cls, field_name, models):
-        if cls.delimiter in field_name:
-            # TODO: finish implementation: model name as part of `field_name`
-            raise NotImplemented()
-        else:
-            if len(models) > 1:
-                raise ModelNotFound(
-                    'The query has multiple models and `{}` is ambiguous. '
-                    'Please also provide the model.'.format(field_name)
-                )
-            model = [v for (k, v) in models.items()][0]  # The only entity
-
-        try:
-            return getattr(model, field_name)
-        except AttributeError:
-            raise ModelFieldNotFound(
-                'Model {} has no attribute {}.'.format(model, field_name)
-            )
+            return function(field, self.value)
 
 
 def apply_filters(query, filters):
-    models = get_query_entities(query)
+    models = get_query_models(query)
     if not models:
-        raise ModelNotFound('The query should contain some entities.')
+        raise BadQuery('The query does not contain any models.')
 
     sqlalchemy_filters = [
         Filter(filter_, models).format_for_sqlalchemy() for filter_ in filters
@@ -124,7 +111,7 @@ def apply_filters(query, filters):
     return query
 
 
-def get_query_entities(query):
+def get_query_models(query):
     return {
         entity['type'].__name__: entity['type']
         for entity in query.column_descriptions
