@@ -7,3 +7,7 @@ class BadFilterFormat(Exception):
 
 class BadQuery(Exception):
     pass
+
+
+class InvalidPage(Exception):
+    pass
