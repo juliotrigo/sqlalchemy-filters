@@ -98,6 +98,20 @@ class Filter(object):
 
 
 def apply_filters(query, filters):
+    """Apply filters to a SQLAlchemy query.
+
+    :param query:
+        A SQLAlchemy query object.
+
+    :param filters:
+        A list of dictionaries, where each one of them includes
+        the necesary information to create a filter to be applied to the
+        query.
+
+    :returns:
+        The SQLAlchemy query object after all the filters have been
+        applied.
+    """
     models = get_query_models(query)
     if not models:
         raise BadQuery('The query does not contain any models.')
@@ -112,6 +126,14 @@ def apply_filters(query, filters):
 
 
 def get_query_models(query):
+    """Get models from query.
+
+    :param query:
+        A SQLAlchemy query object.
+
+    :returns:
+        A dictionary with all the models included in the query.
+    """
     return {
         entity['type'].__name__: entity['type']
         for entity in query.column_descriptions
