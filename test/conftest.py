@@ -10,41 +10,22 @@ from test.models import Base
 
 def pytest_addoption(parser):
     parser.addoption(
-        '--test_db_uri',
+        '--test-db-uri',
         action='store',
         dest='TEST_DB_URI',
-        default='/test_sqlalchemy_filters.db',
+        default='sqlite+pysqlite:///test_sqlalchemy_filters.db',
         help=(
             'DB uri for testing (e.g. '
-            '"username:password@localhost:3306/test_sqlalchemy_filters")'
+            '"mysql+mysqlconnector:username:password@localhost:3306'
+            '/test_sqlalchemy_filters")'
         )
-    )
-
-    parser.addoption(
-        '--test_db_dialect',
-        action='store',
-        dest='TEST_DB_DIALECT',
-        default='sqlite',
-        help='Dialect implementation (e.g. "mysql")'
-    )
-
-    parser.addoption(
-        '--test_db_driver',
-        action='store',
-        dest='TEST_DB_DRIVER',
-        default='pysqlite',
-        help='DBAPI used to connect to the database (e.g. "mysqlconnector")'
     )
 
 
 @pytest.fixture(scope='session')
 def config(request):
     return {
-        'TEST_DB_URI': '{}+{}://{}'.format(
-            request.config.getoption('TEST_DB_DIALECT'),
-            request.config.getoption('TEST_DB_DRIVER'),
-            request.config.getoption('TEST_DB_URI')
-        )
+        'TEST_DB_URI': request.config.getoption('TEST_DB_URI')
     }
 
 
