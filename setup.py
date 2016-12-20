@@ -1,11 +1,20 @@
 # -*- coding: utf-8 -*-
 
+import os
+from codecs import open
 from setuptools import setup, find_packages
+
+
+here = os.path.abspath(os.path.dirname(__file__))
+
+with open(os.path.join(here, 'README.rst'), 'r', 'utf-8') as handle:
+    readme = handle.read()
 
 setup(
     name='sqlalchemy-filters',
     version='0.1.0',
     description='A library to filter SQLAlchemy queries.',
+    long_description=readme,
     author='Student.com',
     author_email='wearehiring@student.com',
     url='https://github.com/Overseas-Student-Living/sqlalchemy-filters',
@@ -30,7 +39,8 @@ setup(
     license='Apache License, Version 2.0',
     classifiers=[
         "Programming Language :: Python",
-        "Operating System :: Linux",
+        "Operating System :: POSIX",
+        "Operating System :: MacOS :: MacOS X",
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
