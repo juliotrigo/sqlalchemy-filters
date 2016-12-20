@@ -11,17 +11,21 @@ setup(
     url='https://github.com/Overseas-Student-Living/sqlalchemy-filters',
     packages=find_packages(exclude=['test', 'test.*']),
     install_requires=[
-        'sqlalchemy>=1.0.14',
+        'sqlalchemy>=1.0.16',
     ],
     extras_require={
         'dev': [
-            'pytest==2.9.2',
-            'flake8==3.0.1',
+            'pytest==3.0.5',
+            'flake8==3.2.1',
             'coverage==4.2.0',
-            'mysql-connector-python==2.0.4',
-            'sqlalchemy-utils==0.32.9',
+            'mysql-connector-python==2.1.5',
+            'sqlalchemy-utils==0.32.12',
         ]
     },
+    dependency_links=[
+        'https://cdn.mysql.com/Downloads/Connector-Python'
+        '/mysql-connector-python-2.1.5.zip'
+    ],
     zip_safe=True,
     license='Apache License, Version 2.0',
     classifiers=[
