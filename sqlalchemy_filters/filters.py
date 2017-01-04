@@ -101,7 +101,7 @@ def apply_filters(query, filters):
     """Apply filters to a SQLAlchemy query.
 
     :param query:
-        A SQLAlchemy query object.
+        A :class:`sqlalchemy.orm.Query` instance.
 
     :param filters:
         A list of dictionaries, where each one of them includes
@@ -109,8 +109,8 @@ def apply_filters(query, filters):
         query.
 
     :returns:
-        The SQLAlchemy query object after all the filters have been
-        applied.
+        The :class:`sqlalchemy.orm.Query` instance after all the filters
+        have been applied.
     """
     models = get_query_models(query)
     if not models:
@@ -129,7 +129,7 @@ def get_query_models(query):
     """Get models from query.
 
     :param query:
-        A SQLAlchemy query object.
+        A :class:`sqlalchemy.orm.Query` instance.
 
     :returns:
         A dictionary with all the models included in the query.
