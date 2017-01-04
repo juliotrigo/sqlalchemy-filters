@@ -124,14 +124,8 @@ class TestNoPaginationProvided(TestPaginationFixtures):
         result = paginated_query.all()
 
         assert len(result) == 8
-        assert result[0].id == 1
-        assert result[1].id == 2
-        assert result[2].id == 3
-        assert result[3].id == 4
-        assert result[4].id == 5
-        assert result[5].id == 6
-        assert result[6].id == 7
-        assert result[7].id == 8
+        for i in range(8):
+            assert result[i].id == i + 1
 
 
 class TestNoPageNumberProvided(TestPaginationFixtures):
@@ -154,14 +148,8 @@ class TestNoPageNumberProvided(TestPaginationFixtures):
         result = paginated_query.all()
 
         assert len(result) == 8
-        assert result[0].id == 1
-        assert result[1].id == 2
-        assert result[2].id == 3
-        assert result[3].id == 4
-        assert result[4].id == 5
-        assert result[5].id == 6
-        assert result[6].id == 7
-        assert result[7].id == 8
+        for i in range(8):
+            assert result[i].id == i + 1
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_page_size_provided(self, session):
@@ -205,14 +193,8 @@ class TestNoPageSizeProvided(TestPaginationFixtures):
         result = paginated_query.all()
 
         assert len(result) == 8
-        assert result[0].id == 1
-        assert result[1].id == 2
-        assert result[2].id == 3
-        assert result[3].id == 4
-        assert result[4].id == 5
-        assert result[5].id == 6
-        assert result[6].id == 7
-        assert result[7].id == 8
+        for i in range(8):
+            assert result[i].id == i + 1
 
     @pytest.mark.parametrize('page_number', [2, 3, 4])
     @pytest.mark.usefixtures('multiple_bars_inserted')
