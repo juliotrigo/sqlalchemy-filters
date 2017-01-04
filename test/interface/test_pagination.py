@@ -61,7 +61,7 @@ class TestWrongPagination(TestPaginationFixtures):
         expected_error = 'Page number should be positive: {}'.format(
             page_number
         )
-        assert expected_error == error_value(err)
+        assert error_value(err) == expected_error
 
     @pytest.mark.parametrize(
         'page_number, page_size',
@@ -82,7 +82,7 @@ class TestWrongPagination(TestPaginationFixtures):
         expected_error = 'Page number should be positive: {}'.format(
             page_number
         )
-        assert expected_error == error_value(err)
+        assert error_value(err) == expected_error
 
     @pytest.mark.parametrize(
         'page_number, page_size',
@@ -101,7 +101,7 @@ class TestWrongPagination(TestPaginationFixtures):
         expected_error = 'Page size should not be negative: {}'.format(
             page_size
         )
-        assert expected_error == err.value.args[0]
+        assert error_value(err) == expected_error
 
 
 class TestNoPaginationProvided(TestPaginationFixtures):
