@@ -30,14 +30,9 @@ class TestPaginationFixtures(object):
         bar_6 = Bar(id=6, name='name_5', count=17)
         bar_7 = Bar(id=7, name='name_7', count=None)
         bar_8 = Bar(id=8, name='name_8', count=18)
-        session.add(bar_1)
-        session.add(bar_2)
-        session.add(bar_3)
-        session.add(bar_4)
-        session.add(bar_5)
-        session.add(bar_6)
-        session.add(bar_7)
-        session.add(bar_8)
+        session.add_all(
+            [bar_1, bar_2, bar_3, bar_4, bar_5, bar_6, bar_7, bar_8]
+        )
         session.commit()
 
 

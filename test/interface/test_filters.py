@@ -166,10 +166,7 @@ class TestFiltersMixin(object):
         bar_2 = Bar(id=2, name='name_2', count=10)
         bar_3 = Bar(id=3, name='name_1', count=None)
         bar_4 = Bar(id=4, name='name_4', count=15)
-        session.add(bar_1)
-        session.add(bar_2)
-        session.add(bar_3)
-        session.add(bar_4)
+        session.add_all([bar_1, bar_2, bar_3, bar_4])
         session.commit()
 
 
@@ -549,10 +546,7 @@ class TestFilterDatesMixin(object):
             created_at=datetime.date(2016, 7, 14),
             execution_time=datetime.datetime(2016, 7, 14, 3, 5, 9)
             )
-        session.add(qux_1)
-        session.add(qux_2)
-        session.add(qux_3)
-        session.add(qux_4)
+        session.add_all([qux_1, qux_2, qux_3, qux_4])
         session.commit()
 
 
