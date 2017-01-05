@@ -6,8 +6,8 @@ SQLAlchemy-filters
     Filter, sort and paginate SQLAlchemy query objects.
     Ideal for exposing these actions over a REST API.
 
-Usage
------
+Filtering
+---------
 
 Assuming that we have a SQLAlchemy `query` that only contains a single
 model:
@@ -50,6 +50,25 @@ Then we can apply filters to that ``query`` object (multiple times):
     filtered_query = apply_filters(filtered_query, more_filters)
 
     result = filtered_query.all()
+
+Pagination
+----------
+
+.. code-block:: python
+
+    from sqlalchemy_filters import apply_pagination
+
+    # `query` should be a SQLAlchemy query object
+
+    query, pagination = apply_pagination(query, page_number=1, page_size=10)
+
+    page_size, page_number, num_pages, total_results = pagination
+
+    assert 10 == len(query)
+    assert 10 == page_size == pagination.page_size
+    assert 1 == page_number == pagination.page_number
+    assert 3 == num_pages == pagination.num_pages
+    assert 22 == total_results == pagination.total_results
 
 Filters format
 --------------
