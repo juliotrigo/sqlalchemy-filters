@@ -2,9 +2,8 @@
 
 from inspect import signature
 
-from sqlalchemy.inspection import inspect
-
 from .exceptions import BadFilterFormat, BadQuery
+from .models import Field, get_query_models
 
 
 class Operator(object):
@@ -36,30 +35,6 @@ class Operator(object):
         self.operator = operator
         self.function = self.OPERATORS[operator]
         self.arity = len(signature(self.function).parameters)
-
-
-class Field(object):
-
-    def __init__(self, models, field_name):
-        # TODO: remove this check once we start supporing multiple models
-        if len(models) > 1:
-            raise BadQuery('The query should contain only one model.')
-
-        self.model = self._get_model(models)
-        self.field_name = field_name
-
-    def _get_model(self, models):
-        # TODO: add model_name argument once we start supporing multiple models
-        return [v for (k, v) in models.items()][0]  # first (and only) model
-
-    def get_sqlalchemy_field(self):
-        if self.field_name not in inspect(self.model).columns.keys():
-            raise BadFilterFormat(
-                'Model {} has no column `{}`.'.format(
-                    self.model, self.field_name
-                )
-            )
-        return getattr(self.model, self.field_name)
 
 
 class Filter(object):
@@ -123,18 +98,3 @@ def apply_filters(query, filters):
         query = query.filter(*sqlalchemy_filters)
 
     return query
-
-
-def get_query_models(query):
-    """Get models from query.
-
-    :param query:
-        A :class:`sqlalchemy.orm.Query` instance.
-
-    :returns:
-        A dictionary with all the models included in the query.
-    """
-    return {
-        entity['type'].__name__: entity['type']
-        for entity in query.column_descriptions
-    }

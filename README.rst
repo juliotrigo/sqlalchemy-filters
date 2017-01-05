@@ -51,6 +51,24 @@ Then we can apply filters to that ``query`` object (multiple times):
 
     result = filtered_query.all()
 
+Sort
+----
+
+.. code-block:: python
+
+    from sqlalchemy_filters import apply_sort
+
+    # `query` should be a SQLAlchemy query object
+
+    order_by = [
+        {'field': 'name', 'direction': 'asc'},
+        {'field': 'id', 'direction': 'desc'},
+    ]
+    sorted_query = apply_sort(query, order_by)
+
+    result = sorted_query.all()
+
+
 Pagination
 ----------
 
@@ -102,6 +120,23 @@ This is the list of operators that can be used:
 - ``like``
 - ``in``
 - ``not_in``
+
+Sort format
+-----------
+
+Sort elements must be provided as dictionaries in a list and will be
+applied sequentially:
+
+.. code-block:: python
+
+    order_by = [
+        {'field': 'name', 'direction': 'asc'},
+        {'field': 'id', 'direction': 'desc'},
+        # ...
+    ]
+
+Where ``field`` is the name of the field that will be sorted using the
+provided ``direction``.
 
 Running tests
 -------------

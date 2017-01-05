@@ -6,16 +6,13 @@ import pytest
 
 from sqlalchemy_filters import apply_pagination
 from sqlalchemy_filters.exceptions import InvalidPage
+from test import error_value
 from test.models import Bar
 
 
 Pagination = namedtuple(
     'Pagination', ['page_number', 'page_size', 'num_pages', 'total_results']
 )
-
-
-def error_value(exception):
-    return exception.value.args[0]
 
 
 class TestPaginationFixtures(object):

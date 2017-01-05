@@ -3,40 +3,11 @@
 import datetime
 
 import pytest
-from sqlalchemy_filters import apply_filters, get_query_models
-from sqlalchemy_filters.exceptions import BadFilterFormat, BadQuery
+from sqlalchemy_filters import apply_filters
+from sqlalchemy_filters.exceptions import (
+    BadFilterFormat, FieldNotFound, BadQuery
+)
 from test.models import Bar, Qux
-
-
-class TestGetQueryModels(object):
-
-    def test_query_with_no_models(self, session):
-        query = session.query()
-
-        entities = get_query_models(query)
-
-        assert {} == entities
-
-    def test_query_with_one_model(self, session):
-        query = session.query(Bar)
-
-        entities = get_query_models(query)
-
-        assert {'Bar': Bar} == entities
-
-    def test_query_with_multiple_models(self, session):
-        query = session.query(Bar, Qux)
-
-        entities = get_query_models(query)
-
-        assert {'Bar': Bar, 'Qux': Qux} == entities
-
-    def test_query_with_duplicated_models(self, session):
-        query = session.query(Bar, Qux, Bar)
-
-        entities = get_query_models(query)
-
-        assert {'Bar': Bar, 'Qux': Qux} == entities
 
 
 class TestProvidedModels(object):
@@ -131,7 +102,7 @@ class TestProvidedFilters(object):
         query = session.query(Bar)
         filters = [{'field': 'invalid_field', 'op': '==', 'value': 'name_1'}]
 
-        with pytest.raises(BadFilterFormat) as err:
+        with pytest.raises(FieldNotFound) as err:
             apply_filters(query, filters)
 
         expected_error = (
@@ -147,7 +118,7 @@ class TestProvidedFilters(object):
         query = session.query(Bar)
         filters = [{'field': attr_name, 'op': '==', 'value': 'name_1'}]
 
-        with pytest.raises(BadFilterFormat) as err:
+        with pytest.raises(FieldNotFound) as err:
             apply_filters(query, filters)
 
         expected_error = (
