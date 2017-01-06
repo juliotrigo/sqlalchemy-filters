@@ -5,6 +5,14 @@ class BadFilterFormat(Exception):
     pass
 
 
+class BadSortFormat(Exception):
+    pass
+
+
+class FieldNotFound(Exception):
+    pass
+
+
 class BadQuery(Exception):
     pass
 
