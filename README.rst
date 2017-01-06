@@ -145,11 +145,13 @@ There are some Makefile targets that can be used to run the tests. A
 test database will be created, used during the tests and destroyed
 afterwards.
 
-The default configuration uses SQLite with the following test URI:
+The default configuration uses both SQLite and MySQL (if the driver is
+installed) to run the tests, with the following URIs:
 
 .. code-block:: shell
 
     sqlite+pysqlite:///test_sqlalchemy_filters.db
+    mysql+mysqlconnector://root:@localhost:3306/test_sqlalchemy_filters
 
 Example of usage:
 
@@ -160,8 +162,11 @@ Example of usage:
     $ make coverage
 
     $ # overriding DB parameters
-    $ ARGS='--test-db-uri mysql+mysqlconnector://root:@192.168.99.100:3340/test_sqlalchemy_filters' make test
-    $ ARGS='--test-db-uri mysql+mysqlconnector://root:@192.168.99.100:3340/test_sqlalchemy_filters' make coverage
+    $ ARGS='--mysql-test-db-uri mysql+mysqlconnector://root:@192.168.99.100:3340/test_sqlalchemy_filters' make test
+    $ ARGS='--sqlite-test-db-uri sqlite+pysqlite:///test_sqlalchemy_filters.db' make test
+
+    $ ARGS='--mysql-test-db-uri mysql+mysqlconnector://root:@192.168.99.100:3340/test_sqlalchemy_filters' make coverage
+    $ ARGS='--sqlite-test-db-uri sqlite+pysqlite:///test_sqlalchemy_filters.db' make coverage
 
 
 License

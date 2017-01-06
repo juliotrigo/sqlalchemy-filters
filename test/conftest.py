@@ -8,15 +8,33 @@ from sqlalchemy_utils import create_database, drop_database, database_exists
 from test.models import Base
 
 
+SQLITE_TEST_DB_URI = 'SQLITE_TEST_DB_URI'
+MYSQL_TEST_DB_URI = 'MYSQL_TEST_DB_URI'
+
+
 def pytest_addoption(parser):
     parser.addoption(
-        '--test-db-uri',
+        '--sqlite-test-db-uri',
         action='store',
-        dest='TEST_DB_URI',
+        dest=SQLITE_TEST_DB_URI,
         default='sqlite+pysqlite:///test_sqlalchemy_filters.db',
         help=(
             'DB uri for testing (e.g. '
-            '"mysql+mysqlconnector:username:password@localhost:3306'
+            '"sqlite+pysqlite:///test_sqlalchemy_filters.db")'
+        )
+    )
+
+    parser.addoption(
+        '--mysql-test-db-uri',
+        action='store',
+        dest=MYSQL_TEST_DB_URI,
+        default=(
+            'mysql+mysqlconnector://root:@localhost:3306'
+            '/test_sqlalchemy_filters'
+        ),
+        help=(
+            'DB uri for testing (e.g. '
+            '"mysql+mysqlconnector://username:password@localhost:3306'
             '/test_sqlalchemy_filters")'
         )
     )
@@ -25,16 +43,32 @@ def pytest_addoption(parser):
 @pytest.fixture(scope='session')
 def config(request):
     return {
-        'TEST_DB_URI': request.config.getoption('TEST_DB_URI')
+        SQLITE_TEST_DB_URI: request.config.getoption(SQLITE_TEST_DB_URI),
+        MYSQL_TEST_DB_URI: request.config.getoption(MYSQL_TEST_DB_URI),
     }
 
 
+def test_db_keys():
+    """Decide what DB backends to use to run the tests."""
+    test_db_uris = []
+    test_db_uris.append(SQLITE_TEST_DB_URI)
+
+    try:
+        import mysql  # noqa: F401
+    except ImportError:
+        pass
+    else:
+        test_db_uris.append(MYSQL_TEST_DB_URI)
+
+    return test_db_uris
+
+
+@pytest.fixture(scope='session', params=test_db_keys())
+def db_uri(request, config):
+    return config[request.param]
+
+
 @pytest.fixture(scope='session')
-def db_uri(config):
-    return config['TEST_DB_URI']
-
-
-@pytest.yield_fixture(scope='session')
 def connection(db_uri):
     create_db(db_uri)
     engine = create_engine(db_uri)
@@ -48,7 +82,7 @@ def connection(db_uri):
     destroy_database(db_uri)
 
 
-@pytest.yield_fixture()
+@pytest.fixture()
 def session(connection):
     Session = sessionmaker(bind=connection)
     db_session = Session()
