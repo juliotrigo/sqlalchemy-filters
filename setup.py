@@ -26,9 +26,11 @@ setup(
         'dev': [
             'pytest==3.0.5',
             'flake8==3.2.1',
-            'coverage==4.2.0',
-            'mysql-connector-python==2.1.5',
+            'coverage==4.3.1',
             'sqlalchemy-utils==0.32.12',
+        ],
+        'mysql': [
+            'mysql-connector-python==2.1.5',
         ]
     },
     dependency_links=[
