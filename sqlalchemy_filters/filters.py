@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from inspect import signature
+from sqlalchemy import and_, or_, not_
 
 from .exceptions import BadFilterFormat, BadQuery
 from .models import Field, get_query_models
@@ -72,6 +73,29 @@ class Filter(object):
             return function(field, self.value)
 
 
+def filter_factory(filterdef, models):
+
+    if isinstance(filterdef, list):
+        return [filter_factory(item, models) for item in filterdef]
+
+    if isinstance(filterdef, dict) and {'or', 'OR'}.intersection(filterdef):
+        clauses = filterdef.get('or') or filterdef['OR']
+        # TODO raise error if clauses is not a list?
+        return or_(*filter_factory(clauses, models))
+
+    if isinstance(filterdef, dict) and {'and', 'AND'}.intersection(filterdef):
+        clauses = filterdef.get('and') or filterdef['AND']
+        # TODO raise error if clauses is not a list?
+        return and_(*filter_factory(clauses, models))
+
+    if isinstance(filterdef, dict) and {'not', 'NOT'}.intersection(filterdef):
+        clause = filterdef.get('not') or filterdef['NOT']
+        # TODO raise error if clause IS a list?
+        return not_(filter_factory(clause, models))
+
+    return Filter(filterdef, models).format_for_sqlalchemy()
+
+
 def apply_filters(query, filters):
     """Apply filters to a SQLAlchemy query.
 
@@ -91,9 +115,8 @@ def apply_filters(query, filters):
     if not models:
         raise BadQuery('The query does not contain any models.')
 
-    sqlalchemy_filters = [
-        Filter(filter_, models).format_for_sqlalchemy() for filter_ in filters
-    ]
+    sqlalchemy_filters = filter_factory(filters, models)
+
     if sqlalchemy_filters:
         query = query.filter(*sqlalchemy_filters)
 

@@ -45,7 +45,7 @@ class TestProvidedFilters(object):
 
         assert query == filtered_query
 
-    @pytest.mark.parametrize('filter_', ['some text', 1, []])
+    @pytest.mark.parametrize('filter_', ['some text', 1, ''])
     def test_wrong_filters_format(self, session, filter_):
         query = session.query(Bar)
         filters = [filter_]
