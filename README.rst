@@ -121,6 +121,33 @@ This is the list of operators that can be used:
 - ``in``
 - ``not_in``
 
+Boolean Functions
+*****************
+``and``, ``or``, and ``not`` functions can be used and nested within the filter definition:
+
+.. code-block:: python
+
+    filters = [
+        {
+            'or': [
+                {
+                    'and': [
+                        {'field': 'field_name', 'op': '==', 'value': 'field_value'},
+                        {'field': 'field_2_name', 'op': '!=', 'value': 'field_2_value'},
+                    ]
+                },
+                {
+                    'not': [
+                        {'field': 'field_3_name', 'op': '==', 'value': 'field_3_value'}
+                    ]
+                },
+            ],
+        }
+    ]
+
+ 
+Note: ``or`` and ``and`` must reference a list of at least one element. ``not`` must reference a list of exactly one element.
+ 
 Sort format
 -----------
 
