@@ -45,6 +45,15 @@ class TestProvidedFilters(object):
 
         assert query == filtered_query
 
+    def test_filters_not_a_list(self, session):
+        query = session.query(Bar)
+        filters = {}
+
+        with pytest.raises(BadFilterFormat) as err:
+            apply_filters(query, filters)
+
+        assert '`filters` must be a list' in str(err)
+
     @pytest.mark.parametrize('filter_', ['some text', 1, ''])
     def test_wrong_filters_format(self, session, filter_):
         query = session.query(Bar)
@@ -511,12 +520,12 @@ class TestFilterDatesMixin(object):
         qux_3 = Qux(
             id=3, name='name_1', count=None,
             created_at=None, execution_time=None
-            )
+        )
         qux_4 = Qux(
             id=4, name='name_4', count=15,
             created_at=datetime.date(2016, 7, 14),
             execution_time=datetime.datetime(2016, 7, 14, 3, 5, 9)
-            )
+        )
         session.add_all([qux_1, qux_2, qux_3, qux_4])
         session.commit()
 
@@ -653,3 +662,198 @@ class TestDateTimeFields(TestFilterDatesMixin):
         assert len(result) == 1
         assert result[0].id == 3
         assert result[0].execution_time is None
+
+
+class TestApplyBooleanFunctions(TestFiltersMixin):
+
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_or(self, session):
+        query = session.query(Bar)
+        filters = [
+            {'or': [
+                {'field': 'id', 'op': '==', 'value': 1},
+                {'field': 'id', 'op': '==', 'value': 3},
+            ]},
+        ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 2
+        assert result[0].id == 1
+        assert result[1].id == 3
+
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_or_with_three_args(self, session):
+        query = session.query(Bar)
+        filters = [
+            {'or': [
+                {'field': 'id', 'op': '==', 'value': 1},
+                {'field': 'id', 'op': '==', 'value': 3},
+                {'field': 'id', 'op': '==', 'value': 4},
+            ]},
+        ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 3
+        assert result[0].id == 1
+        assert result[1].id == 3
+        assert result[2].id == 4
+
+    @pytest.mark.parametrize(
+        ('or_args', 'expected_error'), [
+            (
+                [],
+                '`or` value must be a list with length > 1'
+            ),
+            (
+                [{'field': 'id', 'op': '==', 'value': 1}],
+                '`or` value must be a list with length > 1'
+            ),
+            (
+                {},
+                '`or` value must be a list'
+            ),
+        ]
+    )
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_or_with_bad_format(self, session, or_args, expected_error):
+        query = session.query(Bar)
+        filters = [{'or': or_args}]
+
+        with pytest.raises(BadFilterFormat) as exc:
+            apply_filters(query, filters)
+
+        assert expected_error in str(exc)
+
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_and(self, session):
+        query = session.query(Bar)
+        filters = [
+            {'and': [
+                {'field': 'id', 'op': '<=', 'value': 2},
+                {'field': 'count', 'op': '>=', 'value': 6},
+            ]},
+        ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 1
+        assert result[0].id == 2
+
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_and_with_three_args(self, session):
+        query = session.query(Bar)
+        filters = [
+            {'and': [
+                {'field': 'id', 'op': '<=', 'value': 3},
+                {'field': 'name', 'op': '==', 'value': 'name_1'},
+                {'field': 'count', 'op': 'is_not_null'},
+            ]},
+        ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 1
+        assert result[0].id == 1
+
+    @pytest.mark.parametrize(
+        ('and_args', 'expected_error'), [
+            (
+                [],
+                '`and` value must be a list with length > 1'
+            ),
+            (
+                [{'field': 'id', 'op': '==', 'value': 1}],
+                '`and` value must be a list with length > 1'
+            ),
+            (
+                {},
+                '`and` value must be a list'
+            ),
+        ]
+    )
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_and_with_bad_format(self, session, and_args, expected_error):
+        query = session.query(Bar)
+        filters = [{'and': and_args}]
+
+        with pytest.raises(BadFilterFormat) as exc:
+            apply_filters(query, filters)
+
+        assert expected_error in str(exc)
+
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_not(self, session):
+        query = session.query(Bar)
+        filters = [
+            {'not': [
+                {'field': 'id', 'op': '==', 'value': 3},
+            ]},
+        ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 3
+        assert result[0].id == 1
+        assert result[1].id == 2
+        assert result[2].id == 4
+
+    @pytest.mark.parametrize(
+        ('not_args', 'expected_error'), [
+            (
+                [{'field': 'id', 'op': '==', 'value': 1},
+                    {'field': 'id', 'op': '==', 'value': 2}],
+                '`not` value must be a list of length 1'
+            ),
+            (
+                [],
+                '`not` value must be a list of length 1'
+            ),
+            (
+                {},
+                '`not` value must be a list'
+            ),
+        ]
+    )
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_not_with_bad_format(self, session, not_args, expected_error):
+        query = session.query(Bar)
+        filters = [{'not': not_args}]
+
+        with pytest.raises(BadFilterFormat) as exc:
+            apply_filters(query, filters)
+
+        assert expected_error in str(exc)
+
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_complex(self, session):
+        query = session.query(Bar)
+        filters = [
+            {
+                'and': [
+                    {
+                        'or': [
+                            {'field': 'id', 'op': '==', 'value': 2},
+                            {'field': 'id', 'op': '==', 'value': 3},
+                        ]
+                    },
+                    {
+                        'not': [
+                            {'field': 'name', 'op': '==', 'value': 'name_2'}
+                        ]
+                    },
+                ],
+            }
+        ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 1
+        assert result[0].id == 3

@@ -88,7 +88,7 @@ class Filter(object):
 def build_sqlalchemy_filters(filterdef, models):
     """ Recursively parse the `filterdef` into sqlalchemy filter arguments """
 
-    if isinstance(filterdef, (list, tuple)):
+    if isinstance(filterdef, list):
         return [build_sqlalchemy_filters(item, models) for item in filterdef]
 
     if isinstance(filterdef, dict):
@@ -99,7 +99,7 @@ def build_sqlalchemy_filters(filterdef, models):
                 # Get the function argument definitions.
                 fn_args = filterdef[key]
                 # validate the arguments
-                if not isinstance(fn_args, (list, tuple)):
+                if not isinstance(fn_args, list):
                     raise BadFilterFormat(
                         '`{}` value must be a list or tuple'.format(key)
                     )
@@ -137,8 +137,8 @@ def apply_filters(query, filters):
     if not models:
         raise BadQuery('The query does not contain any models.')
 
-    if not isinstance(filters, (list, tuple)):
-        raise BadFilterFormat('`filters` must be a list or tuple')
+    if not isinstance(filters, list):
+        raise BadFilterFormat('`filters` must be a list')
 
     sqlalchemy_filters = build_sqlalchemy_filters(filters, models)
 
