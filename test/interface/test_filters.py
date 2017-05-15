@@ -691,6 +691,21 @@ class TestApplyBooleanFunctions(TestFiltersMixin):
         assert result[1].id == 3
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_or_with_one_arg(self, session):
+        query = session.query(Bar)
+        filters = [
+            {'or': [
+                {'field': 'id', 'op': '==', 'value': 1},
+            ]},
+        ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 1
+        assert result[0].id == 1
+
+    @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_or_with_three_args(self, session):
         query = session.query(Bar)
         filters = [
@@ -713,11 +728,7 @@ class TestApplyBooleanFunctions(TestFiltersMixin):
         ('or_args', 'expected_error'), [
             (
                 [],
-                '`or` value must be a list or tuple with length > 1'
-            ),
-            (
-                [{'field': 'id', 'op': '==', 'value': 1}],
-                '`or` value must be a list or tuple with length > 1'
+                '`or` value must be a list or tuple with length >= 1'
             ),
             (
                 {},
@@ -752,6 +763,21 @@ class TestApplyBooleanFunctions(TestFiltersMixin):
         assert result[0].id == 2
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_and_with_one_arg(self, session):
+        query = session.query(Bar)
+        filters = [
+            {'and': [
+                {'field': 'id', 'op': '==', 'value': 3},
+            ]},
+        ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 1
+        assert result[0].id == 3
+
+    @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_and_with_three_args(self, session):
         query = session.query(Bar)
         filters = [
@@ -772,11 +798,7 @@ class TestApplyBooleanFunctions(TestFiltersMixin):
         ('and_args', 'expected_error'), [
             (
                 [],
-                '`and` value must be a list or tuple with length > 1'
-            ),
-            (
-                [{'field': 'id', 'op': '==', 'value': 1}],
-                '`and` value must be a list or tuple with length > 1'
+                '`and` value must be a list or tuple with length >= 1'
             ),
             (
                 {},

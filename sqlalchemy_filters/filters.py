@@ -108,10 +108,10 @@ def build_sqlalchemy_filters(filterdef, models):
                         '`{}` value must be a list or tuple of '
                         'length 1'.format(key)
                     )
-                if not only_one_arg and len(fn_args) <= 1:
+                if not only_one_arg and len(fn_args) < 1:
                     raise BadFilterFormat(
                         '`{}` value must be a list or tuple with '
-                        'length > 1'.format(key)
+                        'length >= 1'.format(key)
                     )
 
                 return boolean_fn(*build_sqlalchemy_filters(fn_args, models))
