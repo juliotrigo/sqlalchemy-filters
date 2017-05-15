@@ -88,7 +88,7 @@ class Filter(object):
 def build_sqlalchemy_filters(filterdef, models):
     """ Recursively parse the `filterdef` into sqlalchemy filter arguments """
 
-    if isinstance(filterdef, list):
+    if isinstance(filterdef, (list, tuple)):
         return [build_sqlalchemy_filters(item, models) for item in filterdef]
 
     if isinstance(filterdef, dict):
@@ -99,17 +99,18 @@ def build_sqlalchemy_filters(filterdef, models):
                 # Get the function argument definitions.
                 fn_args = filterdef[key]
                 # validate the arguments
-                if not isinstance(fn_args, list):
+                if not isinstance(fn_args, (list, tuple)):
                     raise BadFilterFormat(
                         '`{}` value must be a list or tuple'.format(key)
                     )
                 if only_one_arg and len(fn_args) != 1:
                     raise BadFilterFormat(
-                        '`{}` value must be a list of length 1'.format(key)
+                        '`{}` value must be a list or tuple of '
+                        'length 1'.format(key)
                     )
                 if not only_one_arg and len(fn_args) <= 1:
                     raise BadFilterFormat(
-                        '`{}` value must be a list with '
+                        '`{}` value must be a list or tuple with '
                         'length > 1'.format(key)
                     )
 
@@ -125,7 +126,7 @@ def apply_filters(query, filters):
         A :class:`sqlalchemy.orm.Query` instance.
 
     :param filters:
-        A list of dictionaries, where each one of them includes
+        A list (or tuple) of dictionaries, where each one of them includes
         the necesary information to create a filter to be applied to the
         query.
 
@@ -137,8 +138,8 @@ def apply_filters(query, filters):
     if not models:
         raise BadQuery('The query does not contain any models.')
 
-    if not isinstance(filters, list):
-        raise BadFilterFormat('`filters` must be a list')
+    if not isinstance(filters, (list, tuple)):
+        raise BadFilterFormat('`filters` must be a list or tuple')
 
     sqlalchemy_filters = build_sqlalchemy_filters(filters, models)
 

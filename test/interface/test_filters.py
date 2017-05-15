@@ -247,16 +247,23 @@ class TestApplyEqualToFilter(TestFiltersMixin):
         assert result[1].id == 3
         assert result[1].name == 'name_1'
 
-    @pytest.mark.parametrize('operator', ['==', 'eq'])
+    @pytest.mark.parametrize(
+        'filters', [
+            [  # filters using `==` in a list
+                {'field': 'name', 'op': '==', 'value': 'name_1'},
+                {'field': 'id', 'op': '==', 'value': 3}
+            ],
+            (  # filters using `eq` in a tuple
+                {'field': 'name', 'op': 'eq', 'value': 'name_1'},
+                {'field': 'id', 'op': 'eq', 'value': 3}
+            )
+        ]
+    )
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_multiple_filters_applied_to_a_single_model(
-        self, session, operator
+        self, session, filters
     ):
         query = session.query(Bar)
-        filters = [
-            {'field': 'name', 'op': operator, 'value': 'name_1'},
-            {'field': 'id', 'op': operator, 'value': 3}
-        ]
 
         filtered_query = apply_filters(query, filters)
         result = filtered_query.all()
@@ -706,15 +713,15 @@ class TestApplyBooleanFunctions(TestFiltersMixin):
         ('or_args', 'expected_error'), [
             (
                 [],
-                '`or` value must be a list with length > 1'
+                '`or` value must be a list or tuple with length > 1'
             ),
             (
                 [{'field': 'id', 'op': '==', 'value': 1}],
-                '`or` value must be a list with length > 1'
+                '`or` value must be a list or tuple with length > 1'
             ),
             (
                 {},
-                '`or` value must be a list'
+                '`or` value must be a list or tuple'
             ),
         ]
     )
@@ -765,15 +772,15 @@ class TestApplyBooleanFunctions(TestFiltersMixin):
         ('and_args', 'expected_error'), [
             (
                 [],
-                '`and` value must be a list with length > 1'
+                '`and` value must be a list or tuple with length > 1'
             ),
             (
                 [{'field': 'id', 'op': '==', 'value': 1}],
-                '`and` value must be a list with length > 1'
+                '`and` value must be a list or tuple with length > 1'
             ),
             (
                 {},
-                '`and` value must be a list'
+                '`and` value must be a list or tuple'
             ),
         ]
     )
@@ -809,15 +816,15 @@ class TestApplyBooleanFunctions(TestFiltersMixin):
             (
                 [{'field': 'id', 'op': '==', 'value': 1},
                     {'field': 'id', 'op': '==', 'value': 2}],
-                '`not` value must be a list of length 1'
+                '`not` value must be a list or tuple of length 1'
             ),
             (
                 [],
-                '`not` value must be a list of length 1'
+                '`not` value must be a list or tuple of length 1'
             ),
             (
                 {},
-                '`not` value must be a list'
+                '`not` value must be a list or tuple'
             ),
         ]
     )
@@ -851,6 +858,33 @@ class TestApplyBooleanFunctions(TestFiltersMixin):
                 ],
             }
         ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 1
+        assert result[0].id == 3
+
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_complex_using_tuples(self, session):
+        query = session.query(Bar)
+        filters = (
+            {
+                'and': (
+                    {
+                        'or': (
+                            {'field': 'id', 'op': '==', 'value': 2},
+                            {'field': 'id', 'op': '==', 'value': 3},
+                        )
+                    },
+                    {
+                        'not': (
+                            {'field': 'name', 'op': '==', 'value': 'name_2'},
+                        )
+                    },
+                ),
+            },
+        )
 
         filtered_query = apply_filters(query, filters)
         result = filtered_query.all()
