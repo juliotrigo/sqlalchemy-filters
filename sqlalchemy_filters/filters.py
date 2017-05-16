@@ -85,11 +85,11 @@ class Filter(object):
             return function(field, self.value)
 
 
-def build_sqlalchemy_filters(filterdef, models):
+def _build_sqlalchemy_filters(filterdef, models):
     """ Recursively parse the `filterdef` into sqlalchemy filter arguments """
 
     if isinstance(filterdef, (list, tuple)):
-        return [build_sqlalchemy_filters(item, models) for item in filterdef]
+        return [_build_sqlalchemy_filters(item, models) for item in filterdef]
 
     if isinstance(filterdef, dict):
         # Check if filterdef defines a boolean function.
@@ -114,7 +114,7 @@ def build_sqlalchemy_filters(filterdef, models):
                         'length >= 1'.format(key)
                     )
 
-                return boolean_fn(*build_sqlalchemy_filters(fn_args, models))
+                return boolean_fn(*_build_sqlalchemy_filters(fn_args, models))
 
     return Filter(filterdef, models).format_for_sqlalchemy()
 
@@ -141,7 +141,7 @@ def apply_filters(query, filters):
     if not isinstance(filters, (list, tuple)):
         raise BadFilterFormat('`filters` must be a list or tuple')
 
-    sqlalchemy_filters = build_sqlalchemy_filters(filters, models)
+    sqlalchemy_filters = _build_sqlalchemy_filters(filters, models)
 
     if sqlalchemy_filters:
         query = query.filter(*sqlalchemy_filters)
