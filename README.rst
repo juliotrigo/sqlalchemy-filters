@@ -104,8 +104,8 @@ following format:
     ]
 
 Where ``field`` is the name of the field that will be filtered using the
-operator provided in ``op`` and (optionally, depending on the operator)
-the provided ``value``.
+operator provided in ``op`` (optional, defaults to `==`) and the
+provided ``value`` (optional depending on the operator).
 
 This is the list of operators that can be used:
 
