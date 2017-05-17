@@ -45,15 +45,6 @@ class TestProvidedFilters(object):
 
         assert query == filtered_query
 
-    def test_filters_not_a_list(self, session):
-        query = session.query(Bar)
-        filters = {}
-
-        with pytest.raises(BadFilterFormat) as err:
-            apply_filters(query, filters)
-
-        assert '`filters` must be a list' in str(err)
-
     @pytest.mark.parametrize('filter_', ['some text', 1, ''])
     def test_wrong_filters_format(self, session, filter_):
         query = session.query(Bar)
@@ -228,6 +219,23 @@ class TestApplyFiltersMultipleTimes(TestFiltersMixin):
         assert len(result) == 1
         assert result[0].id == 3
         assert result[0].name == 'name_1'
+
+
+class TestApplyFilterWithoutList(TestFiltersMixin):
+
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_a_single_dict_can_be_supplied_as_filters(self, session):
+        query = session.query(Bar)
+        filters = {'field': 'name', 'op': '==', 'value': 'name_1'}
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 2
+        assert result[0].id == 1
+        assert result[0].name == 'name_1'
+        assert result[1].id == 3
+        assert result[1].name == 'name_1'
 
 
 class TestApplyEqualToFilter(TestFiltersMixin):
@@ -728,11 +736,15 @@ class TestApplyBooleanFunctions(TestFiltersMixin):
         ('or_args', 'expected_error'), [
             (
                 [],
-                '`or` value must be a list or tuple with length >= 1'
+                '`or` must have one or more arguments'
             ),
             (
                 {},
-                '`or` value must be a list or tuple'
+                '`or` value must be an iterable across the function arguments'
+            ),
+            (
+                'hello',
+                '`or` value must be an iterable across the function arguments'
             ),
         ]
     )
@@ -798,11 +810,15 @@ class TestApplyBooleanFunctions(TestFiltersMixin):
         ('and_args', 'expected_error'), [
             (
                 [],
-                '`and` value must be a list or tuple with length >= 1'
+                '`and` must have one or more arguments'
             ),
             (
                 {},
-                '`and` value must be a list or tuple'
+                '`and` value must be an iterable across the function arguments'
+            ),
+            (
+                'hello',
+                '`and` value must be an iterable across the function arguments'
             ),
         ]
     )
@@ -838,15 +854,19 @@ class TestApplyBooleanFunctions(TestFiltersMixin):
             (
                 [{'field': 'id', 'op': '==', 'value': 1},
                     {'field': 'id', 'op': '==', 'value': 2}],
-                '`not` value must be a list or tuple of length 1'
+                '`not` must have one argument'
             ),
             (
                 [],
-                '`not` value must be a list or tuple of length 1'
+                '`not` must have one argument'
             ),
             (
                 {},
-                '`not` value must be a list or tuple'
+                '`not` value must be an iterable across the function arguments'
+            ),
+            (
+                'hello',
+                '`not` value must be an iterable across the function arguments'
             ),
         ]
     )

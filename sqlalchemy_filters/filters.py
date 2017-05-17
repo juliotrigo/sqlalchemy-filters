@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from collections import namedtuple
+from collections import Iterable, namedtuple
 from inspect import signature
 from sqlalchemy import and_, or_, not_
 
@@ -89,38 +89,49 @@ class Filter(object):
 def _build_sqlalchemy_filters(filterdef, models):
     """ Recursively parse the `filterdef` into sqlalchemy filter arguments """
 
-    if isinstance(filterdef, (list, tuple)):
-        return [_build_sqlalchemy_filters(item, models) for item in filterdef]
+    if _is_iterable_filter(filterdef):
+        filters = []
+        for item in filterdef:
+            filters.extend(_build_sqlalchemy_filters(item, models))
+        return filters
 
     if isinstance(filterdef, dict):
         # Check if filterdef defines a boolean function.
         for boolean_function in BOOLEAN_FUNCTIONS:
             if boolean_function.key in filterdef:
                 # The filterdef is for a boolean-function
-                # Get the function argument definitions.
+                # Get the function argument definitions and validate
                 fn_args = filterdef[boolean_function.key]
-                # validate the arguments
-                if not isinstance(fn_args, (list, tuple)):
+
+                if not _is_iterable_filter(fn_args):
                     raise BadFilterFormat(
-                        '`{}` value must be a list or tuple'.format(
-                            boolean_function.key)
+                        '`{}` value must be an iterable across the function '
+                        'arguments'.format(boolean_function.key)
                     )
                 if boolean_function.only_one_arg and len(fn_args) != 1:
                     raise BadFilterFormat(
-                        '`{}` value must be a list or tuple of '
-                        'length 1'.format(boolean_function.key)
+                        '`{}` must have one argument'.format(
+                            boolean_function.key)
                     )
                 if not boolean_function.only_one_arg and len(fn_args) < 1:
                     raise BadFilterFormat(
-                        '`{}` value must be a list or tuple with '
-                        'length >= 1'.format(boolean_function.key)
+                        '`{}` must have one or more arguments'.format(
+                            boolean_function.key)
                     )
+                return [
+                    boolean_function.sqlalchemy_fn(
+                        *_build_sqlalchemy_filters(fn_args, models)
+                    )
+                ]
 
-                return boolean_function.sqlalchemy_fn(
-                    *_build_sqlalchemy_filters(fn_args, models)
-                )
+    return [Filter(filterdef, models).format_for_sqlalchemy()]
 
-    return Filter(filterdef, models).format_for_sqlalchemy()
+
+def _is_iterable_filter(filterdef):
+    return (
+        isinstance(filterdef, Iterable) and
+        not isinstance(filterdef, (str, dict))
+    )
 
 
 def apply_filters(query, filters):
@@ -130,7 +141,7 @@ def apply_filters(query, filters):
         A :class:`sqlalchemy.orm.Query` instance.
 
     :param filters:
-        A list (or tuple) of dictionaries, where each one of them includes
+        A dict or an iterable of dicts, where each one includes
         the necesary information to create a filter to be applied to the
         query.
 
@@ -142,12 +153,11 @@ def apply_filters(query, filters):
     if not models:
         raise BadQuery('The query does not contain any models.')
 
-    if not isinstance(filters, (list, tuple)):
-        raise BadFilterFormat('`filters` must be a list or tuple')
-
     sqlalchemy_filters = _build_sqlalchemy_filters(filters, models)
 
     if sqlalchemy_filters:
         query = query.filter(*sqlalchemy_filters)
 
     return query
+
+
