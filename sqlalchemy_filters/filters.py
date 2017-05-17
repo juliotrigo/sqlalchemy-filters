@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from collections import namedtuple
 from inspect import signature
 from sqlalchemy import and_, or_, not_
 
@@ -7,15 +7,16 @@ from .exceptions import BadFilterFormat, BadQuery
 from .models import Field, get_query_models
 
 
+BooleanFunction = namedtuple(
+    'BooleanFunction', ('key', 'sqlalchemy_fn', 'only_one_arg')
+)
 BOOLEAN_FUNCTIONS = [
-    ('or', or_, False),
-    ('and', and_, False),
-    ('not', not_, True),
+    BooleanFunction('or', or_, False),
+    BooleanFunction('and', and_, False),
+    BooleanFunction('not', not_, True),
 ]
 """
 Sqlalchemy boolean functions that can be parsed from the filter definition.
-
-Each entry is a tuple of (`key`, `sqlalchemy-function`, `only_one_argument`)
 """
 
 
@@ -93,28 +94,31 @@ def _build_sqlalchemy_filters(filterdef, models):
 
     if isinstance(filterdef, dict):
         # Check if filterdef defines a boolean function.
-        for key, boolean_fn, only_one_arg in BOOLEAN_FUNCTIONS:
-            if key in filterdef:
+        for boolean_function in BOOLEAN_FUNCTIONS:
+            if boolean_function.key in filterdef:
                 # The filterdef is for a boolean-function
                 # Get the function argument definitions.
-                fn_args = filterdef[key]
+                fn_args = filterdef[boolean_function.key]
                 # validate the arguments
                 if not isinstance(fn_args, (list, tuple)):
                     raise BadFilterFormat(
-                        '`{}` value must be a list or tuple'.format(key)
+                        '`{}` value must be a list or tuple'.format(
+                            boolean_function.key)
                     )
-                if only_one_arg and len(fn_args) != 1:
+                if boolean_function.only_one_arg and len(fn_args) != 1:
                     raise BadFilterFormat(
                         '`{}` value must be a list or tuple of '
-                        'length 1'.format(key)
+                        'length 1'.format(boolean_function.key)
                     )
-                if not only_one_arg and len(fn_args) < 1:
+                if not boolean_function.only_one_arg and len(fn_args) < 1:
                     raise BadFilterFormat(
                         '`{}` value must be a list or tuple with '
-                        'length >= 1'.format(key)
+                        'length >= 1'.format(boolean_function.key)
                     )
 
-                return boolean_fn(*_build_sqlalchemy_filters(fn_args, models))
+                return boolean_function.sqlalchemy_fn(
+                    *_build_sqlalchemy_filters(fn_args, models)
+                )
 
     return Filter(filterdef, models).format_for_sqlalchemy()
 
