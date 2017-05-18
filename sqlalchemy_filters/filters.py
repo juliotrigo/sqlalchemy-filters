@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import Iterable, namedtuple
 from inspect import signature
+from six import string_types
 from sqlalchemy import and_, or_, not_
 
 from .exceptions import BadFilterFormat, BadQuery
@@ -130,7 +131,7 @@ def _build_sqlalchemy_filters(filterdef, models):
 def _is_iterable_filter(filterdef):
     return (
         isinstance(filterdef, Iterable) and
-        not isinstance(filterdef, (str, dict))
+        not isinstance(filterdef, (string_types, dict))
     )
 
 

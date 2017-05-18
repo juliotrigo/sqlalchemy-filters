@@ -21,6 +21,7 @@ setup(
     packages=find_packages(exclude=['test', 'test.*']),
     install_requires=[
         'sqlalchemy>=1.0.16',
+        'six>=1.10.0',
     ],
     extras_require={
         'dev': [
