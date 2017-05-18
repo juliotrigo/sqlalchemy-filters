@@ -160,5 +160,3 @@ def apply_filters(query, filters):
         query = query.filter(*sqlalchemy_filters)
 
     return query
-
-
