@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from collections import Iterable, namedtuple
 from inspect import signature
+from itertools import chain
+
 from six import string_types
 from sqlalchemy import and_, or_, not_
 
@@ -91,10 +93,9 @@ def _build_sqlalchemy_filters(filterdef, models):
     """ Recursively parse the `filterdef` into sqlalchemy filter arguments """
 
     if _is_iterable_filter(filterdef):
-        filters = []
-        for item in filterdef:
-            filters.extend(_build_sqlalchemy_filters(item, models))
-        return filters
+        return list(chain.from_iterable(
+            _build_sqlalchemy_filters(item, models) for item in filterdef
+        ))
 
     if isinstance(filterdef, dict):
         # Check if filterdef defines a boolean function.
