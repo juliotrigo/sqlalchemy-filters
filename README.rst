@@ -102,6 +102,12 @@ following format:
         {'field': 'field_2_name', 'op': '!=', 'value': 'field_2_value'},
         # ...
     ]
+    
+Optionally, if there is only one filter, the containing list may be omitted:
+
+.. code-block:: python
+
+    filters = {'field': 'field_name', 'op': '==', 'value': 'field_value'}
 
 Where ``field`` is the name of the field that will be filtered using the
 operator provided in ``op`` and (optionally, depending on the operator)
