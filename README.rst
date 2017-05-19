@@ -102,6 +102,12 @@ following format:
         {'field': 'field_2_name', 'op': '!=', 'value': 'field_2_value'},
         # ...
     ]
+    
+Optionally, if there is only one filter, the containing list may be omitted:
+
+.. code-block:: python
+
+    filters = {'field': 'field_name', 'op': '==', 'value': 'field_value'}
 
 Where ``field`` is the name of the field that will be filtered using the
 operator provided in ``op`` and (optionally, depending on the operator)
@@ -121,6 +127,33 @@ This is the list of operators that can be used:
 - ``in``
 - ``not_in``
 
+Boolean Functions
+*****************
+``and``, ``or``, and ``not`` functions can be used and nested within the filter definition:
+
+.. code-block:: python
+
+    filters = [
+        {
+            'or': [
+                {
+                    'and': [
+                        {'field': 'field_name', 'op': '==', 'value': 'field_value'},
+                        {'field': 'field_2_name', 'op': '!=', 'value': 'field_2_value'},
+                    ]
+                },
+                {
+                    'not': [
+                        {'field': 'field_3_name', 'op': '==', 'value': 'field_3_value'}
+                    ]
+                },
+            ],
+        }
+    ]
+
+ 
+Note: ``or`` and ``and`` must reference a list of at least one element. ``not`` must reference a list of exactly one element.
+ 
 Sort format
 -----------
 
