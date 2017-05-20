@@ -46,7 +46,7 @@ class Operator(object):
     }
 
     def __init__(self, operator='=='):
-        if operator is None:
+        if not operator:
             operator = '=='
 
         if operator not in self.OPERATORS:
