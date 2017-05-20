@@ -102,7 +102,7 @@ following format:
         {'field': 'field_2_name', 'op': '!=', 'value': 'field_2_value'},
         # ...
     ]
-    
+
 Optionally, if there is only one filter, the containing list may be omitted:
 
 .. code-block:: python
@@ -111,7 +111,7 @@ Optionally, if there is only one filter, the containing list may be omitted:
 
 Where ``field`` is the name of the field that will be filtered using the
 operator provided in ``op`` (optional, defaults to `==`) and the
-provided ``value`` (optional depending on the operator).
+provided ``value`` (optional, depending on the operator).
 
 This is the list of operators that can be used:
 
@@ -151,9 +151,9 @@ Boolean Functions
         }
     ]
 
- 
+
 Note: ``or`` and ``and`` must reference a list of at least one element. ``not`` must reference a list of exactly one element.
- 
+
 Sort format
 -----------
 
