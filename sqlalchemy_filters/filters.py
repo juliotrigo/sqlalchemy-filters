@@ -113,12 +113,14 @@ def _build_sqlalchemy_filters(filterdef, models):
                 if boolean_function.only_one_arg and len(fn_args) != 1:
                     raise BadFilterFormat(
                         '`{}` must have one argument'.format(
-                            boolean_function.key)
+                            boolean_function.key
+                        )
                     )
                 if not boolean_function.only_one_arg and len(fn_args) < 1:
                     raise BadFilterFormat(
                         '`{}` must have one or more arguments'.format(
-                            boolean_function.key)
+                            boolean_function.key
+                        )
                     )
                 return [
                     boolean_function.sqlalchemy_fn(
