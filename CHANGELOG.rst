@@ -6,6 +6,13 @@ versions, where semantic versioning is used: *major.minor.patch*.
 
 Backwards-compatible changes increment the minor version number only.
 
+Version 0.3.0
+-------------
+
+Released 2017-05-16
+
+* Adds support for boolean functions within filters
+
 Version 0.2.0
 -------------
 
