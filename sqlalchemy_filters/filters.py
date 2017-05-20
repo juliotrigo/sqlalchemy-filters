@@ -45,7 +45,7 @@ class Operator(object):
         'not_in': lambda f, a: ~f.in_(a),
     }
 
-    def __init__(self, operator):
+    def __init__(self, operator='=='):
         if operator is None:
             operator = '=='
 
