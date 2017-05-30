@@ -35,7 +35,19 @@ class TestProvidedModels(object):
         assert expected_error == err.value.args[0]
 
 
-class TestProvidedFilters(object):
+class TestFiltersMixin(object):
+
+    @pytest.fixture
+    def multiple_bars_inserted(self, session):
+        bar_1 = Bar(id=1, name='name_1', count=5)
+        bar_2 = Bar(id=2, name='name_2', count=10)
+        bar_3 = Bar(id=3, name='name_1', count=None)
+        bar_4 = Bar(id=4, name='name_4', count=15)
+        session.add_all([bar_1, bar_2, bar_3, bar_4])
+        session.commit()
+
+
+class TestProvidedFilters(TestFiltersMixin):
 
     def test_no_filters_provided(self, session):
         query = session.query(Bar)
@@ -67,15 +79,17 @@ class TestProvidedFilters(object):
 
         assert 'Operator `op_not_valid` not valid.' == err.value.args[0]
 
+    @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_no_operator_provided(self, session):
         query = session.query(Bar)
         filters = [{'field': 'name', 'value': 'name_1'}]
 
-        with pytest.raises(BadFilterFormat) as err:
-            apply_filters(query, filters)
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
 
-        expected_error = '`field` and `op` are mandatory filter attributes.'
-        assert expected_error == err.value.args[0]
+        assert len(result) == 2
+        assert result[0].id == 1
+        assert result[1].id == 3
 
     def test_no_field_provided(self, session):
         query = session.query(Bar)
@@ -84,7 +98,7 @@ class TestProvidedFilters(object):
         with pytest.raises(BadFilterFormat) as err:
             apply_filters(query, filters)
 
-        expected_error = '`field` and `op` are mandatory filter attributes.'
+        expected_error = '`field` is a mandatory filter attribute.'
         assert expected_error == err.value.args[0]
 
     # TODO: replace this test once we add the option to compare against
@@ -127,18 +141,6 @@ class TestProvidedFilters(object):
             )
         )
         assert expected_error == err.value.args[0]
-
-
-class TestFiltersMixin(object):
-
-    @pytest.fixture
-    def multiple_bars_inserted(self, session):
-        bar_1 = Bar(id=1, name='name_1', count=5)
-        bar_2 = Bar(id=2, name='name_2', count=10)
-        bar_3 = Bar(id=3, name='name_1', count=None)
-        bar_4 = Bar(id=4, name='name_4', count=15)
-        session.add_all([bar_1, bar_2, bar_3, bar_4])
-        session.commit()
 
 
 class TestApplyIsNullFilter(TestFiltersMixin):

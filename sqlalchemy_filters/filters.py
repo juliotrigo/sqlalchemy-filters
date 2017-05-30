@@ -45,7 +45,10 @@ class Operator(object):
         'not_in': lambda f, a: ~f.in_(a),
     }
 
-    def __init__(self, operator):
+    def __init__(self, operator=None):
+        if not operator:
+            operator = '=='
+
         if operator not in self.OPERATORS:
             raise BadFilterFormat('Operator `{}` not valid.'.format(operator))
 
@@ -59,18 +62,15 @@ class Filter(object):
     def __init__(self, filter_, models):
         try:
             field_name = filter_['field']
-            op = filter_['op']
         except KeyError:
-            raise BadFilterFormat(
-                '`field` and `op` are mandatory filter attributes.'
-            )
+            raise BadFilterFormat('`field` is a mandatory filter attribute.')
         except TypeError:
             raise BadFilterFormat(
                 'Filter `{}` should be a dictionary.'.format(filter_)
             )
 
         self.field = Field(models, field_name)
-        self.operator = Operator(op)
+        self.operator = Operator(filter_.get('op'))
         self.value = filter_.get('value')
         self.value_present = True if 'value' in filter_ else False
 
@@ -113,12 +113,14 @@ def _build_sqlalchemy_filters(filterdef, models):
                 if boolean_function.only_one_arg and len(fn_args) != 1:
                     raise BadFilterFormat(
                         '`{}` must have one argument'.format(
-                            boolean_function.key)
+                            boolean_function.key
+                        )
                     )
                 if not boolean_function.only_one_arg and len(fn_args) < 1:
                     raise BadFilterFormat(
                         '`{}` must have one or more arguments'.format(
-                            boolean_function.key)
+                            boolean_function.key
+                        )
                     )
                 return [
                     boolean_function.sqlalchemy_fn(
