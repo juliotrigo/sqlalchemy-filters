@@ -3,6 +3,7 @@
 import datetime
 
 import pytest
+from sqlalchemy import func
 from sqlalchemy_filters import apply_filters
 from sqlalchemy_filters.exceptions import (
     BadFilterFormat, FieldNotFound, BadQuery
@@ -238,6 +239,32 @@ class TestApplyFilterWithoutList(TestFiltersMixin):
         assert result[0].name == 'name_1'
         assert result[1].id == 3
         assert result[1].name == 'name_1'
+
+
+class TestApplyFilterOnFieldBasedQuery(TestFiltersMixin):
+
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_apply_filter_on_single_field_query(self, session):
+        query = session.query(Bar.id)
+        filters = [{'field': 'name', 'op': '==', 'value': 'name_1'}]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 2
+        assert result[0] == (1,)
+        assert result[1] == (3,)
+
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_apply_filter_on_aggregate_query(self, session):
+        query = session.query(func.count(Bar.id))
+        filters = [{'field': 'name', 'op': '==', 'value': 'name_1'}]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 1
+        assert result[0] == (2,)
 
 
 class TestApplyEqualToFilter(TestFiltersMixin):
