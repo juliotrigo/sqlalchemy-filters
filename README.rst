@@ -33,7 +33,7 @@ model:
 
     # ...
 
-    query = self.session.query(Foo)
+    query = self.session.query(Foo)   
 
 Then we can apply filters to that ``query`` object (multiple times):
 
@@ -50,6 +50,14 @@ Then we can apply filters to that ``query`` object (multiple times):
     filtered_query = apply_filters(filtered_query, more_filters)
 
     result = filtered_query.all()
+
+Note that we can also apply filters to queries defined by fields or functions:
+
+.. code-block:: python
+
+    query_alt_1 = self.session.query(Foo.id, Foo.name)
+    query_alt_2 = self.session.query(func.count(Foo.id))
+
 
 Sort
 ----
