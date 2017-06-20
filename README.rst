@@ -33,7 +33,7 @@ model:
 
     # ...
 
-    query = self.session.query(Foo)   
+    query = self.session.query(Foo)
 
 Then we can apply filters to that ``query`` object (multiple times):
 
