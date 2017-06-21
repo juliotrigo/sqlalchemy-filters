@@ -37,6 +37,6 @@ def get_query_models(query):
         A dictionary with all the models included in the query.
     """
     return {
-        entity['type'].__name__: entity['type']
-        for entity in query.column_descriptions
+        col_desc['entity'].__name__: col_desc['entity']
+        for col_desc in query.column_descriptions
     }

@@ -51,6 +51,14 @@ Then we can apply filters to that ``query`` object (multiple times):
 
     result = filtered_query.all()
 
+Note that we can also apply filters to queries defined by fields or functions:
+
+.. code-block:: python
+
+    query_alt_1 = self.session.query(Foo.id, Foo.name)
+    query_alt_2 = self.session.query(func.count(Foo.id))
+
+
 Sort
 ----
 

@@ -6,6 +6,14 @@ versions, where semantic versioning is used: *major.minor.patch*.
 
 Backwards-compatible changes increment the minor version number only.
 
+
+Version 0.4.0
+-------------
+
+Released 2017-06-21
+
+* Adds support for queries based on model fields or aggregate functions.
+
 Version 0.3.0
 -------------
 
