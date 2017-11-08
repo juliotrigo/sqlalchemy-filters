@@ -57,18 +57,62 @@ class TestProvidedModels:
 
         assert 'The query does not contain any models.' == err.value.args[0]
 
-    # TODO: replace this test once we support multiple models
-    def test_multiple_models(self, session):
-        query = session.query(Bar, Qux)
-        filters = [{'field': 'name', 'op': '==', 'value': 'name_1'}]
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_query_with_named_model(self, session):
+        query = session.query(Bar)
+        filters = [
+            {'model': 'Bar', 'field': 'name', 'op': '==', 'value': 'name_1'}
+        ]
 
-        with pytest.raises(BadQuery) as err:
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 2
+        assert result[0].id == 1
+        assert result[1].id == 3
+
+    def test_query_with_missing_named_model(self, session):
+        query = session.query(Bar)
+        filters = [
+            {'model': 'Buz', 'field': 'name', 'op': '==', 'value': 'name_1'}
+        ]
+
+        with pytest.raises(BadFilterFormat) as err:
             apply_filters(query, filters)
 
-        expected_error = (
-            'The query should contain only one model.'
-        )
-        assert expected_error == err.value.args[0]
+        assert 'The query does not contain model `Buz`.' == err.value.args[0]
+
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    @pytest.mark.usefixtures('multiple_quxs_inserted')
+    def test_multiple_models(self, session):
+        query = session.query(Bar, Qux)
+        filters = [
+            {'model': 'Bar', 'field': 'name', 'op': '==', 'value': 'name_1'},
+            {'model': 'Qux', 'field': 'name', 'op': '==', 'value': 'name_1'},
+        ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 4
+        bars, quxs = zip(*result)
+        assert set(map(type, bars)) == {Bar}
+        assert {bar.id for bar in bars} == {1, 3}
+        assert {bar.name for bar in bars} == {"name_1"}
+        assert set(map(type, quxs)) == {Qux}
+        assert {qux.id for qux in quxs} == {1, 3}
+        assert {qux.name for qux in quxs} == {"name_1"}
+
+    def test_multiple_models_ambiquous_query(self, session):
+        query = session.query(Bar, Qux)
+        filters = [
+            {'field': 'name', 'op': '==', 'value': 'name_1'}
+        ]
+
+        with pytest.raises(BadFilterFormat) as err:
+            apply_filters(query, filters)
+
+        assert 'Ambiguous filter. Please specify a model.' == err.value.args[0]
 
 
 class TestProvidedFilters:

@@ -26,7 +26,23 @@ class Sort(object):
         if direction not in [SORT_ASCENDING, SORT_DESCENDING]:
             raise BadSortFormat('Direction `{}` not valid.'.format(direction))
 
-        self.field = Field(models, field_name)
+        model_name = sort.get('model')
+        if model_name is not None:
+            models = [v for (k, v) in models.items() if k == model_name]
+            if not models:
+                raise BadSortFormat(
+                    'The query does not contain model `{}`.'.format(model_name)
+                )
+            model = models[0]
+        else:
+            if len(models) == 1:
+                model = list(models.values())[0]
+            else:
+                raise BadSortFormat(
+                    "Ambiguous sort. Please specify a model.".format()
+                )
+
+        self.field = Field(model, field_name)
         self.direction = direction
 
     def format_for_sqlalchemy(self):
