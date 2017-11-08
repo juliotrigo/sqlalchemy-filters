@@ -1,21 +1,13 @@
 from sqlalchemy.inspection import inspect
 
-from .exceptions import FieldNotFound, BadQuery
+from .exceptions import FieldNotFound
 
 
 class Field(object):
 
-    def __init__(self, models, field_name):
-        # TODO: remove this check once we start supporing multiple models
-        if len(models) > 1:
-            raise BadQuery('The query should contain only one model.')
-
-        self.model = self._get_model(models)
+    def __init__(self, model, field_name):
+        self.model = model
         self.field_name = field_name
-
-    def _get_model(self, models):
-        # TODO: add model_name argument once we start supporing multiple models
-        return [v for (k, v) in models.items()][0]  # first (and only) model
 
     def get_sqlalchemy_field(self):
         if self.field_name not in inspect(self.model).columns.keys():
@@ -36,7 +28,8 @@ def get_query_models(query):
     :returns:
         A dictionary with all the models included in the query.
     """
+    models = [col_desc['entity'] for col_desc in query.column_descriptions]
+    models.extend(mapper.class_ for mapper in query._join_entities)
     return {
-        col_desc['entity'].__name__: col_desc['entity']
-        for col_desc in query.column_descriptions
+        model.__name__: model for model in models
     }

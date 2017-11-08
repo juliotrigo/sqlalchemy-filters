@@ -53,3 +53,17 @@ class TestGetQueryModels(object):
         entities = get_query_models(query)
 
         assert {'Foo': Foo} == entities
+
+    def test_query_with_join(self, session):
+        query = session.query(Foo).join(Bar)
+
+        entities = get_query_models(query)
+
+        assert {'Foo': Foo, 'Bar': Bar} == entities
+
+    def test_query_with_multiple_joins(self, session):
+        query = session.query(Foo).join(Bar).join(Qux, Bar.id == Qux.id)
+
+        entities = get_query_models(query)
+
+        assert {'Foo': Foo, 'Bar': Bar, 'Qux': Qux} == entities
