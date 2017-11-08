@@ -10,6 +10,22 @@ from test import error_value
 from test.models import Bar, Qux
 
 
+@pytest.fixture
+def multiple_bars_inserted(session):
+    bar_1 = Bar(id=1, name='name_1', count=5)
+    bar_2 = Bar(id=2, name='name_2', count=10)
+    bar_3 = Bar(id=3, name='name_1', count=None)
+    bar_4 = Bar(id=4, name='name_4', count=12)
+    bar_5 = Bar(id=5, name='name_1', count=2)
+    bar_6 = Bar(id=6, name='name_4', count=15)
+    bar_7 = Bar(id=7, name='name_1', count=2)
+    bar_8 = Bar(id=8, name='name_5', count=1)
+    session.add_all(
+        [bar_1, bar_2, bar_3, bar_4, bar_5, bar_6, bar_7, bar_8]
+    )
+    session.commit()
+
+
 class TestProvidedModels(object):
 
     def test_query_with_no_models(self, session):
@@ -98,21 +114,6 @@ class TestSortNotApplied(object):
 
 
 class TestSortApplied(object):
-
-    @pytest.fixture
-    def multiple_bars_inserted(self, session):
-        bar_1 = Bar(id=1, name='name_1', count=5)
-        bar_2 = Bar(id=2, name='name_2', count=10)
-        bar_3 = Bar(id=3, name='name_1', count=None)
-        bar_4 = Bar(id=4, name='name_4', count=12)
-        bar_5 = Bar(id=5, name='name_1', count=2)
-        bar_6 = Bar(id=6, name='name_4', count=15)
-        bar_7 = Bar(id=7, name='name_1', count=2)
-        bar_8 = Bar(id=8, name='name_5', count=1)
-        session.add_all(
-            [bar_1, bar_2, bar_3, bar_4, bar_5, bar_6, bar_7, bar_8]
-        )
-        session.commit()
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_single_sort_field_asc(self, session):
