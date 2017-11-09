@@ -21,3 +21,6 @@ matrix:
     - stage: test
       python: 3.6
       env: TOX_ENV=py36
+
+script:
+  - tox -e $TOX_ENV
