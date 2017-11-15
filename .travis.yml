@@ -21,6 +21,17 @@ matrix:
     - stage: test
       python: 3.6
       env: TOX_ENV=py36
+    - stage: deploy
+      script: skip
+      deploy:
+        provider: pypi
+        user: mattbennett
+        password:
+          secure: "wa1iW0oJeBQ10aSe6d67k6yD+vS76EILpsNdq9buM2U9CRNmf8MlUKMM0ydRJu+TvBHgOg923VWYMjrLZlpFx5v/Zrcxvwkxks9GMfhzRZEMJyWwtCibLFLWbpYwoHcSgP/rYEQz7/fCFdoWM0Eojlx8ekDzUXwMEw5zcyd3hfhD8sdT+LuC/YKNsCkRdIdRNxoG20a54TYHRirKZA+LTYWfGNmDItCX9Hp3mRXG9a8iGlXIDEbULvGycSd8Un+6VGLzK9Hww1HR314134Ve8uGpz0+bHMuK/VUWnzknOvEZqCVPSvyu94+oSuD9yDl0NAjM5aGX9FFMCVC/ulpZ0XIK5Ihnnvm5hOdwrM3KMmPciWwsEYvqlxohV22W9+PicedHL66g4BaqIO4UNkMtPHw6c17rdFr8YenwtS9M2MGqkRgD6Ps5sFJSxMJOqVJihMtRq87mpRbmFtlYk9LnteegwTfsAp24mtVOlybITlnM90NstxpXhV6xv0MhzE7qUxemKqy/CAT0PYDZonz7fZKEu6sR/Ko5hS7ADb0AR8jnvlKj8LriLCTCbbMoNw4edyuMdBYjgEuoEC0oJeAW6ElGyy+DAMIj863fl3clK6aBh6V+5UmoclNWumolzU2oAjW3HiH2wP3ujtePZMcxkQI4WBQTE9hyRoK6z1w+yp0="
+        on:
+          tags: true
+          repo: Overseas-Student-Living/sqlalchemy-filters
+        distributions: "sdist bdist_wheel"
 
 script:
   - tox -e $TOX_ENV

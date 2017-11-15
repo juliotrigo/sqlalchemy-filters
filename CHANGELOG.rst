@@ -6,6 +6,12 @@ versions, where semantic versioning is used: *major.minor.patch*.
 
 Backwards-compatible changes increment the minor version number only.
 
+Version 0.5.0
+-------------
+
+Released 2017-11-15
+
+* Adds support for queries against multiple models, e.g. joins.
 
 Version 0.4.0
 -------------
