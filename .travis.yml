@@ -27,7 +27,7 @@ matrix:
         provider: pypi
         user: mattbennett
         password:
-          secure: "wa1iW0oJeBQ10aSe6d67k6yD+vS76EILpsNdq9buM2U9CRNmf8MlUKMM0ydRJu+TvBHgOg923VWYMjrLZlpFx5v/Zrcxvwkxks9GMfhzRZEMJyWwtCibLFLWbpYwoHcSgP/rYEQz7/fCFdoWM0Eojlx8ekDzUXwMEw5zcyd3hfhD8sdT+LuC/YKNsCkRdIdRNxoG20a54TYHRirKZA+LTYWfGNmDItCX9Hp3mRXG9a8iGlXIDEbULvGycSd8Un+6VGLzK9Hww1HR314134Ve8uGpz0+bHMuK/VUWnzknOvEZqCVPSvyu94+oSuD9yDl0NAjM5aGX9FFMCVC/ulpZ0XIK5Ihnnvm5hOdwrM3KMmPciWwsEYvqlxohV22W9+PicedHL66g4BaqIO4UNkMtPHw6c17rdFr8YenwtS9M2MGqkRgD6Ps5sFJSxMJOqVJihMtRq87mpRbmFtlYk9LnteegwTfsAp24mtVOlybITlnM90NstxpXhV6xv0MhzE7qUxemKqy/CAT0PYDZonz7fZKEu6sR/Ko5hS7ADb0AR8jnvlKj8LriLCTCbbMoNw4edyuMdBYjgEuoEC0oJeAW6ElGyy+DAMIj863fl3clK6aBh6V+5UmoclNWumolzU2oAjW3HiH2wP3ujtePZMcxkQI4WBQTE9hyRoK6z1w+yp0="
+          secure: "x27Zk+mvbYOtuf3XojYBh3O32KTv79SebMzkXE1lmtSms/pvRT+OG5eUAvWq1tro0shQdvv1X86aK9UHNzkRpIJEvbyH8zP3nWr/TlI62iZJC6y9m/c6JWwIUBk3p+CDHSwA1i6QXrxnffRfE/KSlAuTOY2FDYFDUBdVrEQrqIJa68Ij9200kxNcYWC9JmJKLaGl1l/V9M2K7YDsll3PxBByrCQeM95oeuoL3U81fPV0CJnsPNXAMtQHC9+dv+WE9UCo9QVsxWrnJGvCVUAfNQ7Ub+pECwSqzIL1O1ltqi0JH5CafwF6EMcQWxjh6R7IuN224QoAGTBzJ+ngKMxV7aQr58rkP82CyGaYEI7w9pvM9cZ6nBVIdgfCe8EfXCg+tTYy6v7SptT66wzP+GdX7sOuNFDYadmXGHZdwtUtEDFHwiCETRJNt/t5ONejlktY0fXlRUCta5UbYj755iryhk1lE7Ldj3sU336WjG74iAFdAd0fO8gVM0OwKLYZeaU2mN4JBI4qcp6n2S0sNtoyqXzm9OL/76Is5vAzUQavto9ao9bw0HN+ZWVLyE4+NLKS3ti+Pi/YofieoUFZ6kQJQRGja3tt7RCl0MYHqdIQQWx9MJWdiDpkyqqtR+0Q2sSYo8g4TsJe8zCuQLOflwd9pLKXVwdfqMUVGFCbdzZ/rig="
         on:
           tags: true
           repo: Overseas-Student-Living/sqlalchemy-filters
