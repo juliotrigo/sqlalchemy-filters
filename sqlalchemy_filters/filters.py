@@ -69,7 +69,23 @@ class Filter(object):
                 'Filter `{}` should be a dictionary.'.format(filter_)
             )
 
-        self.field = Field(models, field_name)
+        model_name = filter_.get('model')
+        if model_name is not None:
+            models = [v for (k, v) in models.items() if k == model_name]
+            if not models:
+                raise BadFilterFormat(
+                    'The query does not contain model `{}`.'.format(model_name)
+                )
+            model = models[0]
+        else:
+            if len(models) == 1:
+                model = list(models.values())[0]
+            else:
+                raise BadFilterFormat(
+                    "Ambiguous filter. Please specify a model."
+                )
+
+        self.field = Field(model, field_name)
         self.operator = Operator(filter_.get('op'))
         self.value = filter_.get('value')
         self.value_present = True if 'value' in filter_ else False

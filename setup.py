@@ -31,24 +31,20 @@ setup(
             'sqlalchemy-utils==0.32.12',
         ],
         'mysql': [
-            'mysql-connector-python==2.1.5',
+            'mysql-connector-python-rf==2.1.3',
         ]
     },
-    dependency_links=[
-        'https://cdn.mysql.com/Downloads/Connector-Python'
-        '/mysql-connector-python-2.1.5.zip'
-    ],
     zip_safe=True,
     license='Apache License, Version 2.0',
     classifiers=[
         "Programming Language :: Python",
         "Operating System :: POSIX",
         "Operating System :: MacOS :: MacOS X",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
         "Topic :: Internet",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Intended Audience :: Developers",

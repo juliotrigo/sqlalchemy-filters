@@ -11,7 +11,42 @@ from sqlalchemy_filters.exceptions import (
 from test.models import Bar, Qux
 
 
-class TestProvidedModels(object):
+@pytest.fixture
+def multiple_bars_inserted(session):
+    bar_1 = Bar(id=1, name='name_1', count=5)
+    bar_2 = Bar(id=2, name='name_2', count=10)
+    bar_3 = Bar(id=3, name='name_1', count=None)
+    bar_4 = Bar(id=4, name='name_4', count=15)
+    session.add_all([bar_1, bar_2, bar_3, bar_4])
+    session.commit()
+
+
+@pytest.fixture
+def multiple_quxs_inserted(session):
+    qux_1 = Qux(
+        id=1, name='name_1', count=5,
+        created_at=datetime.date(2016, 7, 12),
+        execution_time=datetime.datetime(2016, 7, 12, 1, 5, 9)
+    )
+    qux_2 = Qux(
+        id=2, name='name_2', count=10,
+        created_at=datetime.date(2016, 7, 13),
+        execution_time=datetime.datetime(2016, 7, 13, 2, 5, 9)
+    )
+    qux_3 = Qux(
+        id=3, name='name_1', count=None,
+        created_at=None, execution_time=None
+    )
+    qux_4 = Qux(
+        id=4, name='name_4', count=15,
+        created_at=datetime.date(2016, 7, 14),
+        execution_time=datetime.datetime(2016, 7, 14, 3, 5, 9)
+    )
+    session.add_all([qux_1, qux_2, qux_3, qux_4])
+    session.commit()
+
+
+class TestProvidedModels:
 
     def test_query_with_no_models(self, session):
         query = session.query()
@@ -22,33 +57,65 @@ class TestProvidedModels(object):
 
         assert 'The query does not contain any models.' == err.value.args[0]
 
-    # TODO: replace this test once we support multiple models
-    def test_multiple_models(self, session):
-        query = session.query(Bar, Qux)
-        filters = [{'field': 'name', 'op': '==', 'value': 'name_1'}]
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_query_with_named_model(self, session):
+        query = session.query(Bar)
+        filters = [
+            {'model': 'Bar', 'field': 'name', 'op': '==', 'value': 'name_1'}
+        ]
 
-        with pytest.raises(BadQuery) as err:
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 2
+        assert result[0].id == 1
+        assert result[1].id == 3
+
+    def test_query_with_missing_named_model(self, session):
+        query = session.query(Bar)
+        filters = [
+            {'model': 'Buz', 'field': 'name', 'op': '==', 'value': 'name_1'}
+        ]
+
+        with pytest.raises(BadFilterFormat) as err:
             apply_filters(query, filters)
 
-        expected_error = (
-            'The query should contain only one model.'
-        )
-        assert expected_error == err.value.args[0]
+        assert 'The query does not contain model `Buz`.' == err.value.args[0]
+
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    @pytest.mark.usefixtures('multiple_quxs_inserted')
+    def test_multiple_models(self, session):
+        query = session.query(Bar, Qux)
+        filters = [
+            {'model': 'Bar', 'field': 'name', 'op': '==', 'value': 'name_1'},
+            {'model': 'Qux', 'field': 'name', 'op': '==', 'value': 'name_1'},
+        ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 4
+        bars, quxs = zip(*result)
+        assert set(map(type, bars)) == {Bar}
+        assert {bar.id for bar in bars} == {1, 3}
+        assert {bar.name for bar in bars} == {"name_1"}
+        assert set(map(type, quxs)) == {Qux}
+        assert {qux.id for qux in quxs} == {1, 3}
+        assert {qux.name for qux in quxs} == {"name_1"}
+
+    def test_multiple_models_ambiquous_query(self, session):
+        query = session.query(Bar, Qux)
+        filters = [
+            {'field': 'name', 'op': '==', 'value': 'name_1'}
+        ]
+
+        with pytest.raises(BadFilterFormat) as err:
+            apply_filters(query, filters)
+
+        assert 'Ambiguous filter. Please specify a model.' == err.value.args[0]
 
 
-class TestFiltersMixin(object):
-
-    @pytest.fixture
-    def multiple_bars_inserted(self, session):
-        bar_1 = Bar(id=1, name='name_1', count=5)
-        bar_2 = Bar(id=2, name='name_2', count=10)
-        bar_3 = Bar(id=3, name='name_1', count=None)
-        bar_4 = Bar(id=4, name='name_4', count=15)
-        session.add_all([bar_1, bar_2, bar_3, bar_4])
-        session.commit()
-
-
-class TestProvidedFilters(TestFiltersMixin):
+class TestProvidedFilters:
 
     def test_no_filters_provided(self, session):
         query = session.query(Bar)
@@ -144,7 +211,7 @@ class TestProvidedFilters(TestFiltersMixin):
         assert expected_error == err.value.args[0]
 
 
-class TestApplyIsNullFilter(TestFiltersMixin):
+class TestApplyIsNullFilter:
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_filter_field_with_null_values(self, session):
@@ -168,7 +235,7 @@ class TestApplyIsNullFilter(TestFiltersMixin):
         assert len(result) == 0
 
 
-class TestApplyIsNotNullFilter(TestFiltersMixin):
+class TestApplyIsNotNullFilter:
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_filter_field_with_null_values(self, session):
@@ -198,7 +265,7 @@ class TestApplyIsNotNullFilter(TestFiltersMixin):
         assert result[3].id == 4
 
 
-class TestApplyFiltersMultipleTimes(TestFiltersMixin):
+class TestApplyFiltersMultipleTimes:
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_concatenate_queries(self, session):
@@ -224,7 +291,7 @@ class TestApplyFiltersMultipleTimes(TestFiltersMixin):
         assert result[0].name == 'name_1'
 
 
-class TestApplyFilterWithoutList(TestFiltersMixin):
+class TestApplyFilterWithoutList:
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_a_single_dict_can_be_supplied_as_filters(self, session):
@@ -241,7 +308,7 @@ class TestApplyFilterWithoutList(TestFiltersMixin):
         assert result[1].name == 'name_1'
 
 
-class TestApplyFilterOnFieldBasedQuery(TestFiltersMixin):
+class TestApplyFilterOnFieldBasedQuery:
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_apply_filter_on_single_field_query(self, session):
@@ -267,7 +334,7 @@ class TestApplyFilterOnFieldBasedQuery(TestFiltersMixin):
         assert result[0] == (2,)
 
 
-class TestApplyEqualToFilter(TestFiltersMixin):
+class TestApplyEqualToFilter:
 
     @pytest.mark.parametrize('operator', ['==', 'eq'])
     @pytest.mark.usefixtures('multiple_bars_inserted')
@@ -310,7 +377,7 @@ class TestApplyEqualToFilter(TestFiltersMixin):
         assert result[0].name == 'name_1'
 
 
-class TestApplyNotEqualToFilter(TestFiltersMixin):
+class TestApplyNotEqualToFilter:
 
     @pytest.mark.parametrize('operator', ['!=', 'ne'])
     @pytest.mark.usefixtures('multiple_bars_inserted')
@@ -348,7 +415,7 @@ class TestApplyNotEqualToFilter(TestFiltersMixin):
         assert result[1].name == 'name_4'
 
 
-class TestApplyGreaterThanFilter(TestFiltersMixin):
+class TestApplyGreaterThanFilter:
 
     @pytest.mark.parametrize('operator', ['>', 'gt'])
     @pytest.mark.usefixtures('multiple_bars_inserted')
@@ -381,7 +448,7 @@ class TestApplyGreaterThanFilter(TestFiltersMixin):
         assert result[0].id == 4
 
 
-class TestApplyLessThanFilter(TestFiltersMixin):
+class TestApplyLessThanFilter:
 
     @pytest.mark.parametrize('operator', ['<', 'lt'])
     @pytest.mark.usefixtures('multiple_bars_inserted')
@@ -412,7 +479,7 @@ class TestApplyLessThanFilter(TestFiltersMixin):
         assert len(result) == 0
 
 
-class TestApplyGreaterOrEqualThanFilter(TestFiltersMixin):
+class TestApplyGreaterOrEqualThanFilter:
 
     @pytest.mark.parametrize('operator', ['>=', 'ge'])
     @pytest.mark.usefixtures('multiple_bars_inserted')
@@ -446,7 +513,7 @@ class TestApplyGreaterOrEqualThanFilter(TestFiltersMixin):
         assert result[0].id == 4
 
 
-class TestApplyLessOrEqualThanFilter(TestFiltersMixin):
+class TestApplyLessOrEqualThanFilter:
 
     @pytest.mark.parametrize('operator', ['<=', 'le'])
     @pytest.mark.usefixtures('multiple_bars_inserted')
@@ -480,7 +547,7 @@ class TestApplyLessOrEqualThanFilter(TestFiltersMixin):
         assert result[0].id == 1
 
 
-class TestApplyLikeFilter(TestFiltersMixin):
+class TestApplyLikeFilter:
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_one_filter_applied_to_a_single_model(self, session):
@@ -495,7 +562,7 @@ class TestApplyLikeFilter(TestFiltersMixin):
         assert result[1].id == 3
 
 
-class TestApplyInFilter(TestFiltersMixin):
+class TestApplyInFilter:
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_field_not_in_value_list(self, session):
@@ -519,7 +586,7 @@ class TestApplyInFilter(TestFiltersMixin):
         assert result[0].id == 4
 
 
-class TestApplyNotInFilter(TestFiltersMixin):
+class TestApplyNotInFilter:
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_field_not_in_value_list(self, session):
@@ -547,34 +614,7 @@ class TestApplyNotInFilter(TestFiltersMixin):
         assert result[1].id == 2
 
 
-class TestFilterDatesMixin(object):
-
-    @pytest.fixture
-    def multiple_quxs_inserted(self, session):
-        qux_1 = Qux(
-            id=1, name='name_1', count=5,
-            created_at=datetime.date(2016, 7, 12),
-            execution_time=datetime.datetime(2016, 7, 12, 1, 5, 9)
-        )
-        qux_2 = Qux(
-            id=2, name='name_2', count=10,
-            created_at=datetime.date(2016, 7, 13),
-            execution_time=datetime.datetime(2016, 7, 13, 2, 5, 9)
-        )
-        qux_3 = Qux(
-            id=3, name='name_1', count=None,
-            created_at=None, execution_time=None
-        )
-        qux_4 = Qux(
-            id=4, name='name_4', count=15,
-            created_at=datetime.date(2016, 7, 14),
-            execution_time=datetime.datetime(2016, 7, 14, 3, 5, 9)
-        )
-        session.add_all([qux_1, qux_2, qux_3, qux_4])
-        session.commit()
-
-
-class TestDateFields(TestFilterDatesMixin):
+class TestDateFields:
 
     @pytest.mark.parametrize(
         'value',
@@ -637,7 +677,7 @@ class TestDateFields(TestFilterDatesMixin):
         assert result[0].created_at is None
 
 
-class TestDateTimeFields(TestFilterDatesMixin):
+class TestDateTimeFields:
 
     @pytest.mark.parametrize(
         'value',
@@ -708,7 +748,7 @@ class TestDateTimeFields(TestFilterDatesMixin):
         assert result[0].execution_time is None
 
 
-class TestApplyBooleanFunctions(TestFiltersMixin):
+class TestApplyBooleanFunctions:
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_or(self, session):

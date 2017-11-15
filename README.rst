@@ -9,8 +9,7 @@ SQLAlchemy-filters
 Filtering
 ---------
 
-Assuming that we have a SQLAlchemy `query` that only contains a single
-model:
+Assuming that we have a SQLAlchemy `query` object:
 
 .. code-block:: python
 
@@ -33,7 +32,7 @@ model:
 
     # ...
 
-    query = self.session.query(Foo)
+    query = session.query(Foo)
 
 Then we can apply filters to that ``query`` object (multiple times):
 
@@ -51,12 +50,36 @@ Then we can apply filters to that ``query`` object (multiple times):
 
     result = filtered_query.all()
 
+It is also possible to filter queries that contain multiple models, including joins:
+
+.. code-block:: python
+
+    class Bar(Base):
+
+        __tablename__ = 'bar'
+        foo_id = Column(Integer, ForeignKey('foo.id'))
+
+
+.. code-block:: python
+
+    query = session.query(Foo).join(Bar)
+
+    filters = [
+        {'model': 'Foo', field': 'name', 'op': '==', 'value': 'name_1'},
+        {'model': 'Bar', field': 'count', 'op': '>=', 'value': 5},
+    ]
+    filtered_query = apply_filters(query, filters)
+
+    result = filtered_query.all()
+
+You must specify the `model` key in each filter if the query is against more than one model.
+
 Note that we can also apply filters to queries defined by fields or functions:
 
 .. code-block:: python
 
-    query_alt_1 = self.session.query(Foo.id, Foo.name)
-    query_alt_2 = self.session.query(func.count(Foo.id))
+    query_alt_1 = session.query(Foo.id, Foo.name)
+    query_alt_2 = session.query(func.count(Foo.id))
 
 
 Sort
@@ -69,8 +92,8 @@ Sort
     # `query` should be a SQLAlchemy query object
 
     order_by = [
-        {'field': 'name', 'direction': 'asc'},
-        {'field': 'id', 'direction': 'desc'},
+        {'model': 'Foo', field': 'name', 'direction': 'asc'},
+        {'model': 'Bar', field': 'id', 'direction': 'desc'},
     ]
     sorted_query = apply_sort(query, order_by)
 
@@ -106,12 +129,14 @@ following format:
 .. code-block:: python
 
     filters = [
-        {'field': 'field_name', 'op': '==', 'value': 'field_value'},
-        {'field': 'field_2_name', 'op': '!=', 'value': 'field_2_value'},
+        {'model': 'model_name', 'field': 'field_name', 'op': '==', 'value': 'field_value'},
+        {{'model': 'model_name', 'field': 'field_2_name', 'op': '!=', 'value': 'field_2_value'},
         # ...
     ]
 
-Optionally, if there is only one filter, the containing list may be omitted:
+The `model` key is optional if the query being filtered only applies to one model.
+
+If there is only one filter, the containing list may be omitted:
 
 .. code-block:: python
 
@@ -171,13 +196,16 @@ applied sequentially:
 .. code-block:: python
 
     order_by = [
-        {'field': 'name', 'direction': 'asc'},
-        {'field': 'id', 'direction': 'desc'},
+        {'model': 'Foo', 'field': 'name', 'direction': 'asc'},
+        {'model': 'Bar', field': 'id', 'direction': 'desc'},
         # ...
     ]
 
 Where ``field`` is the name of the field that will be sorted using the
 provided ``direction``.
+
+The `model` key is optional if the query being sorted only applies to one model.
+
 
 Running tests
 -------------
