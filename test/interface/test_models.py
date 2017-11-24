@@ -1,4 +1,6 @@
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
+
 from sqlalchemy_filters import get_query_models
 from test.models import Bar, Foo, Qux
 
@@ -67,3 +69,11 @@ class TestGetQueryModels(object):
         entities = get_query_models(query)
 
         assert {'Foo': Foo, 'Bar': Bar, 'Qux': Qux} == entities
+
+    def test_query_with_joinedload(self, session):
+        query = session.query(Foo).options(joinedload(Foo.bar))
+
+        entities = get_query_models(query)
+
+        # Bar is not added to the query since the joinedload is transparent
+        assert {'Foo': Foo} == entities
