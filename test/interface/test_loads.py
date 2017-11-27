@@ -25,7 +25,7 @@ def multiple_foos_inserted(multiple_bars_inserted, session):
     session.commit()
 
 
-class TestFieldsApplied(object):
+class TestLoadsApplied(object):
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_single_value(self, session):
@@ -79,7 +79,7 @@ class TestFieldsApplied(object):
         assert str(restricted_query) == expected
 
     @pytest.mark.usefixtures('multiple_foos_inserted')
-    def test_multiple_values_multiple_models_joined(self, session):
+    def test_multiple_values_multiple_models_joined(self, session, db_uri):
 
         query = session.query(Foo, Bar).join(Bar)
         loads = [
@@ -89,15 +89,17 @@ class TestFieldsApplied(object):
 
         restricted_query = apply_loads(query, loads)
 
+        join_type = "INNER JOIN" if "mysql" in db_uri else "JOIN"
+
         expected = (
             "SELECT foo.id AS foo_id, foo.count AS foo_count, "
             "bar.id AS bar_id, bar.count AS bar_count \n"
-            "FROM foo INNER JOIN bar ON bar.id = foo.bar_id"
+            "FROM foo {join} bar ON bar.id = foo.bar_id".format(join=join_type)
         )
         assert str(restricted_query) == expected
 
     @pytest.mark.usefixtures('multiple_foos_inserted')
-    def test_multiple_values_multiple_models_lazy_load(self, session):
+    def test_multiple_values_multiple_models_lazy_load(self, session, db_uri):
 
         query = session.query(Foo).join(Bar)
         loads = [
@@ -107,9 +109,11 @@ class TestFieldsApplied(object):
 
         restricted_query = apply_loads(query, loads)
 
+        join_type = "INNER JOIN" if "mysql" in db_uri else "JOIN"
+
         # Bar is lazily joined, so the second loads directive has no effect
         expected = (
             "SELECT foo.id AS foo_id, foo.count AS foo_count \n"
-            "FROM foo INNER JOIN bar ON bar.id = foo.bar_id"
+            "FROM foo {join} bar ON bar.id = foo.bar_id".format(join=join_type)
         )
         assert str(restricted_query) == expected
