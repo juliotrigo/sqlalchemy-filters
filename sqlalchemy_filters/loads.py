@@ -1,14 +1,14 @@
 from sqlalchemy.orm import Load
 
 from .exceptions import BadSpec, BadLoadFormat
-from .models import get_model_from_spec
+from .models import Field, get_model_from_spec
 
 
 class LoadOnly(object):
 
     def __init__(self, load_spec, query):
         try:
-            self.field_names = load_spec['fields']
+            field_names = load_spec['fields']
         except KeyError:
             raise BadLoadFormat(
                 '`fields` is a mandatory attribute.'
@@ -24,9 +24,12 @@ class LoadOnly(object):
             raise BadLoadFormat(str(exc)) from exc
 
         self.model = model
+        self.fields = [Field(model, field_name) for field_name in field_names]
 
     def format_for_sqlalchemy(self):
-        return Load(self.model).load_only(*self.field_names)
+        return Load(self.model).load_only(
+            *[field.get_sqlalchemy_field() for field in self.fields]
+        )
 
 
 def apply_loads(query, load_spec):
