@@ -112,7 +112,7 @@ class TestProvidedModels:
         with pytest.raises(BadFilterFormat) as err:
             apply_filters(query, filters)
 
-        assert 'Ambiguous filter. Please specify a model.' == err.value.args[0]
+        assert 'Ambiguous spec. Please specify a model.' == err.value.args[0]
 
 
 class TestProvidedFilters:
@@ -133,7 +133,7 @@ class TestProvidedFilters:
         with pytest.raises(BadFilterFormat) as err:
             apply_filters(query, filters)
 
-        expected_error = 'Filter `{}` should be a dictionary.'.format(
+        expected_error = 'Filter spec `{}` should be a dictionary.'.format(
             filter_
         )
         assert expected_error == err.value.args[0]

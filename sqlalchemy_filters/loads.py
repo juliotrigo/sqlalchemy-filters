@@ -1,38 +1,27 @@
 from sqlalchemy.orm import Load
 
-from .exceptions import BadQuery, BadLoadFormat
-from .models import get_query_models
+from .exceptions import BadSpec, BadLoadFormat
+from .models import get_model_from_spec
 
 
 class LoadOnly(object):
 
-    def __init__(self, value, models):
+    def __init__(self, load_spec, query):
         try:
-            self.field_names = value['fields']
+            self.field_names = load_spec['fields']
         except KeyError:
             raise BadLoadFormat(
                 '`fields` is a mandatory attribute.'
             )
         except TypeError:
             raise BadLoadFormat(
-                'Value `{}` should be a dictionary.'.format(value)
+                'Load spec `{}` should be a dictionary.'.format(load_spec)
             )
 
-        model_name = value.get('model')
-        if model_name is not None:
-            models = [v for (k, v) in models.items() if k == model_name]
-            if not models:
-                raise BadLoadFormat(
-                    'The query does not contain model `{}`.'.format(model_name)
-                )
-            model = models[0]
-        else:
-            if len(models) == 1:
-                model = list(models.values())[0]
-            else:
-                raise BadLoadFormat(
-                    "Ambiguous field. Please specify a model."
-                )
+        try:
+            model = get_model_from_spec(load_spec, query)
+        except BadSpec as exc:
+            raise BadLoadFormat(str(exc)) from exc
 
         self.model = model
 
@@ -40,16 +29,16 @@ class LoadOnly(object):
         return Load(self.model).load_only(*self.field_names)
 
 
-def apply_loads(query, spec):
+def apply_loads(query, load_spec):
     """Apply load restrictions to a :class:`sqlalchemy.orm.Query` instance.
 
-    :param spec:
+    :param load_spec:
         A list of dictionaries, where each item contains the fields to load
         for each model.
 
         Example::
 
-            spec = [
+            load_spec = [
                 {'model': 'Foo', fields': ['id', 'name']},
                 {'model': 'Bar', 'fields': ['name']},
             ]
@@ -58,12 +47,8 @@ def apply_loads(query, spec):
         The :class:`sqlalchemy.orm.Query` instance after the load restrictions
         have been applied.
     """
-    models = get_query_models(query)
-    if not models:
-        raise BadQuery('The query does not contain any models.')
-
     sqlalchemy_loads = [
-        LoadOnly(value, models).format_for_sqlalchemy() for value in spec
+        LoadOnly(item, query).format_for_sqlalchemy() for item in load_spec
     ]
     if sqlalchemy_loads:
         query = query.options(*sqlalchemy_loads)

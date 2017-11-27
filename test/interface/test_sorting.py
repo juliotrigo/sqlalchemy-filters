@@ -120,7 +120,7 @@ class TestProvidedModels(object):
         with pytest.raises(BadSortFormat) as err:
             apply_sort(query, order_by)
 
-        assert 'Ambiguous sort. Please specify a model.' == err.value.args[0]
+        assert 'Ambiguous spec. Please specify a model.' == err.value.args[0]
 
 
 class TestSortNotApplied(object):
@@ -141,7 +141,7 @@ class TestSortNotApplied(object):
         with pytest.raises(BadSortFormat) as err:
             apply_sort(query, order_by)
 
-        expected_error = 'Sort `{}` should be a dictionary.'.format(sort)
+        expected_error = 'Sort spec `{}` should be a dictionary.'.format(sort)
         assert expected_error == error_value(err)
 
     def test_field_not_provided(self, session):
