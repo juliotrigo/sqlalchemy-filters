@@ -6,7 +6,7 @@ from itertools import chain
 from six import string_types
 from sqlalchemy import and_, or_, not_
 
-from .exceptions import BadSpec, BadFilterFormat
+from .exceptions import BadFilterFormat
 from .models import Field, get_model_from_spec
 
 
@@ -69,10 +69,7 @@ class Filter(object):
                 'Filter spec `{}` should be a dictionary.'.format(filter_spec)
             )
 
-        try:
-            model = get_model_from_spec(filter_spec, query)
-        except BadSpec as exc:
-            raise BadFilterFormat(str(exc)) from exc
+        model = get_model_from_spec(filter_spec, query)
 
         self.field = Field(model, field_name)
         self.operator = Operator(filter_spec.get('op'))

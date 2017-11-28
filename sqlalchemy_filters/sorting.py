@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .exceptions import BadSpec, BadSortFormat
+from .exceptions import BadSortFormat
 from .models import Field, get_model_from_spec
 
 
@@ -26,10 +26,7 @@ class Sort(object):
         if direction not in [SORT_ASCENDING, SORT_DESCENDING]:
             raise BadSortFormat('Direction `{}` not valid.'.format(direction))
 
-        try:
-            model = get_model_from_spec(sort_spec, query)
-        except BadSpec as exc:
-            raise BadSortFormat(str(exc)) from exc
+        model = get_model_from_spec(sort_spec, query)
 
         self.field = Field(model, field_name)
         self.direction = direction

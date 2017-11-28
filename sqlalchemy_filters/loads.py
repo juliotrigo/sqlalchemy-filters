@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Load
 
-from .exceptions import BadSpec, BadLoadFormat
+from .exceptions import BadLoadFormat
 from .models import Field, get_model_from_spec
 
 
@@ -18,13 +18,10 @@ class LoadOnly(object):
                 'Load spec `{}` should be a dictionary.'.format(load_spec)
             )
 
-        try:
-            model = get_model_from_spec(load_spec, query)
-        except BadSpec as exc:
-            raise BadLoadFormat(str(exc)) from exc
-
-        self.model = model
-        self.fields = [Field(model, field_name) for field_name in field_names]
+        self.model = get_model_from_spec(load_spec, query)
+        self.fields = [
+            Field(self.model, field_name) for field_name in field_names
+        ]
 
     def format_for_sqlalchemy(self):
         return Load(self.model).load_only(
