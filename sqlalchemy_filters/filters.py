@@ -6,8 +6,8 @@ from itertools import chain
 from six import string_types
 from sqlalchemy import and_, or_, not_
 
-from .exceptions import BadFilterFormat, BadQuery
-from .models import Field, get_query_models
+from .exceptions import BadFilterFormat
+from .models import Field, get_model_from_spec
 
 
 BooleanFunction = namedtuple(
@@ -59,36 +59,22 @@ class Operator(object):
 
 class Filter(object):
 
-    def __init__(self, filter_, models):
+    def __init__(self, filter_spec, query):
         try:
-            field_name = filter_['field']
+            field_name = filter_spec['field']
         except KeyError:
             raise BadFilterFormat('`field` is a mandatory filter attribute.')
         except TypeError:
             raise BadFilterFormat(
-                'Filter `{}` should be a dictionary.'.format(filter_)
+                'Filter spec `{}` should be a dictionary.'.format(filter_spec)
             )
 
-        model_name = filter_.get('model')
-        if model_name is not None:
-            models = [v for (k, v) in models.items() if k == model_name]
-            if not models:
-                raise BadFilterFormat(
-                    'The query does not contain model `{}`.'.format(model_name)
-                )
-            model = models[0]
-        else:
-            if len(models) == 1:
-                model = list(models.values())[0]
-            else:
-                raise BadFilterFormat(
-                    "Ambiguous filter. Please specify a model."
-                )
+        model = get_model_from_spec(filter_spec, query)
 
         self.field = Field(model, field_name)
-        self.operator = Operator(filter_.get('op'))
-        self.value = filter_.get('value')
-        self.value_present = True if 'value' in filter_ else False
+        self.operator = Operator(filter_spec.get('op'))
+        self.value = filter_spec.get('value')
+        self.value_present = True if 'value' in filter_spec else False
 
         if not self.value_present and self.operator.arity == 2:
             raise BadFilterFormat('`value` must be provided.')
@@ -105,21 +91,30 @@ class Filter(object):
             return function(field, self.value)
 
 
-def _build_sqlalchemy_filters(filterdef, models):
-    """ Recursively parse the `filterdef` into sqlalchemy filter arguments """
+def _is_iterable_filter(filter_spec):
+    """ `filter_spec` may be a list of nested filter specs, or a dict.
+    """
+    return (
+        isinstance(filter_spec, Iterable) and
+        not isinstance(filter_spec, (string_types, dict))
+    )
 
-    if _is_iterable_filter(filterdef):
+
+def _build_sqlalchemy_filters(filter_spec, query):
+    """ Recursively process `filter_spec` """
+
+    if _is_iterable_filter(filter_spec):
         return list(chain.from_iterable(
-            _build_sqlalchemy_filters(item, models) for item in filterdef
+            _build_sqlalchemy_filters(item, query) for item in filter_spec
         ))
 
-    if isinstance(filterdef, dict):
-        # Check if filterdef defines a boolean function.
+    if isinstance(filter_spec, dict):
+        # Check if filter spec defines a boolean function.
         for boolean_function in BOOLEAN_FUNCTIONS:
-            if boolean_function.key in filterdef:
-                # The filterdef is for a boolean-function
+            if boolean_function.key in filter_spec:
+                # The filter spec is for a boolean-function
                 # Get the function argument definitions and validate
-                fn_args = filterdef[boolean_function.key]
+                fn_args = filter_spec[boolean_function.key]
 
                 if not _is_iterable_filter(fn_args):
                     raise BadFilterFormat(
@@ -140,40 +135,49 @@ def _build_sqlalchemy_filters(filterdef, models):
                     )
                 return [
                     boolean_function.sqlalchemy_fn(
-                        *_build_sqlalchemy_filters(fn_args, models)
+                        *_build_sqlalchemy_filters(fn_args, query)
                     )
                 ]
 
-    return [Filter(filterdef, models).format_for_sqlalchemy()]
+    return [Filter(filter_spec, query).format_for_sqlalchemy()]
 
 
-def _is_iterable_filter(filterdef):
-    return (
-        isinstance(filterdef, Iterable) and
-        not isinstance(filterdef, (string_types, dict))
-    )
-
-
-def apply_filters(query, filters):
+def apply_filters(query, filter_spec):
     """Apply filters to a SQLAlchemy query.
 
     :param query:
         A :class:`sqlalchemy.orm.Query` instance.
 
-    :param filters:
+    :param filter_spec:
         A dict or an iterable of dicts, where each one includes
         the necesary information to create a filter to be applied to the
         query.
+
+        Example::
+
+            filter_spec = [
+                {'model': 'Foo', 'field': 'name', 'op': '==', 'value': 'foo'},
+            ]
+
+        If the query being modified refers to a single model, the `model` key
+        may be omitted from the filter spec.
+
+        Filters may be combined using boolean functions.
+
+        Example:
+
+            filter_spec = {
+                'or': [
+                    {'model': 'Foo', 'field': 'id', 'op': '==', 'value': '1'},
+                    {'model': 'Bar', 'field': 'id', 'op': '==', 'value': '2'},
+                ]
+            }
 
     :returns:
         The :class:`sqlalchemy.orm.Query` instance after all the filters
         have been applied.
     """
-    models = get_query_models(query)
-    if not models:
-        raise BadQuery('The query does not contain any models.')
-
-    sqlalchemy_filters = _build_sqlalchemy_filters(filters, models)
+    sqlalchemy_filters = _build_sqlalchemy_filters(filter_spec, query)
 
     if sqlalchemy_filters:
         query = query.filter(*sqlalchemy_filters)

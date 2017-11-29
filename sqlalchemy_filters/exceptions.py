@@ -9,6 +9,14 @@ class BadSortFormat(Exception):
     pass
 
 
+class BadLoadFormat(Exception):
+    pass
+
+
+class BadSpec(Exception):
+    pass
+
+
 class FieldNotFound(Exception):
     pass
 
