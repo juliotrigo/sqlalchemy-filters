@@ -1,9 +1,6 @@
 SQLAlchemy-filters
 ==================
 
-ADD LOAD SPEC DOCS inc note about joibedload
-FIX TYPOS IN DOCS!
-
 .. pull-quote::
 
     Filter, sort and paginate SQLAlchemy query objects.
