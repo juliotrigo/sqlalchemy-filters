@@ -196,3 +196,21 @@ class TestSortApplied(object):
         assert result[1].id == 1
         assert result[2].id == 4
         assert result[3].id == 2
+
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_a_single_dict_can_be_supplied_as_sort_spec(self, session):
+        query = session.query(Bar)
+        sort_spec = {'field': 'name', 'direction': 'desc'}
+
+        sorted_query = apply_sort(query, sort_spec)
+        result = sorted_query.all()
+
+        assert len(result) == 8
+        assert result[0].id == 8
+        assert result[1].id == 4
+        assert result[2].id == 6
+        assert result[3].id == 2
+        assert result[4].id == 1
+        assert result[5].id == 3
+        assert result[6].id == 5
+        assert result[7].id == 7

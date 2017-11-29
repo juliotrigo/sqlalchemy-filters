@@ -58,6 +58,9 @@ def apply_sort(query, sort_spec):
         The :class:`sqlalchemy.orm.Query` instance after the provided
         sorting has been applied.
     """
+    if isinstance(sort_spec, dict):
+        sort_spec = [sort_spec]
+
     sqlalchemy_order_by = [
         Sort(item, query).format_for_sqlalchemy() for item in sort_spec
     ]

@@ -29,15 +29,7 @@ def multiple_foos_inserted(multiple_bars_inserted, session):
 
 class TestLoadNotApplied(object):
 
-    def test_no_load_provided(self, session):
-        query = session.query(Bar)
-        load_spec = []
-
-        restricted_query = apply_loads(query, load_spec)
-
-        assert query == restricted_query
-
-    @pytest.mark.parametrize('spec', ['some text', 1, []])
+    @pytest.mark.parametrize('spec', [1, []])
     def test_wrong_spec_format(self, session, spec):
         query = session.query(Bar)
         load_spec = [spec]
@@ -72,6 +64,19 @@ class TestLoadNotApplied(object):
 
 
 class TestLoadsApplied(object):
+
+    def test_no_load_provided(self, session):
+        query = session.query(Bar)
+        load_spec = []
+
+        restricted_query = apply_loads(query, load_spec)
+
+        # defers all fields
+        expected = (
+            "SELECT bar.id AS bar_id \n"
+            "FROM bar"
+        )
+        assert str(restricted_query) == expected
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_single_value(self, session):
@@ -161,5 +166,35 @@ class TestLoadsApplied(object):
         expected = (
             "SELECT foo.id AS foo_id, foo.count AS foo_count \n"
             "FROM foo {join} bar ON bar.id = foo.bar_id".format(join=join_type)
+        )
+        assert str(restricted_query) == expected
+
+    @pytest.mark.usefixtures('multiple_foos_inserted')
+    def test_a_single_dict_can_be_supplied_as_load_spec(self, session):
+
+        query = session.query(Foo)
+        load_spec = {'fields': ['name', 'count']}
+
+        restricted_query = apply_loads(query, load_spec)
+
+        expected = (
+            "SELECT foo.id AS foo_id, foo.name AS foo_name, "
+            "foo.count AS foo_count \n"
+            "FROM foo"
+        )
+        assert str(restricted_query) == expected
+
+    @pytest.mark.usefixtures('multiple_foos_inserted')
+    def test_a_list_of_fields_can_be_supplied_as_load_spec(self, session):
+
+        query = session.query(Foo)
+        load_spec = ['name', 'count']
+
+        restricted_query = apply_loads(query, load_spec)
+
+        expected = (
+            "SELECT foo.id AS foo_id, foo.name AS foo_name, "
+            "foo.count AS foo_count \n"
+            "FROM foo"
         )
         assert str(restricted_query) == expected

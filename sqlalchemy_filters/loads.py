@@ -47,6 +47,15 @@ def apply_loads(query, load_spec):
         The :class:`sqlalchemy.orm.Query` instance after the load restrictions
         have been applied.
     """
+    if (
+        isinstance(load_spec, list) and
+        all(map(lambda item: isinstance(item, str), load_spec))
+    ):
+        load_spec = {'fields': load_spec}
+
+    if isinstance(load_spec, dict):
+        load_spec = [load_spec]
+
     sqlalchemy_loads = [
         LoadOnly(item, query).format_for_sqlalchemy() for item in load_spec
     ]
