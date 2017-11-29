@@ -78,7 +78,6 @@ class TestLoadsApplied(object):
         )
         assert str(restricted_query) == expected
 
-    @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_single_value(self, session):
 
         query = session.query(Bar)
@@ -94,7 +93,6 @@ class TestLoadsApplied(object):
         )
         assert str(restricted_query) == expected
 
-    @pytest.mark.usefixtures('multiple_foos_inserted')
     def test_multiple_values_single_model(self, session):
 
         query = session.query(Foo)
@@ -111,7 +109,6 @@ class TestLoadsApplied(object):
         )
         assert str(restricted_query) == expected
 
-    @pytest.mark.usefixtures('multiple_foos_inserted')
     def test_multiple_values_multiple_models(self, session):
 
         query = session.query(Foo, Bar)
@@ -129,7 +126,6 @@ class TestLoadsApplied(object):
         )
         assert str(restricted_query) == expected
 
-    @pytest.mark.usefixtures('multiple_foos_inserted')
     def test_multiple_values_multiple_models_joined(self, session, db_uri):
 
         query = session.query(Foo, Bar).join(Bar)
@@ -149,7 +145,6 @@ class TestLoadsApplied(object):
         )
         assert str(restricted_query) == expected
 
-    @pytest.mark.usefixtures('multiple_foos_inserted')
     def test_multiple_values_multiple_models_lazy_load(self, session, db_uri):
 
         query = session.query(Foo).join(Bar)
@@ -169,7 +164,6 @@ class TestLoadsApplied(object):
         )
         assert str(restricted_query) == expected
 
-    @pytest.mark.usefixtures('multiple_foos_inserted')
     def test_a_single_dict_can_be_supplied_as_load_spec(self, session):
 
         query = session.query(Foo)
@@ -184,7 +178,6 @@ class TestLoadsApplied(object):
         )
         assert str(restricted_query) == expected
 
-    @pytest.mark.usefixtures('multiple_foos_inserted')
     def test_a_list_of_fields_can_be_supplied_as_load_spec(self, session):
 
         query = session.query(Foo)
