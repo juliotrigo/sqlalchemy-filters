@@ -153,6 +153,26 @@ def apply_filters(query, filter_spec):
         the necesary information to create a filter to be applied to the
         query.
 
+        Example::
+
+            filter_spec = [
+                {'model': 'Foo', 'field': 'name', 'op': '==', 'value': 'foo'},
+            ]
+
+        If the query being modified refers to a single model, the `model` key
+        may be omitted from the filter spec.
+
+        Filters may be combined using boolean functions.
+
+        Example:
+
+            filter_spec = {
+                'or': [
+                    {'model': 'Foo', 'field': 'id', 'op': '==', 'value': '1'},
+                    {'model': 'Bar', 'field': 'id', 'op': '==', 'value': '2'},
+                ]
+            }
+
     :returns:
         The :class:`sqlalchemy.orm.Query` instance after all the filters
         have been applied.

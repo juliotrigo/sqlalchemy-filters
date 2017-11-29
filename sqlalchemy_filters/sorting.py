@@ -50,9 +50,12 @@ def apply_sort(query, sort_spec):
         Example::
 
             sort_spec = [
-                {'field': 'name', 'direction': 'asc'},
-                {'field': 'id', 'direction': 'desc'},
+                {'model': 'Foo', 'field': 'name', 'direction': 'asc'},
+                {'model': 'Bar', 'field': 'id', 'direction': 'desc'},
             ]
+
+        If the query being modified refers to a single model, the `model` key
+        may be omitted from the sort spec.
 
     :returns:
         The :class:`sqlalchemy.orm.Query` instance after the provided

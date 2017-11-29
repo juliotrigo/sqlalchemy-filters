@@ -43,6 +43,12 @@ def apply_loads(query, load_spec):
                 {'model': 'Bar', 'fields': ['name']},
             ]
 
+        If the query being modified refers to a single model, the `model` key
+        may be omitted from the load spec. The following shorthand form is
+        also accepted when the model can be inferred::
+
+            load_spec = ['id', 'name']
+
     :returns:
         The :class:`sqlalchemy.orm.Query` instance after the load restrictions
         have been applied.
