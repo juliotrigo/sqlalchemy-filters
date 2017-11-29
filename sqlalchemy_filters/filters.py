@@ -91,8 +91,17 @@ class Filter(object):
             return function(field, self.value)
 
 
+def _is_iterable_filter(filter_spec):
+    """ `filter_spec` may be a list of nested filter specs, or a dict.
+    """
+    return (
+        isinstance(filter_spec, Iterable) and
+        not isinstance(filter_spec, (string_types, dict))
+    )
+
+
 def _build_sqlalchemy_filters(filter_spec, query):
-    """ Recursively parse `filter_spec` into sqlalchemy filter arguments """
+    """ Recursively process `filter_spec` """
 
     if _is_iterable_filter(filter_spec):
         return list(chain.from_iterable(
@@ -100,10 +109,10 @@ def _build_sqlalchemy_filters(filter_spec, query):
         ))
 
     if isinstance(filter_spec, dict):
-        # Check if filterdef defines a boolean function.
+        # Check if filter spec defines a boolean function.
         for boolean_function in BOOLEAN_FUNCTIONS:
             if boolean_function.key in filter_spec:
-                # The filterdef is for a boolean-function
+                # The filter spec is for a boolean-function
                 # Get the function argument definitions and validate
                 fn_args = filter_spec[boolean_function.key]
 
@@ -131,13 +140,6 @@ def _build_sqlalchemy_filters(filter_spec, query):
                 ]
 
     return [Filter(filter_spec, query).format_for_sqlalchemy()]
-
-
-def _is_iterable_filter(filterdef):
-    return (
-        isinstance(filterdef, Iterable) and
-        not isinstance(filterdef, (string_types, dict))
-    )
 
 
 def apply_filters(query, filter_spec):
