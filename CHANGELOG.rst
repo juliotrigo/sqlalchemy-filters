@@ -6,6 +6,14 @@ versions, where semantic versioning is used: *major.minor.patch*.
 
 Backwards-compatible changes increment the minor version number only.
 
+Version 0.6.0
+-------------
+
+Released 2017-11-30
+
+* Adds support for restricting the columns that are loaded from the
+  database.
+
 Version 0.5.0
 -------------
 
