@@ -93,11 +93,28 @@ def get_model_class_by_name(registry, name):
             return cls
 
 
-def auto_join(query, *models):
-    """ Automatically join `models` to `query` if they're not already present
+def get_default_model(query):
+    """ Return the singular model from `query`, or `None` if `query` contains
+    multiple models.
+    """
+    query_models = get_query_models(query).values()
+    if len(query_models) == 1:
+        default_model, = iter(query_models)
+    else:
+        default_model = None
+    return default_model
+
+
+def auto_join(query, *model_names):
+    """ Automatically join models to `query` if they're not already present
     and the join can be done implicitly.
     """
-    for model in models:
+    # every model has access to the registry, so we can use any from the query
+    query_models = get_query_models(query).values()
+    model_registry = list(query_models)[-1]._decl_class_registry
+
+    for name in model_names:
+        model = get_model_class_by_name(model_registry, name)
         if model not in get_query_models(query).values():
             try:
                 query = query.join(model)

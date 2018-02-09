@@ -1,10 +1,7 @@
 from sqlalchemy.orm import Load
 
 from .exceptions import BadLoadFormat
-from .models import (
-    Field, auto_join, get_model_from_spec, get_query_models,
-    get_model_class_by_name
-)
+from .models import Field, auto_join, get_model_from_spec, get_default_model
 
 
 class LoadOnly(object):
@@ -86,18 +83,10 @@ def apply_loads(query, load_spec):
 
     loads = [LoadOnly(item) for item in load_spec]
 
-    query_models = get_query_models(query).values()
-    model_registry = list(query_models)[-1]._decl_class_registry
+    default_model = get_default_model(query)
 
     load_models = get_named_models(loads)
-    for name in load_models:
-        model = get_model_class_by_name(model_registry, name)
-        query = auto_join(query, model)
-
-    if len(query_models) == 1:
-        default_model, = iter(query_models)
-    else:
-        default_model = None
+    query = auto_join(query, *load_models)
 
     sqlalchemy_loads = [
         load.format_for_sqlalchemy(query, default_model) for load in loads

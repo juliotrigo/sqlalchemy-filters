@@ -7,10 +7,7 @@ from six import string_types
 from sqlalchemy import and_, or_, not_
 
 from .exceptions import BadFilterFormat
-from .models import (
-    Field, auto_join, get_model_from_spec, get_query_models,
-    get_model_class_by_name
-)
+from .models import Field, auto_join, get_model_from_spec, get_default_model
 
 
 BooleanFunction = namedtuple(
@@ -220,18 +217,10 @@ def apply_filters(query, filter_spec):
     """
     filters = build_filters(filter_spec)
 
-    query_models = get_query_models(query).values()
-    model_registry = list(query_models)[-1]._decl_class_registry
+    default_model = get_default_model(query)
 
     filter_models = get_named_models(filters)
-    for name in filter_models:
-        model = get_model_class_by_name(model_registry, name)
-        query = auto_join(query, model)
-
-    if len(query_models) == 1:
-        default_model, = iter(query_models)
-    else:
-        default_model = None
+    query = auto_join(query, *filter_models)
 
     sqlalchemy_filters = [
         filter.format_for_sqlalchemy(query, default_model)

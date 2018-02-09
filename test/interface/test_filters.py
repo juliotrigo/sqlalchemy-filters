@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import importlib
 
 import pytest
 from sqlalchemy import func

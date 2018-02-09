@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from .exceptions import BadSortFormat
-from .models import (
-    Field, auto_join, get_model_from_spec, get_query_models,
-    get_model_class_by_name
-)
+from .models import Field, auto_join, get_model_from_spec, get_default_model
 
 SORT_ASCENDING = 'asc'
 SORT_DESCENDING = 'desc'
@@ -87,18 +84,10 @@ def apply_sort(query, sort_spec):
 
     sorts = [Sort(item) for item in sort_spec]
 
-    query_models = get_query_models(query).values()
-    model_registry = list(query_models)[-1]._decl_class_registry
+    default_model = get_default_model(query)
 
     sort_models = get_named_models(sorts)
-    for name in sort_models:
-        model = get_model_class_by_name(model_registry, name)
-        query = auto_join(query, model)
-
-    if len(query_models) == 1:
-        default_model, = iter(query_models)
-    else:
-        default_model = None
+    query = auto_join(query, *sort_models)
 
     sqlalchemy_sorts = [
         sort.format_for_sqlalchemy(query, default_model) for sort in sorts
