@@ -1,13 +1,26 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import importlib
 
 import pytest
 from sqlalchemy import func
 from sqlalchemy_filters import apply_filters
-from sqlalchemy_filters.exceptions import BadFilterFormat, FieldNotFound
+from sqlalchemy_filters.exceptions import (
+    BadFilterFormat, BadSpec, FieldNotFound
+)
 
-from test.models import Bar, Qux
+from test.models import Foo, Bar, Qux
+
+
+@pytest.fixture
+def multiple_foos_inserted(session, multiple_bars_inserted):
+    foo_1 = Foo(id=1, bar_id=1, name='name_1', count=50)
+    foo_2 = Foo(id=2, bar_id=2, name='name_2', count=100)
+    foo_3 = Foo(id=3, bar_id=3, name='name_1', count=None)
+    foo_4 = Foo(id=4, bar_id=4, name='name_4', count=150)
+    session.add_all([foo_1, foo_2, foo_3, foo_4])
+    session.commit()
 
 
 @pytest.fixture
@@ -164,6 +177,70 @@ class TestMultipleModels:
         assert set(map(type, quxs)) == {Qux}
         assert {qux.id for qux in quxs} == {1, 3}
         assert {qux.name for qux in quxs} == {"name_1"}
+
+
+class TestAutoJoin:
+
+    @pytest.mark.usefixtures('multiple_foos_inserted')
+    def test_auto_join(self, session):
+
+        query = session.query(Foo)
+        filters = [
+            {'field': 'name', 'op': '==', 'value': 'name_1'},
+            {'model': 'Bar', 'field': 'count', 'op': 'is_null'},
+        ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 1
+        assert result[0].id == 3
+        assert result[0].bar_id == 3
+        assert result[0].bar.count is None
+
+    @pytest.mark.usefixtures('multiple_foos_inserted')
+    def test_noop_if_query_contains_named_models(self, session):
+
+        query = session.query(Foo).join(Bar)
+        filters = [
+            {'model': 'Foo', 'field': 'name', 'op': '==', 'value': 'name_1'},
+            {'model': 'Bar', 'field': 'count', 'op': 'is_null'},
+        ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 1
+        assert result[0].id == 3
+        assert result[0].bar_id == 3
+        assert result[0].bar.count is None
+
+    @pytest.mark.usefixtures('multiple_foos_inserted')
+    def test_auto_join_to_invalid_model(self, session):
+
+        query = session.query(Foo)
+        filters = [
+            {'field': 'name', 'op': '==', 'value': 'name_1'},
+            {'model': 'Bar', 'field': 'count', 'op': 'is_null'},
+            {'model': 'Qux', 'field': 'created_at', 'op': 'is_not_null'}
+        ]
+        with pytest.raises(BadSpec) as err:
+            apply_filters(query, filters)
+
+        assert 'The query does not contain model `Qux`.' == err.value.args[0]
+
+    @pytest.mark.usefixtures('multiple_foos_inserted')
+    def test_ambiguous_query(self, session):
+
+        query = session.query(Foo).join(Bar)
+        filters = [
+            {'field': 'name', 'op': '==', 'value': 'name_1'},  # ambiguous
+            {'model': 'Bar', 'field': 'count', 'op': 'is_null'},
+        ]
+        with pytest.raises(BadSpec) as err:
+            apply_filters(query, filters)
+
+        assert 'Ambiguous spec. Please specify a model.' == err.value.args[0]
 
 
 class TestApplyIsNullFilter:

@@ -1,16 +1,16 @@
 from sqlalchemy.orm import Load
 
 from .exceptions import BadLoadFormat
-from .models import Field, get_model_from_spec
+from .models import (
+    Field, auto_join, get_model_from_spec, get_query_models,
+    get_model_class_by_name
+)
 
 
 class LoadOnly(object):
 
     def __init__(self, load_spec):
         self.load_spec = load_spec
-
-    def format_for_sqlalchemy(self, query):
-        load_spec = self.load_spec
 
         try:
             field_names = load_spec['fields']
@@ -23,7 +23,18 @@ class LoadOnly(object):
                 'Load spec `{}` should be a dictionary.'.format(load_spec)
             )
 
-        model = get_model_from_spec(load_spec, query)
+        self.field_names = field_names
+
+    def get_named_models(self):
+        if "model" in self.load_spec:
+            return {self.load_spec['model']}
+        return set()
+
+    def format_for_sqlalchemy(self, query, default_model):
+        load_spec = self.load_spec
+        field_names = self.field_names
+
+        model = get_model_from_spec(load_spec, query, default_model)
         fields = [
             Field(model, field_name) for field_name in field_names
         ]
@@ -31,6 +42,13 @@ class LoadOnly(object):
         return Load(model).load_only(
             *[field.get_sqlalchemy_field() for field in fields]
         )
+
+
+def get_named_models(loads):
+    models = set()
+    for load in loads:
+        models.update(load.get_named_models())
+    return models
 
 
 def apply_loads(query, load_spec):
@@ -67,7 +85,23 @@ def apply_loads(query, load_spec):
         load_spec = [load_spec]
 
     loads = [LoadOnly(item) for item in load_spec]
-    sqlalchemy_loads = [load.format_for_sqlalchemy(query) for load in loads]
+
+    query_models = get_query_models(query).values()
+    model_registry = list(query_models)[-1]._decl_class_registry
+
+    load_models = get_named_models(loads)
+    for name in load_models:
+        model = get_model_class_by_name(model_registry, name)
+        query = auto_join(query, model)
+
+    if len(query_models) == 1:
+        default_model, = iter(query_models)
+    else:
+        default_model = None
+
+    sqlalchemy_loads = [
+        load.format_for_sqlalchemy(query, default_model) for load in loads
+    ]
     if sqlalchemy_loads:
         query = query.options(*sqlalchemy_loads)
 

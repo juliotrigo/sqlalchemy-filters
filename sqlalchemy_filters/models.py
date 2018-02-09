@@ -1,3 +1,4 @@
+from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.inspection import inspect
 
 from .exceptions import BadQuery, FieldNotFound, BadSpec
@@ -35,7 +36,7 @@ def get_query_models(query):
     }
 
 
-def get_model_from_spec(spec, query):
+def get_model_from_spec(spec, query, default_model=None):
     """ Determine the model to which a spec applies on a given query.
 
     A spec that does not specify a model may be applied to a query that
@@ -74,9 +75,32 @@ def get_model_from_spec(spec, query):
     else:
         if len(models) == 1:
             model = list(models.values())[0]
+        elif default_model is not None:
+            return default_model
         else:
             raise BadSpec(
                 "Ambiguous spec. Please specify a model."
             )
 
     return model
+
+
+def get_model_class_by_name(registry, name):
+    """ Return the model class matching `name` in the given `registry`.
+    """
+    for cls in registry.values():
+        if getattr(cls, '__name__', None) == name:
+            return cls
+
+
+def auto_join(query, *models):
+    """ Automatically join `models` to `query` if they're not already present
+    and the join can be done implicitly.
+    """
+    for model in models:
+        if model not in get_query_models(query).values():
+            try:
+                query = query.join(model)
+            except InvalidRequestError:
+                pass  # can't be autojoined
+    return query

@@ -4,10 +4,26 @@ import datetime
 
 import pytest
 
-from sqlalchemy_filters.exceptions import BadSortFormat, FieldNotFound
+from sqlalchemy_filters.exceptions import BadSortFormat, BadSpec, FieldNotFound
 from sqlalchemy_filters.sorting import apply_sort
 from test import error_value
-from test.models import Bar, Qux
+from test.models import Foo, Bar, Qux
+
+
+@pytest.fixture
+def multiple_foos_inserted(session, multiple_bars_inserted):
+    foo_1 = Foo(id=1, bar_id=1, name='name_1', count=1)
+    foo_2 = Foo(id=2, bar_id=2, name='name_2', count=1)
+    foo_3 = Foo(id=3, bar_id=3, name='name_1', count=1)
+    foo_4 = Foo(id=4, bar_id=4, name='name_4', count=1)
+    foo_5 = Foo(id=5, bar_id=5, name='name_1', count=2)
+    foo_6 = Foo(id=6, bar_id=6, name='name_4', count=2)
+    foo_7 = Foo(id=7, bar_id=7, name='name_1', count=2)
+    foo_8 = Foo(id=8, bar_id=8, name='name_5', count=2)
+    session.add_all(
+        [foo_1, foo_2, foo_3, foo_4, foo_5, foo_6, foo_7, foo_8]
+    )
+    session.commit()
 
 
 @pytest.fixture
@@ -214,3 +230,80 @@ class TestSortApplied(object):
         assert result[5].id == 3
         assert result[6].id == 5
         assert result[7].id == 7
+
+
+class TestAutoJoin:
+
+    @pytest.mark.usefixtures('multiple_foos_inserted')
+    def test_auto_join(self, session):
+
+        query = session.query(Foo)
+        order_by = [
+            {'field': 'count', 'direction': 'desc'},
+            {'model': 'Bar', 'field': 'name', 'direction': 'asc'},
+            {'field': 'id', 'direction': 'asc'},
+        ]
+
+        sorted_query = apply_sort(query, order_by)
+        result = sorted_query.all()
+
+        assert len(result) == 8
+        assert result[0].id == 5
+        assert result[1].id == 7
+        assert result[2].id == 6
+        assert result[3].id == 8
+        assert result[4].id == 1
+        assert result[5].id == 3
+        assert result[6].id == 2
+        assert result[7].id == 4
+
+    @pytest.mark.usefixtures('multiple_foos_inserted')
+    def test_noop_if_query_contains_named_models(self, session):
+
+        query = session.query(Foo).join(Bar)
+        order_by = [
+            {'model': 'Foo', 'field': 'count', 'direction': 'desc'},
+            {'model': 'Bar', 'field': 'name', 'direction': 'asc'},
+            {'model': 'Foo', 'field': 'id', 'direction': 'asc'},
+        ]
+
+        sorted_query = apply_sort(query, order_by)
+        result = sorted_query.all()
+
+        assert len(result) == 8
+        assert result[0].id == 5
+        assert result[1].id == 7
+        assert result[2].id == 6
+        assert result[3].id == 8
+        assert result[4].id == 1
+        assert result[5].id == 3
+        assert result[6].id == 2
+        assert result[7].id == 4
+
+    @pytest.mark.usefixtures('multiple_foos_inserted')
+    def test_auto_join_to_invalid_model(self, session):
+
+        query = session.query(Foo)
+        order_by = [
+            {'model': 'Foo', 'field': 'count', 'direction': 'desc'},
+            {'model': 'Bar', 'field': 'name', 'direction': 'asc'},
+            {'model': 'Qux', 'field': 'count', 'direction': 'asc'}
+        ]
+
+        with pytest.raises(BadSpec) as err:
+            apply_sort(query, order_by)
+
+        assert 'The query does not contain model `Qux`.' == err.value.args[0]
+
+    @pytest.mark.usefixtures('multiple_foos_inserted')
+    def test_ambiguous_query(self, session):
+
+        query = session.query(Foo).join(Bar)
+        order_by = [
+            {'field': 'count', 'direction': 'asc'},  # ambiguous
+            {'model': 'Bar', 'field': 'name', 'direction': 'desc'},
+        ]
+        with pytest.raises(BadSpec) as err:
+            apply_sort(query, order_by)
+
+        assert 'Ambiguous spec. Please specify a model.' == err.value.args[0]
