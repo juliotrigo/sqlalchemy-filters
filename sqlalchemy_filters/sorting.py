@@ -10,7 +10,12 @@ SORT_DESCENDING = 'desc'
 
 class Sort(object):
 
-    def __init__(self, sort_spec, query):
+    def __init__(self, sort_spec):
+        self.sort_spec = sort_spec
+
+    def format_for_sqlalchemy(self, query):
+        sort_spec = self.sort_spec
+
         try:
             field_name = sort_spec['field']
             direction = sort_spec['direction']
@@ -28,16 +33,13 @@ class Sort(object):
 
         model = get_model_from_spec(sort_spec, query)
 
-        self.field = Field(model, field_name)
-        self.direction = direction
+        field = Field(model, field_name)
+        sqlalchemy_field = field.get_sqlalchemy_field()
 
-    def format_for_sqlalchemy(self):
-        field = self.field.get_sqlalchemy_field()
-
-        if self.direction == SORT_ASCENDING:
-            return field.asc()
-        elif self.direction == SORT_DESCENDING:
-            return field.desc()
+        if direction == SORT_ASCENDING:
+            return sqlalchemy_field.asc()
+        elif direction == SORT_DESCENDING:
+            return sqlalchemy_field.desc()
 
 
 def apply_sort(query, sort_spec):
@@ -64,10 +66,12 @@ def apply_sort(query, sort_spec):
     if isinstance(sort_spec, dict):
         sort_spec = [sort_spec]
 
-    sqlalchemy_order_by = [
-        Sort(item, query).format_for_sqlalchemy() for item in sort_spec
+    sorts = [Sort(item) for item in sort_spec]
+    sqlalchemy_sorts = [
+        sort.format_for_sqlalchemy(query) for sort in sorts
     ]
-    if sqlalchemy_order_by:
-        query = query.order_by(*sqlalchemy_order_by)
+
+    if sqlalchemy_sorts:
+        query = query.order_by(*sqlalchemy_sorts)
 
     return query

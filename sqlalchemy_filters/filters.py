@@ -59,7 +59,12 @@ class Operator(object):
 
 class Filter(object):
 
-    def __init__(self, filter_spec, query):
+    def __init__(self, filter_spec):
+        self.filter_spec = filter_spec
+
+    def format_for_sqlalchemy(self, query):
+        filter_spec = self.filter_spec
+
         try:
             field_name = filter_spec['field']
         except KeyError:
@@ -71,24 +76,35 @@ class Filter(object):
 
         model = get_model_from_spec(filter_spec, query)
 
-        self.field = Field(model, field_name)
-        self.operator = Operator(filter_spec.get('op'))
-        self.value = filter_spec.get('value')
-        self.value_present = True if 'value' in filter_spec else False
-
-        if not self.value_present and self.operator.arity == 2:
+        operator = Operator(filter_spec.get('op'))
+        value = filter_spec.get('value')
+        value_present = True if 'value' in filter_spec else False
+        if not value_present and operator.arity == 2:
             raise BadFilterFormat('`value` must be provided.')
 
-    def format_for_sqlalchemy(self):
-        function = self.operator.function
-        arity = self.operator.arity
-        field = self.field.get_sqlalchemy_field()
+        function = operator.function
+        arity = operator.arity
+
+        field = Field(model, field_name)
+        sqlalchemy_field = field.get_sqlalchemy_field()
 
         if arity == 1:
-            return function(field)
+            return function(sqlalchemy_field)
 
         if arity == 2:
-            return function(field, self.value)
+            return function(sqlalchemy_field, value)
+
+
+class BooleanFilter:
+
+    def __init__(self, function, *filters):
+        self.function = function
+        self.filters = filters
+
+    def format_for_sqlalchemy(self, query):
+        return self.function(
+            *[filter.format_for_sqlalchemy(query) for filter in self.filters]
+        )
 
 
 def _is_iterable_filter(filter_spec):
@@ -100,12 +116,12 @@ def _is_iterable_filter(filter_spec):
     )
 
 
-def _build_sqlalchemy_filters(filter_spec, query):
+def build_filters(filter_spec):
     """ Recursively process `filter_spec` """
 
     if _is_iterable_filter(filter_spec):
         return list(chain.from_iterable(
-            _build_sqlalchemy_filters(item, query) for item in filter_spec
+            build_filters(item) for item in filter_spec
         ))
 
     if isinstance(filter_spec, dict):
@@ -134,12 +150,12 @@ def _build_sqlalchemy_filters(filter_spec, query):
                         )
                     )
                 return [
-                    boolean_function.sqlalchemy_fn(
-                        *_build_sqlalchemy_filters(fn_args, query)
+                    BooleanFilter(
+                        boolean_function.sqlalchemy_fn, *build_filters(fn_args)
                     )
                 ]
 
-    return [Filter(filter_spec, query).format_for_sqlalchemy()]
+    return [Filter(filter_spec)]
 
 
 def apply_filters(query, filter_spec):
@@ -177,7 +193,10 @@ def apply_filters(query, filter_spec):
         The :class:`sqlalchemy.orm.Query` instance after all the filters
         have been applied.
     """
-    sqlalchemy_filters = _build_sqlalchemy_filters(filter_spec, query)
+    filters = build_filters(filter_spec)
+    sqlalchemy_filters = [
+        filter.format_for_sqlalchemy(query) for filter in filters
+    ]
 
     if sqlalchemy_filters:
         query = query.filter(*sqlalchemy_filters)

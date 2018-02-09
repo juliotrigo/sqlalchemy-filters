@@ -6,7 +6,12 @@ from .models import Field, get_model_from_spec
 
 class LoadOnly(object):
 
-    def __init__(self, load_spec, query):
+    def __init__(self, load_spec):
+        self.load_spec = load_spec
+
+    def format_for_sqlalchemy(self, query):
+        load_spec = self.load_spec
+
         try:
             field_names = load_spec['fields']
         except KeyError:
@@ -18,14 +23,13 @@ class LoadOnly(object):
                 'Load spec `{}` should be a dictionary.'.format(load_spec)
             )
 
-        self.model = get_model_from_spec(load_spec, query)
-        self.fields = [
-            Field(self.model, field_name) for field_name in field_names
+        model = get_model_from_spec(load_spec, query)
+        fields = [
+            Field(model, field_name) for field_name in field_names
         ]
 
-    def format_for_sqlalchemy(self):
-        return Load(self.model).load_only(
-            *[field.get_sqlalchemy_field() for field in self.fields]
+        return Load(model).load_only(
+            *[field.get_sqlalchemy_field() for field in fields]
         )
 
 
@@ -62,9 +66,8 @@ def apply_loads(query, load_spec):
     if isinstance(load_spec, dict):
         load_spec = [load_spec]
 
-    sqlalchemy_loads = [
-        LoadOnly(item, query).format_for_sqlalchemy() for item in load_spec
-    ]
+    loads = [LoadOnly(item) for item in load_spec]
+    sqlalchemy_loads = [load.format_for_sqlalchemy(query) for load in loads]
     if sqlalchemy_loads:
         query = query.options(*sqlalchemy_loads)
 
