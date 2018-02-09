@@ -72,9 +72,36 @@ It is also possible to filter queries that contain multiple models, including jo
 
     result = filtered_query.all()
 
-You must specify the `model` key in each filter if the query is against more than one model.
 
-Note that we can also apply filters to queries defined by fields or functions:
+`apply_filters` will attempt to automatically join models to `query` if they're not already present and a model-specific filter is supplied. For example, the value of `filtered_query` in the following two code blocks is identical:
+
+.. code-block:: python
+
+    query = session.query(Foo).join(Bar)  # join pre-applied to query
+
+    filter_spec = [
+        {field': 'name', 'op': '==', 'value': 'name_1'},
+        {'model': 'Bar', field': 'count', 'op': '>=', 'value': 5},
+    ]
+    filtered_query = apply_filters(query, filter_spec)
+
+.. code-block:: python
+
+    query = session.query(Foo)  # join to Bar will be automatically applied
+
+    filter_spec = [
+        {field': 'name', 'op': '==', 'value': 'name_1'},
+        {'model': 'Bar', field': 'count', 'op': '>=', 'value': 5},
+    ]
+    filtered_query = apply_filters(query, filter_spec)
+
+The automatic join is only possible if sqlalchemy can implictly determine the condition for the join, for example because of a foreign key relationship.
+
+Automatic joins allow flexibility for clients to filter by related objects without specifying all possible joins on the server beforehand.
+
+Note in the second block, the first filter does not specify a model. It is implictly applied to the `Foo` model because that is the only model in the original query passed to `apply_filters`.
+
+It is also possible to apply filters to queries defined by fields or functions:
 
 .. code-block:: python
 
@@ -159,6 +186,11 @@ Sort
     result = sorted_query.all()
 
 
+`apply_sort` will attempt to automatically join models to `query` if they're not already present and a model-specific sort is supplied. The behaviour is the same as in `apply_filters`.
+
+This allows flexibility for clients to sort by fields on related objects without specifying all possible joins on the server beforehand.
+
+
 Pagination
 ----------
 
@@ -193,7 +225,7 @@ following format:
         # ...
     ]
 
-The `model` key is optional if the query being filtered only applies to one model.
+The `model` key is optional if the original query being filtered only applies to one model.
 
 If there is only one filter, the containing list may be omitted:
 
@@ -263,7 +295,7 @@ applied sequentially:
 Where ``field`` is the name of the field that will be sorted using the
 provided ``direction``.
 
-The `model` key is optional if the query being sorted only applies to one model.
+The `model` key is optional if the original query being sorted only applies to one model.
 
 
 Running tests
