@@ -80,7 +80,7 @@ It is also possible to filter queries that contain multiple models, including jo
     query = session.query(Foo).join(Bar)  # join pre-applied to query
 
     filter_spec = [
-        {field': 'name', 'op': '==', 'value': 'name_1'},
+        {'model': 'Foo', field': 'name', 'op': '==', 'value': 'name_1'},
         {'model': 'Bar', field': 'count', 'op': '>=', 'value': 5},
     ]
     filtered_query = apply_filters(query, filter_spec)
@@ -97,9 +97,9 @@ It is also possible to filter queries that contain multiple models, including jo
 
 The automatic join is only possible if sqlalchemy can implictly determine the condition for the join, for example because of a foreign key relationship.
 
-Automatic joins allow flexibility for clients to filter by related objects without specifying all possible joins on the server beforehand.
+Automatic joins allow flexibility for clients to filter and sort by related objects without specifying all possible joins on the server beforehand.
 
-Note in the second block, the first filter does not specify a model. It is implictly applied to the `Foo` model because that is the only model in the original query passed to `apply_filters`.
+Note that first filter of the second block does not specify a model. It is implictly applied to the `Foo` model because that is the only model in the original query passed to `apply_filters`.
 
 It is also possible to apply filters to queries defined by fields or functions:
 
