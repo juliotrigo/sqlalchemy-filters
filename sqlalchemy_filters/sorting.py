@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from .exceptions import BadSortFormat
-from .models import Field, get_model_from_spec
-
+from .models import Field, auto_join, get_model_from_spec, get_default_model
 
 SORT_ASCENDING = 'asc'
 SORT_DESCENDING = 'desc'
@@ -10,7 +9,9 @@ SORT_DESCENDING = 'desc'
 
 class Sort(object):
 
-    def __init__(self, sort_spec, query):
+    def __init__(self, sort_spec):
+        self.sort_spec = sort_spec
+
         try:
             field_name = sort_spec['field']
             direction = sort_spec['direction']
@@ -26,18 +27,35 @@ class Sort(object):
         if direction not in [SORT_ASCENDING, SORT_DESCENDING]:
             raise BadSortFormat('Direction `{}` not valid.'.format(direction))
 
-        model = get_model_from_spec(sort_spec, query)
-
-        self.field = Field(model, field_name)
+        self.field_name = field_name
         self.direction = direction
 
-    def format_for_sqlalchemy(self):
-        field = self.field.get_sqlalchemy_field()
+    def get_named_models(self):
+        if "model" in self.sort_spec:
+            return {self.sort_spec['model']}
+        return set()
 
-        if self.direction == SORT_ASCENDING:
-            return field.asc()
-        elif self.direction == SORT_DESCENDING:
-            return field.desc()
+    def format_for_sqlalchemy(self, query, default_model):
+        sort_spec = self.sort_spec
+        direction = self.direction
+        field_name = self.field_name
+
+        model = get_model_from_spec(sort_spec, query, default_model)
+
+        field = Field(model, field_name)
+        sqlalchemy_field = field.get_sqlalchemy_field()
+
+        if direction == SORT_ASCENDING:
+            return sqlalchemy_field.asc()
+        elif direction == SORT_DESCENDING:
+            return sqlalchemy_field.desc()
+
+
+def get_named_models(sorts):
+    models = set()
+    for sort in sorts:
+        models.update(sort.get_named_models())
+    return models
 
 
 def apply_sort(query, sort_spec):
@@ -64,10 +82,18 @@ def apply_sort(query, sort_spec):
     if isinstance(sort_spec, dict):
         sort_spec = [sort_spec]
 
-    sqlalchemy_order_by = [
-        Sort(item, query).format_for_sqlalchemy() for item in sort_spec
+    sorts = [Sort(item) for item in sort_spec]
+
+    default_model = get_default_model(query)
+
+    sort_models = get_named_models(sorts)
+    query = auto_join(query, *sort_models)
+
+    sqlalchemy_sorts = [
+        sort.format_for_sqlalchemy(query, default_model) for sort in sorts
     ]
-    if sqlalchemy_order_by:
-        query = query.order_by(*sqlalchemy_order_by)
+
+    if sqlalchemy_sorts:
+        query = query.order_by(*sqlalchemy_sorts)
 
     return query

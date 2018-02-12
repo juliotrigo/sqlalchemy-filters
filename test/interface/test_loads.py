@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import pytest
+from sqlalchemy.orm import joinedload
 
 from sqlalchemy_filters import apply_loads
-from sqlalchemy_filters.exceptions import BadLoadFormat, FieldNotFound
+from sqlalchemy_filters.exceptions import BadLoadFormat, BadSpec, FieldNotFound
 from test.models import Foo, Bar
 from test import error_value
 
@@ -191,3 +192,102 @@ class TestLoadsApplied(object):
             "FROM foo"
         )
         assert str(restricted_query) == expected
+
+    def test_eager_load(self, session, db_uri):
+
+        query = session.query(Foo).options(joinedload(Foo.bar))
+        load_spec = [
+            {'model': 'Foo', 'fields': ['name']},
+            {'model': 'Bar', 'fields': ['count']}
+        ]
+        restricted_query = apply_loads(query, load_spec)
+
+        join_type = "INNER JOIN" if "mysql" in db_uri else "JOIN"
+
+        # autojoin has no effect
+        expected = (
+            "SELECT "
+            "foo.id AS foo_id, foo.name AS foo_name, "
+            "foo.bar_id AS foo_bar_id, "
+            "bar_1.id AS bar_1_id, bar_1.name AS bar_1_name, "
+            "bar_1.count AS bar_1_count \n"
+            "FROM foo {join} bar ON bar.id = foo.bar_id "
+            "LEFT OUTER JOIN bar AS bar_1 ON bar_1.id = foo.bar_id".format(
+                join=join_type
+            )
+        )
+
+        assert str(restricted_query) == expected
+
+
+class TestAutoJoin:
+
+    @pytest.mark.usefixtures('multiple_foos_inserted')
+    def test_auto_join(self, session, db_uri):
+
+        query = session.query(Foo)
+        loads = [
+            {'fields': ['count']},
+            {'model': 'Bar', 'fields': ['count']},
+        ]
+
+        restricted_query = apply_loads(query, loads)
+
+        join_type = "INNER JOIN" if "mysql" in db_uri else "JOIN"
+
+        # Bar is lazily joined, so the second loads directive has no effect
+        expected = (
+            "SELECT foo.id AS foo_id, foo.count AS foo_count \n"
+            "FROM foo {join} bar ON bar.id = foo.bar_id".format(join=join_type)
+        )
+        assert str(restricted_query) == expected
+
+    @pytest.mark.usefixtures('multiple_foos_inserted')
+    def test_noop_if_query_contains_named_models(self, session, db_uri):
+
+        query = session.query(Foo, Bar).join(Bar)
+        loads = [
+            {'model': 'Foo', 'fields': ['count']},
+            {'model': 'Bar', 'fields': ['count']},
+        ]
+
+        restricted_query = apply_loads(query, loads)
+
+        join_type = "INNER JOIN" if "mysql" in db_uri else "JOIN"
+
+        expected = (
+            "SELECT foo.id AS foo_id, foo.count AS foo_count, "
+            "bar.id AS bar_id, bar.count AS bar_count \n"
+            "FROM foo {join} bar ON bar.id = foo.bar_id".format(join=join_type)
+        )
+        assert str(restricted_query) == expected
+
+    @pytest.mark.usefixtures('multiple_foos_inserted')
+    def test_auto_join_to_invalid_model(self, session):
+
+        query = session.query(Foo, Bar)
+        loads = [
+            {'model': 'Foo', 'fields': ['count']},
+            {'model': 'Bar', 'fields': ['count']},
+            {'model': 'Qux', 'fields': ['count']},
+        ]
+
+        with pytest.raises(BadSpec) as err:
+            apply_loads(query, loads)
+
+        assert 'The query does not contain model `Qux`.' == err.value.args[0]
+
+    @pytest.mark.usefixtures('multiple_foos_inserted')
+    def test_ambiguous_query(self, session):
+
+        query = session.query(Foo, Bar)
+        loads = [
+            {'fields': ['count']},  # ambiguous
+            {'model': 'Bar', 'fields': ['count']},
+            {'model': 'Qux', 'fields': ['count']},
+        ]
+
+        with pytest.raises(BadSpec) as err:
+            apply_loads(query, loads)
+
+        assert 'Ambiguous spec. Please specify a model.' == err.value.args[0]

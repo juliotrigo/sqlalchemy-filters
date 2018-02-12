@@ -3,8 +3,11 @@ from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
 from sqlalchemy_filters.exceptions import BadSpec, BadQuery
-from sqlalchemy_filters.models import get_query_models, get_model_from_spec
-from test.models import Bar, Foo, Qux
+from sqlalchemy_filters.models import (
+    auto_join, get_default_model, get_query_models, get_model_class_by_name,
+    get_model_from_spec
+)
+from test.models import Base, Bar, Foo, Qux
 
 
 class TestGetQueryModels(object):
@@ -116,3 +119,124 @@ class TestGetModelFromSpec:
             get_model_from_spec(spec, query)
 
         assert 'Ambiguous spec. Please specify a model.' == err.value.args[0]
+
+
+class TestGetModelClassByName:
+
+    @pytest.fixture
+    def registry(self):
+        return Base._decl_class_registry
+
+    def test_exists(self, registry):
+        assert get_model_class_by_name(registry, 'Foo') == Foo
+
+    def test_model_does_not_exist(self, registry):
+        assert get_model_class_by_name(registry, 'Missing') is None
+
+
+class TestGetDefaultModel:
+
+    def test_single_model_query(self, session):
+        query = session.query(Foo)
+        assert get_default_model(query) == Foo
+
+    def test_multi_model_query(self, session):
+        query = session.query(Foo).join(Bar)
+        assert get_default_model(query) is None
+
+    def test_empty_query(self, session):
+        query = session.query()
+        assert get_default_model(query) is None
+
+
+class TestAutoJoin:
+
+    def test_model_not_present(self, session, db_uri):
+        query = session.query(Foo)
+        query = auto_join(query, 'Bar')
+
+        join_type = "INNER JOIN" if "mysql" in db_uri else "JOIN"
+
+        expected = (
+            "SELECT "
+            "foo.id AS foo_id, foo.name AS foo_name, "
+            "foo.count AS foo_count, foo.bar_id AS foo_bar_id \n"
+            "FROM foo {join} bar ON bar.id = foo.bar_id".format(join=join_type)
+        )
+        assert str(query) == expected
+
+    def test_model_already_present(self, session):
+        query = session.query(Foo, Bar)
+
+        # no join applied
+        expected = (
+            "SELECT "
+            "foo.id AS foo_id, foo.name AS foo_name, "
+            "foo.count AS foo_count, foo.bar_id AS foo_bar_id, "
+            "bar.id AS bar_id, bar.name AS bar_name, bar.count AS bar_count \n"
+            "FROM foo, bar"
+        )
+        assert str(query) == expected
+
+        query = auto_join(query, 'Bar')
+        assert str(query) == expected   # no change
+
+    def test_model_already_joined(self, session, db_uri):
+        query = session.query(Foo).join(Bar)
+
+        join_type = "INNER JOIN" if "mysql" in db_uri else "JOIN"
+
+        expected = (
+            "SELECT "
+            "foo.id AS foo_id, foo.name AS foo_name, "
+            "foo.count AS foo_count, foo.bar_id AS foo_bar_id \n"
+            "FROM foo {join} bar ON bar.id = foo.bar_id".format(join=join_type)
+        )
+        assert str(query) == expected
+
+        query = auto_join(query, 'Bar')
+        assert str(query) == expected   # no change
+
+    def test_model_eager_joined(self, session, db_uri):
+        query = session.query(Foo).options(joinedload(Foo.bar))
+
+        join_type = "INNER JOIN" if "mysql" in db_uri else "JOIN"
+
+        expected_eager = (
+            "SELECT "
+            "foo.id AS foo_id, foo.name AS foo_name, "
+            "foo.count AS foo_count, foo.bar_id AS foo_bar_id, "
+            "bar_1.id AS bar_1_id, bar_1.name AS bar_1_name, "
+            "bar_1.count AS bar_1_count \n"
+            "FROM foo LEFT OUTER JOIN bar AS bar_1 ON bar_1.id = foo.bar_id"
+        )
+        assert str(query) == expected_eager
+
+        expected_joined = (
+            "SELECT "
+            "foo.id AS foo_id, foo.name AS foo_name, "
+            "foo.count AS foo_count, foo.bar_id AS foo_bar_id, "
+            "bar_1.id AS bar_1_id, bar_1.name AS bar_1_name, "
+            "bar_1.count AS bar_1_count \n"
+            "FROM foo {join} bar ON bar.id = foo.bar_id "
+            "LEFT OUTER JOIN bar AS bar_1 ON bar_1.id = foo.bar_id".format(
+                join=join_type
+            )
+        )
+
+        query = auto_join(query, 'Bar')
+        assert str(query) == expected_joined
+
+    def test_model_does_not_exist(self, session, db_uri):
+        query = session.query(Foo)
+
+        expected = (
+            "SELECT "
+            "foo.id AS foo_id, foo.name AS foo_name, "
+            "foo.count AS foo_count, foo.bar_id AS foo_bar_id \n"
+            "FROM foo"
+        )
+        assert str(query) == expected
+
+        query = auto_join(query, 'Missing')
+        assert str(query) == expected   # no change

@@ -72,9 +72,36 @@ It is also possible to filter queries that contain multiple models, including jo
 
     result = filtered_query.all()
 
-You must specify the `model` key in each filter if the query is against more than one model.
 
-Note that we can also apply filters to queries defined by fields or functions:
+`apply_filters` will attempt to automatically join models to `query` if they're not already present and a model-specific filter is supplied. For example, the value of `filtered_query` in the following two code blocks is identical:
+
+.. code-block:: python
+
+    query = session.query(Foo).join(Bar)  # join pre-applied to query
+
+    filter_spec = [
+        {'model': 'Foo', field': 'name', 'op': '==', 'value': 'name_1'},
+        {'model': 'Bar', field': 'count', 'op': '>=', 'value': 5},
+    ]
+    filtered_query = apply_filters(query, filter_spec)
+
+.. code-block:: python
+
+    query = session.query(Foo)  # join to Bar will be automatically applied
+
+    filter_spec = [
+        {field': 'name', 'op': '==', 'value': 'name_1'},
+        {'model': 'Bar', field': 'count', 'op': '>=', 'value': 5},
+    ]
+    filtered_query = apply_filters(query, filter_spec)
+
+The automatic join is only possible if sqlalchemy can implictly determine the condition for the join, for example because of a foreign key relationship.
+
+Automatic joins allow flexibility for clients to filter and sort by related objects without specifying all possible joins on the server beforehand.
+
+Note that first filter of the second block does not specify a model. It is implictly applied to the `Foo` model because that is the only model in the original query passed to `apply_filters`.
+
+It is also possible to apply filters to queries defined by fields or functions:
 
 .. code-block:: python
 
@@ -118,17 +145,21 @@ The default SQLAlchemy join is lazy, meaning that columns from the joined table 
 
 `apply_loads` cannot be applied to columns that are loaded as `joined eager loads <http://docs.sqlalchemy.org/en/latest/orm/loading_relationships.html#joined-eager-loading>`_. This is because a joined eager load does not add the joined model to the original query, as explained `here <http://docs.sqlalchemy.org/en/latest/orm/loading_relationships.html#the-zen-of-joined-eager-loading>`_
 
-The following would produce an error:
+The following would not prevent all columns from Bar being eagerly loaded:
 
 .. code-block:: python
 
-    query = session.query(Foo).options(joinedload(Bar))
+    query = session.query(Foo).options(joinedload(Foo.bar))
     load_spec = [
         {'model': 'Foo', 'fields': ['name']}
-        {'model': 'Bar', 'fields': ['count']}  # invalid
+        {'model': 'Bar', 'fields': ['count']}
     ]
-    query = apply_loads(query, load_spec)  # error! query does not contain model Bar
+    query = apply_loads(query, load_spec)
 
+.. sidebar:: Automatic Join
+
+    In fact, what happens here is that `Bar` is automatically joined to `query`, because it is determined that `Bar` is not part of the original query. The `load_spec` therefore has no effect because the automatic join
+    results in lazy evaluation.
 
 If you wish to perform a joined load with restricted columns, you must specify the columns as part of the joined load, rather than with `apply_loads`:
 
@@ -157,6 +188,11 @@ Sort
     sorted_query = apply_sort(query, sort_spec)
 
     result = sorted_query.all()
+
+
+`apply_sort` will attempt to automatically join models to `query` if they're not already present and a model-specific sort is supplied. The behaviour is the same as in `apply_filters`.
+
+This allows flexibility for clients to sort by fields on related objects without specifying all possible joins on the server beforehand.
 
 
 Pagination
@@ -193,7 +229,7 @@ following format:
         # ...
     ]
 
-The `model` key is optional if the query being filtered only applies to one model.
+The `model` key is optional if the original query being filtered only applies to one model.
 
 If there is only one filter, the containing list may be omitted:
 
@@ -263,7 +299,7 @@ applied sequentially:
 Where ``field`` is the name of the field that will be sorted using the
 provided ``direction``.
 
-The `model` key is optional if the query being sorted only applies to one model.
+The `model` key is optional if the original query being sorted only applies to one model.
 
 
 Running tests

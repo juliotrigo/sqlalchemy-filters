@@ -7,7 +7,7 @@ from six import string_types
 from sqlalchemy import and_, or_, not_
 
 from .exceptions import BadFilterFormat
-from .models import Field, get_model_from_spec
+from .models import Field, auto_join, get_model_from_spec, get_default_model
 
 
 BooleanFunction = namedtuple(
@@ -59,9 +59,11 @@ class Operator(object):
 
 class Filter(object):
 
-    def __init__(self, filter_spec, query):
+    def __init__(self, filter_spec):
+        self.filter_spec = filter_spec
+
         try:
-            field_name = filter_spec['field']
+            filter_spec['field']
         except KeyError:
             raise BadFilterFormat('`field` is a mandatory filter attribute.')
         except TypeError:
@@ -69,26 +71,55 @@ class Filter(object):
                 'Filter spec `{}` should be a dictionary.'.format(filter_spec)
             )
 
-        model = get_model_from_spec(filter_spec, query)
-
-        self.field = Field(model, field_name)
         self.operator = Operator(filter_spec.get('op'))
         self.value = filter_spec.get('value')
-        self.value_present = True if 'value' in filter_spec else False
-
-        if not self.value_present and self.operator.arity == 2:
+        value_present = True if 'value' in filter_spec else False
+        if not value_present and self.operator.arity == 2:
             raise BadFilterFormat('`value` must be provided.')
 
-    def format_for_sqlalchemy(self):
-        function = self.operator.function
-        arity = self.operator.arity
-        field = self.field.get_sqlalchemy_field()
+    def get_named_models(self):
+        if "model" in self.filter_spec:
+            return {self.filter_spec['model']}
+        return set()
+
+    def format_for_sqlalchemy(self, query, default_model):
+        filter_spec = self.filter_spec
+        operator = self.operator
+        value = self.value
+
+        model = get_model_from_spec(filter_spec, query, default_model)
+
+        function = operator.function
+        arity = operator.arity
+
+        field_name = self.filter_spec['field']
+        field = Field(model, field_name)
+        sqlalchemy_field = field.get_sqlalchemy_field()
 
         if arity == 1:
-            return function(field)
+            return function(sqlalchemy_field)
 
         if arity == 2:
-            return function(field, self.value)
+            return function(sqlalchemy_field, value)
+
+
+class BooleanFilter:
+
+    def __init__(self, function, *filters):
+        self.function = function
+        self.filters = filters
+
+    def get_named_models(self):
+        models = set()
+        for filter in self.filters:
+            models.update(filter.get_named_models())
+        return models
+
+    def format_for_sqlalchemy(self, query, default_model):
+        return self.function(*[
+            filter.format_for_sqlalchemy(query, default_model)
+            for filter in self.filters
+        ])
 
 
 def _is_iterable_filter(filter_spec):
@@ -100,12 +131,12 @@ def _is_iterable_filter(filter_spec):
     )
 
 
-def _build_sqlalchemy_filters(filter_spec, query):
+def build_filters(filter_spec):
     """ Recursively process `filter_spec` """
 
     if _is_iterable_filter(filter_spec):
         return list(chain.from_iterable(
-            _build_sqlalchemy_filters(item, query) for item in filter_spec
+            build_filters(item) for item in filter_spec
         ))
 
     if isinstance(filter_spec, dict):
@@ -134,12 +165,19 @@ def _build_sqlalchemy_filters(filter_spec, query):
                         )
                     )
                 return [
-                    boolean_function.sqlalchemy_fn(
-                        *_build_sqlalchemy_filters(fn_args, query)
+                    BooleanFilter(
+                        boolean_function.sqlalchemy_fn, *build_filters(fn_args)
                     )
                 ]
 
-    return [Filter(filter_spec, query).format_for_sqlalchemy()]
+    return [Filter(filter_spec)]
+
+
+def get_named_models(filters):
+    models = set()
+    for filter in filters:
+        models.update(filter.get_named_models())
+    return models
 
 
 def apply_filters(query, filter_spec):
@@ -177,7 +215,17 @@ def apply_filters(query, filter_spec):
         The :class:`sqlalchemy.orm.Query` instance after all the filters
         have been applied.
     """
-    sqlalchemy_filters = _build_sqlalchemy_filters(filter_spec, query)
+    filters = build_filters(filter_spec)
+
+    default_model = get_default_model(query)
+
+    filter_models = get_named_models(filters)
+    query = auto_join(query, *filter_models)
+
+    sqlalchemy_filters = [
+        filter.format_for_sqlalchemy(query, default_model)
+        for filter in filters
+    ]
 
     if sqlalchemy_filters:
         query = query.filter(*sqlalchemy_filters)
