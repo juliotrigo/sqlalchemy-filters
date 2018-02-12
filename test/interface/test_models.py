@@ -224,8 +224,6 @@ class TestAutoJoin:
             )
         )
 
-        # effect of filter?
-
         query = auto_join(query, 'Bar')
         assert str(query) == expected_joined
 
