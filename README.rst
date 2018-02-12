@@ -145,17 +145,21 @@ The default SQLAlchemy join is lazy, meaning that columns from the joined table 
 
 `apply_loads` cannot be applied to columns that are loaded as `joined eager loads <http://docs.sqlalchemy.org/en/latest/orm/loading_relationships.html#joined-eager-loading>`_. This is because a joined eager load does not add the joined model to the original query, as explained `here <http://docs.sqlalchemy.org/en/latest/orm/loading_relationships.html#the-zen-of-joined-eager-loading>`_
 
-The following would produce an error:
+The following would not prevent all columns from Bar being eagerly loaded:
 
 .. code-block:: python
 
-    query = session.query(Foo).options(joinedload(Bar))
+    query = session.query(Foo).options(joinedload(Foo.bar))
     load_spec = [
         {'model': 'Foo', 'fields': ['name']}
-        {'model': 'Bar', 'fields': ['count']}  # invalid
+        {'model': 'Bar', 'fields': ['count']}
     ]
-    query = apply_loads(query, load_spec)  # error! query does not contain model Bar
+    query = apply_loads(query, load_spec)
 
+.. sidebar:: Automatic Join
+
+    In fact, what happens here is that `Bar` is automatically joined to `query`, because it is determined that `Bar` is not part of the original query. The `load_spec` therefore has no effect because the automatic join
+    results in lazy evaluation.
 
 If you wish to perform a joined load with restricted columns, you must specify the columns as part of the joined load, rather than with `apply_loads`:
 

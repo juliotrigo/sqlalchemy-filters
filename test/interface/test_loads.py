@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
+from sqlalchemy.orm import joinedload
 
 from sqlalchemy_filters import apply_loads
 from sqlalchemy_filters.exceptions import BadLoadFormat, BadSpec, FieldNotFound
@@ -190,6 +191,32 @@ class TestLoadsApplied(object):
             "foo.count AS foo_count \n"
             "FROM foo"
         )
+        assert str(restricted_query) == expected
+
+    def test_eager_load(self, session, db_uri):
+
+        query = session.query(Foo).options(joinedload(Foo.bar))
+        load_spec = [
+            {'model': 'Foo', 'fields': ['name']},
+            {'model': 'Bar', 'fields': ['count']}
+        ]
+        restricted_query = apply_loads(query, load_spec)
+
+        join_type = "INNER JOIN" if "mysql" in db_uri else "JOIN"
+
+        # autojoin has no effect
+        expected = (
+            "SELECT "
+            "foo.id AS foo_id, foo.name AS foo_name, "
+            "foo.bar_id AS foo_bar_id, "
+            "bar_1.id AS bar_1_id, bar_1.name AS bar_1_name, "
+            "bar_1.count AS bar_1_count \n"
+            "FROM foo {join} bar ON bar.id = foo.bar_id "
+            "LEFT OUTER JOIN bar AS bar_1 ON bar_1.id = foo.bar_id".format(
+                join=join_type
+            )
+        )
+
         assert str(restricted_query) == expected
 
 

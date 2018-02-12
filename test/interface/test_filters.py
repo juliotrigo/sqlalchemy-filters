@@ -4,6 +4,8 @@ import datetime
 
 import pytest
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
+
 from sqlalchemy_filters import apply_filters
 from sqlalchemy_filters.exceptions import (
     BadFilterFormat, BadSpec, FieldNotFound
@@ -240,6 +242,24 @@ class TestAutoJoin:
             apply_filters(query, filters)
 
         assert 'Ambiguous spec. Please specify a model.' == err.value.args[0]
+
+    @pytest.mark.usefixtures('multiple_foos_inserted')
+    def test_eager_load(self, session):
+
+        # behaves as if the joinedload wasn't present
+        query = session.query(Foo).options(joinedload(Foo.bar))
+        filters = [
+            {'field': 'name', 'op': '==', 'value': 'name_1'},
+            {'model': 'Bar', 'field': 'count', 'op': 'is_null'},
+        ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 1
+        assert result[0].id == 3
+        assert result[0].bar_id == 3
+        assert result[0].bar.count is None
 
 
 class TestApplyIsNullFilter:

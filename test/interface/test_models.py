@@ -197,6 +197,38 @@ class TestAutoJoin:
         query = auto_join(query, 'Bar')
         assert str(query) == expected   # no change
 
+    def test_model_eager_joined(self, session, db_uri):
+        query = session.query(Foo).options(joinedload(Foo.bar))
+
+        join_type = "INNER JOIN" if "mysql" in db_uri else "JOIN"
+
+        expected_eager = (
+            "SELECT "
+            "foo.id AS foo_id, foo.name AS foo_name, "
+            "foo.count AS foo_count, foo.bar_id AS foo_bar_id, "
+            "bar_1.id AS bar_1_id, bar_1.name AS bar_1_name, "
+            "bar_1.count AS bar_1_count \n"
+            "FROM foo LEFT OUTER JOIN bar AS bar_1 ON bar_1.id = foo.bar_id"
+        )
+        assert str(query) == expected_eager
+
+        expected_joined = (
+            "SELECT "
+            "foo.id AS foo_id, foo.name AS foo_name, "
+            "foo.count AS foo_count, foo.bar_id AS foo_bar_id, "
+            "bar_1.id AS bar_1_id, bar_1.name AS bar_1_name, "
+            "bar_1.count AS bar_1_count \n"
+            "FROM foo {join} bar ON bar.id = foo.bar_id "
+            "LEFT OUTER JOIN bar AS bar_1 ON bar_1.id = foo.bar_id".format(
+                join=join_type
+            )
+        )
+
+        # effect of filter?
+
+        query = auto_join(query, 'Bar')
+        assert str(query) == expected_joined
+
     def test_model_does_not_exist(self, session, db_uri):
         query = session.query(Foo)
 

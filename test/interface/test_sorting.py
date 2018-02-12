@@ -4,6 +4,7 @@ import datetime
 
 import pytest
 
+from sqlalchemy.orm import joinedload
 from sqlalchemy_filters.exceptions import BadSortFormat, BadSpec, FieldNotFound
 from sqlalchemy_filters.sorting import apply_sort
 from test import error_value
@@ -307,3 +308,27 @@ class TestAutoJoin:
             apply_sort(query, order_by)
 
         assert 'Ambiguous spec. Please specify a model.' == err.value.args[0]
+
+    @pytest.mark.usefixtures('multiple_foos_inserted')
+    def test_eager_load(self, session):
+
+        # behaves as if the joinedload wasn't present
+        query = session.query(Foo).options(joinedload(Foo.bar))
+        order_by = [
+            {'field': 'count', 'direction': 'desc'},
+            {'model': 'Bar', 'field': 'name', 'direction': 'asc'},
+            {'field': 'id', 'direction': 'asc'},
+        ]
+
+        sorted_query = apply_sort(query, order_by)
+        result = sorted_query.all()
+
+        assert len(result) == 8
+        assert result[0].id == 5
+        assert result[1].id == 7
+        assert result[2].id == 6
+        assert result[3].id == 8
+        assert result[4].id == 1
+        assert result[5].id == 3
+        assert result[6].id == 2
+        assert result[7].id == 4
