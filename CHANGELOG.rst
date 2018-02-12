@@ -6,6 +6,14 @@ versions, where semantic versioning is used: *major.minor.patch*.
 
 Backwards-compatible changes increment the minor version number only.
 
+Version 0.7.0
+-------------
+
+Released 2018-02-12
+
+* Filters and sorts on related models now result in an "automatic join"
+  if the query being filtered does not already contain the related model
+
 Version 0.6.0
 -------------
 
