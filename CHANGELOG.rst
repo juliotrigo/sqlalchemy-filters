@@ -4,7 +4,14 @@ Release Notes
 Here you can see the full list of changes between sqlalchemy-filters
 versions, where semantic versioning is used: *major.minor.patch*.
 
-Backwards-compatible changes increment the minor version number only.
+
+Version 0.8.0
+-------------
+
+Released 2018-06-25
+
+* Adds support for `ilike` (case-insensitive) string comparison.
+
 
 Version 0.7.0
 -------------
