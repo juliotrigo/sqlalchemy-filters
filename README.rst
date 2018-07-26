@@ -257,7 +257,7 @@ This is the list of operators that can be used:
 - ``not_in``
 
 Boolean Functions
-*****************
+^^^^^^^^^^^^^^^^^
 ``and``, ``or``, and ``not`` functions can be used and nested within the filter specification:
 
 .. code-block:: python
