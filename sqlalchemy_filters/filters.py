@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 from collections import Iterable, namedtuple
-from inspect import signature
+try:
+    from inspect import signature
+except ImportError:
+    # For python2 capability. NOTE: you must fulfill this requirement
+    # yourself, it is not in requirements.txt
+    from funcsigs import signature
 from itertools import chain
 
 from six import string_types
