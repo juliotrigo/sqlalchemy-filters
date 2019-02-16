@@ -2,7 +2,7 @@
 from collections import Iterable, namedtuple
 try:
     from inspect import signature
-except ImportError:  # noqa: F401
+except ImportError: # pragma: no cover
     # For python2 capability. NOTE: This is in not handled in install_requires
     # but rather in extras_require. You can install with
     # 'pip install sqlalchemy-filters[python2]'
