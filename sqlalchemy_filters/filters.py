@@ -110,7 +110,7 @@ class Filter(object):
             return function(sqlalchemy_field, value)
 
 
-class BooleanFilter:
+class BooleanFilter(object):
 
     def __init__(self, function, *filters):
         self.function = function
