@@ -10,6 +10,9 @@ install:
 matrix:
   include:
     - stage: test
+      python: 2.7
+      env: TOX_ENV=py27
+    - stage: test
       python: 3.4
       env: TOX_ENV=py34
     - stage: test
