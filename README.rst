@@ -337,7 +337,7 @@ Example of usage:
 Python 2
 --------
 
-There is no active support for python 2, however it is compatiable as of January 2019, if you install funcsigs.
+There is no active support for python 2, however it is compatiable as of February 2019, if you install funcsigs.
 
 
 License

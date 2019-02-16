@@ -3,8 +3,9 @@ from collections import Iterable, namedtuple
 try:
     from inspect import signature
 except ImportError:
-    # For python2 capability. NOTE: you must fulfill this requirement
-    # yourself, it is not in requirements.txt
+    # For python2 capability. NOTE: This is in not handled in install_requires
+    # but rather in extras_require. You can install with
+    # 'pip install sqlalchemy-filters[python2]'
     from funcsigs import signature
 from itertools import chain
 
