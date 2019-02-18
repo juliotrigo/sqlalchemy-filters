@@ -32,6 +32,9 @@ setup(
         ],
         'mysql': [
             'mysql-connector-python-rf==2.1.3',
+        ],
+        'python2': [
+            "funcsigs>=1.0.2"
         ]
     },
     zip_safe=True,

@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 from collections import Iterable, namedtuple
-from inspect import signature
+try:
+    from inspect import signature
+except ImportError:  # pragma: no cover
+    # For python2 capability. NOTE: This is in not handled in install_requires
+    # but rather in extras_require. You can install with
+    # 'pip install sqlalchemy-filters[python2]'
+    from funcsigs import signature
 from itertools import chain
 
 from six import string_types
@@ -104,7 +110,7 @@ class Filter(object):
             return function(sqlalchemy_field, value)
 
 
-class BooleanFilter:
+class BooleanFilter(object):
 
     def __init__(self, function, *filters):
         self.function = function
