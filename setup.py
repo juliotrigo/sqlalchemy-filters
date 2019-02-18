@@ -40,16 +40,17 @@ setup(
     zip_safe=True,
     license='Apache License, Version 2.0',
     classifiers=[
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: Apache Software License",
+        "Operating System :: OS Independent",
         "Programming Language :: Python",
-        "Operating System :: POSIX",
-        "Operating System :: MacOS :: MacOS X",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
-        "Topic :: Internet",
+        "Programming Language :: Python :: 3.7",
+        "Topic :: Database",
+        "Topic :: Database :: Front-Ends",
         "Topic :: Software Development :: Libraries :: Python Modules",
-        "Intended Audience :: Developers",
     ]
 )
