@@ -6,6 +6,17 @@ SQLAlchemy-filters
     Filter, sort and paginate SQLAlchemy query objects.
     Ideal for exposing these actions over a REST API.
 
+
+.. image:: https://img.shields.io/pypi/v/sqlalchemy-filters.svg
+    :target: https://pypi.org/project/sqlalchemy-filters/
+
+.. image:: https://img.shields.io/pypi/pyversions/sqlalchemy-filters.svg
+    :target: https://pypi.org/project/sqlalchemy-filters/
+
+.. image:: https://travis-ci.org/juliotrigo/sqlalchemy-filters.svg?branch=master
+    :target: https://travis-ci.org/juliotrigo/sqlalchemy-filters
+
+
 Filtering
 ---------
 
