@@ -1,0 +1,6 @@
+include CHANGELOG.rst
+include LICENSE
+include README.rst
+
+global-exclude __pycache__
+global-exclude *.pyc
