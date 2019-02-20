@@ -29,6 +29,8 @@ setup(
             'flake8==3.2.1',
             'coverage==4.3.1',
             'sqlalchemy-utils==0.32.12',
+            'restructuredtext-lint==1.2.2',
+            'Pygments==2.3.1',
         ],
         'mysql': [
             'mysql-connector-python-rf==2.1.3',
