@@ -50,7 +50,7 @@ Released 2017-05-22
 
 * Adds support for boolean functions within filters
 * Adds the possibility of supplying a single dictionary as filters when
-only one filter is provided
+  only one filter is provided
 * Makes the `op` filter attribute optional: `==` is the default operator
 
 Version 0.2.0
