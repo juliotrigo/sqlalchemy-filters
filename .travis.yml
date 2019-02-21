@@ -7,6 +7,10 @@ dist: xenial
 
 services:
   - mysql
+  - postgresql
+
+addons:
+  postgresql: "10"
 
 install:
   - pip install tox
