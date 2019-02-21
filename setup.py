@@ -25,13 +25,15 @@ setup(
     ],
     extras_require={
         'dev': [
-            'pytest==3.0.5',
-            'flake8==3.2.1',
-            'coverage==4.3.1',
-            'sqlalchemy-utils==0.32.12',
+            'pytest==4.3.0',
+            'flake8==3.7.6',
+            'coverage==4.5.2',
+            'sqlalchemy-utils==0.33.11',
+            'restructuredtext-lint==1.2.2',
+            'Pygments==2.3.1',
         ],
         'mysql': [
-            'mysql-connector-python-rf==2.1.3',
+            'mysql-connector-python-rf==2.2.2',
         ],
         'python2': [
             "funcsigs>=1.0.2"

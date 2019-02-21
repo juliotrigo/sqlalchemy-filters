@@ -1,12 +1,16 @@
 .PHONY: test
 
 
+rst-lint:
+	rst-lint README.rst
+	rst-lint CHANGELOG.rst
+
 flake8:
 	flake8 sqlalchemy_filters test
 
 test: flake8
-	@py.test test $(ARGS)
+	pytest test $(ARGS)
 
-coverage: flake8
+coverage: flake8 rst-lint
 	coverage run --source sqlalchemy_filters -m pytest test $(ARGS)
 	coverage report -m --fail-under 100
