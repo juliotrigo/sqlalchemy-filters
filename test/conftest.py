@@ -12,6 +12,8 @@ SQLITE_TEST_DB_URI = 'SQLITE_TEST_DB_URI'
 MYSQL_TEST_DB_URI = 'MYSQL_TEST_DB_URI'
 POSTGRESQL_TEST_DB_URI = 'POSTGRESQL_TEST_DB_URI'
 
+POSTGRESQL_DB = 'postgresql'
+
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -96,10 +98,12 @@ def db_uri(request, config):
 
 @pytest.fixture(scope='session')
 def db_engine_options(db_uri):
-    return dict(
-        client_encoding='utf8',
-        connect_args={'client_encoding': 'utf8'}
-    )
+    if POSTGRESQL_DB in db_uri:
+        return dict(
+            client_encoding='utf8',
+            connect_args={'client_encoding': 'utf8'}
+        )
+    return {}
 
 
 @pytest.fixture(scope='session')
