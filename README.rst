@@ -317,19 +317,37 @@ The `model` key is optional if the original query being sorted only applies to o
 Running tests
 -------------
 
-There are some Makefile targets that can be used to run the tests. A
-test database will be created, used during the tests and destroyed
-afterwards.
-
-The default configuration uses both SQLite and MySQL (if the driver is
-installed) to run the tests, with the following URIs:
+The default configuration uses **SQLite**, **MySQL** (if the driver is
+installed, which is the case when `tox` is used) and **PostgreSQL** (if
+the driver is installed, which is the case when `tox` is used) to run
+the tests, with the following URIs:
 
 .. code-block:: shell
 
     sqlite+pysqlite:///test_sqlalchemy_filters.db
     mysql+mysqlconnector://root:@localhost:3306/test_sqlalchemy_filters
+    postgresql+psycopg2://postgres:@localhost:5432/test_sqlalchemy_filters?client_encoding=utf8'
 
-Example of usage:
+A test database will be created, used during the tests and destroyed
+afterwards for each RDMS configured.
+
+There are Makefile targets to run docker containers locally for both
+**MySQL** and **PostgreSQL**, using the default ports and configuration:
+
+.. code-block:: shell
+
+    $ make docker-mysql-run
+    $ make docker-postgres-run
+
+To run the tests locally:
+
+.. code-block:: shell
+
+    $ # Create/activate a virtual environment
+    $ pip install tox
+    $ tox
+
+There are some other Makefile targets that can be used to run the tests:
 
 .. code-block:: shell
 
@@ -343,6 +361,17 @@ Example of usage:
 
     $ ARGS='--mysql-test-db-uri mysql+mysqlconnector://root:@192.168.99.100:3340/test_sqlalchemy_filters' make coverage
     $ ARGS='--sqlite-test-db-uri sqlite+pysqlite:///test_sqlalchemy_filters.db' make coverage
+
+
+
+Database management systems
+---------------------------
+
+The following database management systems are supported (with test coverage):
+
+- SQLite
+- MySQL
+- PostgreSQL
 
 
 Python 2
