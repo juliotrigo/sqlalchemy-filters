@@ -12,7 +12,7 @@ from test.models import Foo, Bar, Qux
 
 
 @pytest.fixture
-def multiple_foos_inserted(session, multiple_bars_inserted):
+def multiple_foos_inserted(session, multiple_bars_with_no_nulls_inserted):
     foo_1 = Foo(id=1, bar_id=1, name='name_1', count=1)
     foo_2 = Foo(id=2, bar_id=2, name='name_2', count=1)
     foo_3 = Foo(id=3, bar_id=3, name='name_1', count=1)
@@ -21,25 +21,21 @@ def multiple_foos_inserted(session, multiple_bars_inserted):
     foo_6 = Foo(id=6, bar_id=6, name='name_4', count=2)
     foo_7 = Foo(id=7, bar_id=7, name='name_1', count=2)
     foo_8 = Foo(id=8, bar_id=8, name='name_5', count=2)
-    session.add_all(
-        [foo_1, foo_2, foo_3, foo_4, foo_5, foo_6, foo_7, foo_8]
-    )
+    session.add_all([foo_1, foo_2, foo_3, foo_4, foo_5, foo_6, foo_7, foo_8])
     session.commit()
 
 
 @pytest.fixture
-def multiple_bars_inserted(session):
+def multiple_bars_with_no_nulls_inserted(session):
     bar_1 = Bar(id=1, name='name_1', count=5)
     bar_2 = Bar(id=2, name='name_2', count=10)
-    bar_3 = Bar(id=3, name='name_1', count=None)
+    bar_3 = Bar(id=3, name='name_1', count=3)
     bar_4 = Bar(id=4, name='name_4', count=12)
     bar_5 = Bar(id=5, name='name_1', count=2)
     bar_6 = Bar(id=6, name='name_4', count=15)
     bar_7 = Bar(id=7, name='name_1', count=2)
     bar_8 = Bar(id=8, name='name_5', count=1)
-    session.add_all(
-        [bar_1, bar_2, bar_3, bar_4, bar_5, bar_6, bar_7, bar_8]
-    )
+    session.add_all([bar_1, bar_2, bar_3, bar_4, bar_5, bar_6, bar_7, bar_8])
     session.commit()
 
 
@@ -109,7 +105,21 @@ class TestSortNotApplied(object):
 
 class TestSortApplied(object):
 
-    @pytest.mark.usefixtures('multiple_bars_inserted')
+    """Tests that the results are sorted according to the provided
+    filters.
+
+    Do NOT test how any specific DBMS sorts the results for rows
+    that have the same value in the field that is being sorted since
+    this is not consistent accross DBMS.
+
+    Also, sorting on fields with `None` values is NOT tested since
+    different DBMS behave differently when sorting `NULL` values. SQL
+    defines that `NULL` values should be placed together when sorting,
+    but it does not specify whether they should be placed first or last
+    in the result.
+    """
+
+    @pytest.mark.usefixtures('multiple_bars_with_no_nulls_inserted')
     def test_single_sort_field_asc(self, session):
         query = session.query(Bar)
         order_by = [{'field': 'name', 'direction': 'asc'}]
@@ -117,17 +127,23 @@ class TestSortApplied(object):
         sorted_query = apply_sort(query, order_by)
         result = sorted_query.all()
 
+        result_same_name_1 = [
+            result[0].id, result[1].id, result[2].id, result[3].id
+        ]
+        result_same_name_4 = [result[5].id, result[6].id]
+
         assert len(result) == 8
-        assert result[0].id == 1
-        assert result[1].id == 3
-        assert result[2].id == 5
-        assert result[3].id == 7
+
+        assert 1 in result_same_name_1
+        assert 3 in result_same_name_1
+        assert 5 in result_same_name_1
+        assert 7 in result_same_name_1
         assert result[4].id == 2
-        assert result[5].id == 4
-        assert result[6].id == 6
+        assert 4 in result_same_name_4
+        assert 6 in result_same_name_4
         assert result[7].id == 8
 
-    @pytest.mark.usefixtures('multiple_bars_inserted')
+    @pytest.mark.usefixtures('multiple_bars_with_no_nulls_inserted')
     def test_single_sort_field_desc(self, session):
         query = session.query(Bar)
         order_by = [{'field': 'name', 'direction': 'desc'}]
@@ -135,17 +151,23 @@ class TestSortApplied(object):
         sorted_query = apply_sort(query, order_by)
         result = sorted_query.all()
 
-        assert len(result) == 8
-        assert result[0].id == 8
-        assert result[1].id == 4
-        assert result[2].id == 6
-        assert result[3].id == 2
-        assert result[4].id == 1
-        assert result[5].id == 3
-        assert result[6].id == 5
-        assert result[7].id == 7
+        result_same_name_4 = [result[1].id, result[2].id]
+        result_same_name_1 = [
+            result[4].id, result[5].id, result[6].id, result[7].id
+        ]
 
-    @pytest.mark.usefixtures('multiple_bars_inserted')
+        assert len(result) == 8
+
+        assert result[0].id == 8
+        assert 4 in result_same_name_4
+        assert 6 in result_same_name_4
+        assert result[3].id == 2
+        assert 1 in result_same_name_1
+        assert 3 in result_same_name_1
+        assert 5 in result_same_name_1
+        assert 7 in result_same_name_1
+
+    @pytest.mark.usefixtures('multiple_bars_with_no_nulls_inserted')
     def test_multiple_sort_fields(self, session):
         query = session.query(Bar)
         order_by = [
@@ -159,9 +181,9 @@ class TestSortApplied(object):
 
         assert len(result) == 8
         assert result[0].id == 1
-        assert result[1].id == 7
-        assert result[2].id == 5
-        assert result[3].id == 3
+        assert result[1].id == 3
+        assert result[2].id == 7
+        assert result[3].id == 5
         assert result[4].id == 2
         assert result[5].id == 6
         assert result[6].id == 4
@@ -169,13 +191,13 @@ class TestSortApplied(object):
 
     def test_multiple_models(self, session):
 
-        bar_1 = Bar(id=1, name='name_1', count=5)
+        bar_1 = Bar(id=1, name='name_1', count=15)
         bar_2 = Bar(id=2, name='name_2', count=10)
-        bar_3 = Bar(id=3, name='name_1', count=None)
-        bar_4 = Bar(id=4, name='name_1', count=12)
+        bar_3 = Bar(id=3, name='name_1', count=20)
+        bar_4 = Bar(id=4, name='name_1', count=10)
 
         qux_1 = Qux(
-            id=1, name='name_1', count=5,
+            id=1, name='name_1', count=15,
             created_at=datetime.date(2016, 7, 12),
             execution_time=datetime.datetime(2016, 7, 12, 1, 5, 9)
         )
@@ -185,11 +207,11 @@ class TestSortApplied(object):
             execution_time=datetime.datetime(2016, 7, 13, 2, 5, 9)
         )
         qux_3 = Qux(
-            id=3, name='name_1', count=None,
+            id=3, name='name_1', count=10,
             created_at=None, execution_time=None
         )
         qux_4 = Qux(
-            id=4, name='name_1', count=15,
+            id=4, name='name_1', count=20,
             created_at=datetime.date(2016, 7, 14),
             execution_time=datetime.datetime(2016, 7, 14, 3, 5, 9)
         )
@@ -202,7 +224,7 @@ class TestSortApplied(object):
         query = session.query(Bar).join(Qux, Bar.id == Qux.id)
         order_by = [
             {'model': 'Bar', 'field': 'name', 'direction': 'asc'},
-            {'model': 'Qux', 'field': 'count', 'direction': 'asc'}
+            {'model': 'Qux', 'field': 'count', 'direction': 'asc'},
         ]
 
         sorted_query = apply_sort(query, order_by)
@@ -214,7 +236,7 @@ class TestSortApplied(object):
         assert result[2].id == 4
         assert result[3].id == 2
 
-    @pytest.mark.usefixtures('multiple_bars_inserted')
+    @pytest.mark.usefixtures('multiple_bars_with_no_nulls_inserted')
     def test_a_single_dict_can_be_supplied_as_sort_spec(self, session):
         query = session.query(Bar)
         sort_spec = {'field': 'name', 'direction': 'desc'}
@@ -222,15 +244,21 @@ class TestSortApplied(object):
         sorted_query = apply_sort(query, sort_spec)
         result = sorted_query.all()
 
+        result_same_name_4 = [result[1].id, result[2].id]
+        result_same_name_1 = [
+            result[4].id, result[5].id, result[6].id, result[7].id
+        ]
+
         assert len(result) == 8
+
         assert result[0].id == 8
-        assert result[1].id == 4
-        assert result[2].id == 6
+        assert 4 in result_same_name_4
+        assert 6 in result_same_name_4
         assert result[3].id == 2
-        assert result[4].id == 1
-        assert result[5].id == 3
-        assert result[6].id == 5
-        assert result[7].id == 7
+        assert 1 in result_same_name_1
+        assert 3 in result_same_name_1
+        assert 5 in result_same_name_1
+        assert 7 in result_same_name_1
 
 
 class TestAutoJoin:
