@@ -97,8 +97,15 @@ def db_uri(request, config):
 
 
 @pytest.fixture(scope='session')
-def db_engine_options(db_uri):
+def is_postgresql(db_uri):
     if POSTGRESQL_DB in db_uri:
+        return True
+    return False
+
+
+@pytest.fixture(scope='session')
+def db_engine_options(db_uri, is_postgresql):
+    if is_postgresql:
         return dict(
             client_encoding='utf8',
             connect_args={'client_encoding': 'utf8'}

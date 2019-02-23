@@ -110,7 +110,7 @@ class TestSortApplied(object):
 
     Do NOT test how any specific DBMS sorts the results for rows
     that have the same value in the field that is being sorted since
-    this is not consistent accross DBMS.
+    this is not consistent across DBMS.
 
     Also, sorting on fields with `None` values is NOT tested since
     different DBMS behave differently when sorting `NULL` values. SQL
