@@ -329,7 +329,7 @@ the tests, with the following URIs:
     postgresql+psycopg2://postgres:@localhost:5432/test_sqlalchemy_filters?client_encoding=utf8'
 
 A test database will be created, used during the tests and destroyed
-afterwards for each RDMS configured.
+afterwards for each RDBMS configured.
 
 There are Makefile targets to run docker containers locally for both
 **MySQL** and **PostgreSQL**, using the default ports and configuration:
@@ -367,7 +367,7 @@ There are some other Makefile targets that can be used to run the tests:
 Database management systems
 ---------------------------
 
-The following database management systems are supported (with test coverage):
+The following RDBMS are supported (tested):
 
 - SQLite
 - MySQL

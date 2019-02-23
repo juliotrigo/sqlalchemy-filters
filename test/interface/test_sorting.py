@@ -108,12 +108,12 @@ class TestSortApplied(object):
     """Tests that the results are sorted according to the provided
     filters.
 
-    Do NOT test how any specific DBMS sorts the results for rows
+    Do NOT test how any specific RDBMS sorts the results for rows
     that have the same value in the field that is being sorted since
-    this is not consistent across DBMS.
+    this is not consistent across RDBMS.
 
     Also, sorting on fields with `None` values is NOT tested since
-    different DBMS behave differently when sorting `NULL` values. SQL
+    different RDBMS behave differently when sorting `NULL` values. SQL
     defines that `NULL` values should be placed together when sorting,
     but it does not specify whether they should be placed first or last
     in the result.
