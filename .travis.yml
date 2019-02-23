@@ -5,6 +5,7 @@ python: 3.7
 
 dist: xenial
 
+# Keep DB versions synchronized with the ones in the Makefile for local testing
 services:
   - mysql
 
