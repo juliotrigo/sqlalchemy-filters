@@ -377,7 +377,7 @@ The following database management systems are supported (with test coverage):
 Python 2
 --------
 
-There is no active support for python 2, however it is compatiable as of February 2019, if you install funcsigs.
+There is no active support for python 2, however it is compatiable as of February 2019, if you install `funcsigs`.
 
 
 License
