@@ -108,11 +108,11 @@ class TestSortApplied(object):
     """Tests that results are sorted only according to the provided
     filters.
 
-    Exclude nonexplicit sorting from tests: do NOT test how different
+    Excludes nonexplicit sorting from tests: do NOT test how different
     RDBMS sort rows with the same values being ordered since this is not
     consistent across RDBMS.
 
-    Exclude `NULL` sorting from tests: sorting fields containing `NULL`
+    Excludes `NULL` sorting from tests: sorting fields containing `NULL`
     values is NOT tested since different RDBMS behave differently when
     sorting `NULL` values. SQL defines that `NULL` values should be
     placed together when sorting, but it does not specify whether they
