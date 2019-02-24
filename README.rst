@@ -110,17 +110,20 @@ blocks is identical:
     ]
     filtered_query = apply_filters(query, filter_spec)
 
-The automatic join is only possible if sqlalchemy can implictly determine
-the condition for the join, for example because of a foreign key relationship.
+The automatic join is only possible if sqlalchemy can implictly
+determine the condition for the join, for example because of a foreign
+key relationship.
 
-Automatic joins allow flexibility for clients to filter and sort by related
-objects without specifying all possible joins on the server beforehand.
+Automatic joins allow flexibility for clients to filter and sort by
+related objects without specifying all possible joins on the server
+beforehand.
 
 Note that first filter of the second block does not specify a model.
 It is implictly applied to the ``Foo`` model because that is the only
 model in the original query passed to ``apply_filters``.
 
-It is also possible to apply filters to queries defined by fields or functions:
+It is also possible to apply filters to queries defined by fields or
+functions:
 
 .. code-block:: python
 
@@ -131,8 +134,8 @@ It is also possible to apply filters to queries defined by fields or functions:
 Restricted Loads
 ----------------
 
-You can restrict the fields that SQLAlchemy loads from the database by using
-the ``apply_loads`` function:
+You can restrict the fields that SQLAlchemy loads from the database by
+using the ``apply_loads`` function:
 
 .. code-block:: python
 
@@ -153,9 +156,9 @@ loaded during normal query execution.
 Effect on joined queries
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The default SQLAlchemy join is lazy, meaning that columns from the joined
-table are loaded only when required. Therefore ``apply_loads`` has limited
-effect in the following scenario:
+The default SQLAlchemy join is lazy, meaning that columns from the
+joined table are loaded only when required. Therefore ``apply_loads``
+has limited effect in the following scenario:
 
 .. code-block:: python
 
@@ -173,7 +176,8 @@ This is because a joined eager load does not add the joined model to the
 original query, as explained
 `here <http://docs.sqlalchemy.org/en/latest/orm/loading_relationships.html#the-zen-of-joined-eager-loading>`_
 
-The following would not prevent all columns from Bar being eagerly loaded:
+The following would not prevent all columns from Bar being eagerly
+loaded:
 
 .. code-block:: python
 
@@ -188,8 +192,8 @@ The following would not prevent all columns from Bar being eagerly loaded:
 
     In fact, what happens here is that ``Bar`` is automatically joined
     to ``query``, because it is determined that ``Bar`` is not part of
-    the original query. The ``load_spec`` therefore has no effect because
-    the automatic join results in lazy evaluation.
+    the original query. The ``load_spec`` therefore has no effect
+    because the automatic join results in lazy evaluation.
 
 If you wish to perform a joined load with restricted columns, you must
 specify the columns as part of the joined load, rather than with
@@ -346,9 +350,9 @@ Running tests
 -------------
 
 The default configuration uses **SQLite**, **MySQL** (if the driver is
-installed, which is the case when ``tox`` is used) and **PostgreSQL** (if
-the driver is installed, which is the case when ``tox`` is used) to run
-the tests, with the following URIs:
+installed, which is the case when ``tox`` is used) and **PostgreSQL**
+(if the driver is installed, which is the case when ``tox`` is used) to
+run the tests, with the following URIs:
 
 .. code-block:: shell
 
@@ -405,7 +409,8 @@ The following RDBMS are supported (tested):
 Python 2
 --------
 
-There is no active support for python 2, however it is compatiable as of February 2019, if you install ``funcsigs``.
+There is no active support for python 2, however it is compatiable as of
+February 2019, if you install ``funcsigs``.
 
 
 License
