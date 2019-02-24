@@ -20,7 +20,7 @@ SQLAlchemy-filters
 Filtering
 ---------
 
-Assuming that we have a SQLAlchemy `query` object:
+Assuming that we have a SQLAlchemy ``query`` object:
 
 .. code-block:: python
 
@@ -61,7 +61,8 @@ Then we can apply filters to that ``query`` object (multiple times):
 
     result = filtered_query.all()
 
-It is also possible to filter queries that contain multiple models, including joins:
+It is also possible to filter queries that contain multiple models,
+including joins:
 
 .. code-block:: python
 
@@ -84,7 +85,10 @@ It is also possible to filter queries that contain multiple models, including jo
     result = filtered_query.all()
 
 
-`apply_filters` will attempt to automatically join models to `query` if they're not already present and a model-specific filter is supplied. For example, the value of `filtered_query` in the following two code blocks is identical:
+``apply_filters`` will attempt to automatically join models to ``query``
+if they're not already present and a model-specific filter is supplied.
+For example, the value of ``filtered_query`` in the following two code
+blocks is identical:
 
 .. code-block:: python
 
@@ -106,11 +110,15 @@ It is also possible to filter queries that contain multiple models, including jo
     ]
     filtered_query = apply_filters(query, filter_spec)
 
-The automatic join is only possible if sqlalchemy can implictly determine the condition for the join, for example because of a foreign key relationship.
+The automatic join is only possible if sqlalchemy can implictly determine
+the condition for the join, for example because of a foreign key relationship.
 
-Automatic joins allow flexibility for clients to filter and sort by related objects without specifying all possible joins on the server beforehand.
+Automatic joins allow flexibility for clients to filter and sort by related
+objects without specifying all possible joins on the server beforehand.
 
-Note that first filter of the second block does not specify a model. It is implictly applied to the `Foo` model because that is the only model in the original query passed to `apply_filters`.
+Note that first filter of the second block does not specify a model.
+It is implictly applied to the ``Foo`` model because that is the only
+model in the original query passed to ``apply_filters``.
 
 It is also possible to apply filters to queries defined by fields or functions:
 
@@ -124,7 +132,7 @@ Restricted Loads
 ----------------
 
 You can restrict the fields that SQLAlchemy loads from the database by using
-the `apply_loads` function:
+the ``apply_loads`` function:
 
 .. code-block:: python
 
@@ -136,13 +144,18 @@ the `apply_loads` function:
     query = apply_loads(query, load_spec)  # will load only Foo.name and Bar.count
 
 
-The effect of the `apply_loads` function is to _defer_ the load of any other fields to when/if they're accessed, rather than loading them when the query is executed. It only applies to fields that would be loaded during normal query execution.
+The effect of the ``apply_loads`` function is to ``_defer_`` the load
+of any other fields to when/if they're accessed, rather than loading
+them when the query is executed. It only applies to fields that would be
+loaded during normal query execution.
 
 
 Effect on joined queries
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The default SQLAlchemy join is lazy, meaning that columns from the joined table are loaded only when required. Therefore `apply_loads` has limited effect in the following scenario:
+The default SQLAlchemy join is lazy, meaning that columns from the joined
+table are loaded only when required. Therefore ``apply_loads`` has limited
+effect in the following scenario:
 
 .. code-block:: python
 
@@ -154,7 +167,11 @@ The default SQLAlchemy join is lazy, meaning that columns from the joined table 
     query = apply_loads(query, load_spec)  # will load only Foo.name
 
 
-`apply_loads` cannot be applied to columns that are loaded as `joined eager loads <http://docs.sqlalchemy.org/en/latest/orm/loading_relationships.html#joined-eager-loading>`_. This is because a joined eager load does not add the joined model to the original query, as explained `here <http://docs.sqlalchemy.org/en/latest/orm/loading_relationships.html#the-zen-of-joined-eager-loading>`_
+``apply_loads`` cannot be applied to columns that are loaded as
+`joined eager loads <http://docs.sqlalchemy.org/en/latest/orm/loading_relationships.html#joined-eager-loading>`_.
+This is because a joined eager load does not add the joined model to the
+original query, as explained
+`here <http://docs.sqlalchemy.org/en/latest/orm/loading_relationships.html#the-zen-of-joined-eager-loading>`_
 
 The following would not prevent all columns from Bar being eagerly loaded:
 
@@ -169,10 +186,14 @@ The following would not prevent all columns from Bar being eagerly loaded:
 
 .. sidebar:: Automatic Join
 
-    In fact, what happens here is that `Bar` is automatically joined to `query`, because it is determined that `Bar` is not part of the original query. The `load_spec` therefore has no effect because the automatic join
-    results in lazy evaluation.
+    In fact, what happens here is that ``Bar`` is automatically joined
+    to ``query``, because it is determined that ``Bar`` is not part of
+    the original query. The ``load_spec`` therefore has no effect because
+    the automatic join results in lazy evaluation.
 
-If you wish to perform a joined load with restricted columns, you must specify the columns as part of the joined load, rather than with `apply_loads`:
+If you wish to perform a joined load with restricted columns, you must
+specify the columns as part of the joined load, rather than with
+``apply_loads``:
 
 .. code-block:: python
 
@@ -201,9 +222,12 @@ Sort
     result = sorted_query.all()
 
 
-`apply_sort` will attempt to automatically join models to `query` if they're not already present and a model-specific sort is supplied. The behaviour is the same as in `apply_filters`.
+``apply_sort`` will attempt to automatically join models to ``query`` if
+they're not already present and a model-specific sort is supplied.
+The behaviour is the same as in ``apply_filters``.
 
-This allows flexibility for clients to sort by fields on related objects without specifying all possible joins on the server beforehand.
+This allows flexibility for clients to sort by fields on related objects
+without specifying all possible joins on the server beforehand.
 
 
 Pagination
@@ -240,7 +264,8 @@ following format:
         # ...
     ]
 
-The `model` key is optional if the original query being filtered only applies to one model.
+The ``model`` key is optional if the original query being filtered only
+applies to one model.
 
 If there is only one filter, the containing list may be omitted:
 
@@ -249,7 +274,7 @@ If there is only one filter, the containing list may be omitted:
     filter_spec = {'field': 'field_name', 'op': '==', 'value': 'field_value'}
 
 Where ``field`` is the name of the field that will be filtered using the
-operator provided in ``op`` (optional, defaults to `==`) and the
+operator provided in ``op`` (optional, defaults to ``==``) and the
 provided ``value`` (optional, depending on the operator).
 
 This is the list of operators that can be used:
@@ -269,7 +294,8 @@ This is the list of operators that can be used:
 
 Boolean Functions
 ^^^^^^^^^^^^^^^^^
-``and``, ``or``, and ``not`` functions can be used and nested within the filter specification:
+``and``, ``or``, and ``not`` functions can be used and nested within the
+filter specification:
 
 .. code-block:: python
 
@@ -292,7 +318,8 @@ Boolean Functions
     ]
 
 
-Note: ``or`` and ``and`` must reference a list of at least one element. ``not`` must reference a list of exactly one element.
+Note: ``or`` and ``and`` must reference a list of at least one element.
+``not`` must reference a list of exactly one element.
 
 Sort format
 -----------
@@ -311,15 +338,16 @@ applied sequentially:
 Where ``field`` is the name of the field that will be sorted using the
 provided ``direction``.
 
-The `model` key is optional if the original query being sorted only applies to one model.
+The ``model`` key is optional if the original query being sorted only
+applies to one model.
 
 
 Running tests
 -------------
 
 The default configuration uses **SQLite**, **MySQL** (if the driver is
-installed, which is the case when `tox` is used) and **PostgreSQL** (if
-the driver is installed, which is the case when `tox` is used) to run
+installed, which is the case when ``tox`` is used) and **PostgreSQL** (if
+the driver is installed, which is the case when ``tox`` is used) to run
 the tests, with the following URIs:
 
 .. code-block:: shell
