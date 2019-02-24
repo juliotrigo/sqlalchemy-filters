@@ -105,18 +105,18 @@ class TestSortNotApplied(object):
 
 class TestSortApplied(object):
 
-    """Tests that the results are sorted according to the provided
+    """Tests that results are sorted only according to the provided
     filters.
 
-    Do NOT test how any specific RDBMS sorts the results for rows
-    that have the same value in the field that is being sorted since
-    this is not consistent across RDBMS.
+    Exclude nonexplicit sorting from tests: do NOT test how different
+    RDBMS sort rows with the same values being ordered since this is not
+    consistent across RDBMS.
 
-    Also, sorting on fields with `None` values is NOT tested since
-    different RDBMS behave differently when sorting `NULL` values. SQL
-    defines that `NULL` values should be placed together when sorting,
-    but it does not specify whether they should be placed first or last
-    in the result.
+    Exclude `NULL` sorting from tests: sorting fields containing `NULL`
+    values is NOT tested since different RDBMS behave differently when
+    sorting `NULL` values. SQL defines that `NULL` values should be
+    placed together when sorting, but it does not specify whether they
+    should be placed first or last in the result.
     """
 
     @pytest.mark.usefixtures('multiple_bars_with_no_nulls_inserted')
@@ -133,7 +133,6 @@ class TestSortApplied(object):
         result_same_name_4 = [result[5].id, result[6].id]
 
         assert len(result) == 8
-
         assert 1 in result_same_name_1
         assert 3 in result_same_name_1
         assert 5 in result_same_name_1
@@ -157,7 +156,6 @@ class TestSortApplied(object):
         ]
 
         assert len(result) == 8
-
         assert result[0].id == 8
         assert 4 in result_same_name_4
         assert 6 in result_same_name_4
@@ -250,7 +248,6 @@ class TestSortApplied(object):
         ]
 
         assert len(result) == 8
-
         assert result[0].id == 8
         assert 4 in result_same_name_4
         assert 6 in result_same_name_4
