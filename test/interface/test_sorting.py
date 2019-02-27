@@ -127,19 +127,19 @@ class TestSortApplied(object):
         sorted_query = apply_sort(query, order_by)
         result = sorted_query.all()
 
-        result_same_name_1 = [
+        results_with_same_order_1 = [
             result[0].id, result[1].id, result[2].id, result[3].id
         ]
-        result_same_name_4 = [result[5].id, result[6].id]
+        results_with_same_order_2 = [result[5].id, result[6].id]
 
         assert len(result) == 8
-        assert 1 in result_same_name_1
-        assert 3 in result_same_name_1
-        assert 5 in result_same_name_1
-        assert 7 in result_same_name_1
+        assert 1 in results_with_same_order_1
+        assert 3 in results_with_same_order_1
+        assert 5 in results_with_same_order_1
+        assert 7 in results_with_same_order_1
         assert result[4].id == 2
-        assert 4 in result_same_name_4
-        assert 6 in result_same_name_4
+        assert 4 in results_with_same_order_2
+        assert 6 in results_with_same_order_2
         assert result[7].id == 8
 
     @pytest.mark.usefixtures('multiple_bars_with_no_nulls_inserted')
@@ -150,20 +150,20 @@ class TestSortApplied(object):
         sorted_query = apply_sort(query, order_by)
         result = sorted_query.all()
 
-        result_same_name_4 = [result[1].id, result[2].id]
-        result_same_name_1 = [
+        results_with_same_order_1 = [result[1].id, result[2].id]
+        results_with_same_order_2 = [
             result[4].id, result[5].id, result[6].id, result[7].id
         ]
 
         assert len(result) == 8
         assert result[0].id == 8
-        assert 4 in result_same_name_4
-        assert 6 in result_same_name_4
+        assert 4 in results_with_same_order_1
+        assert 6 in results_with_same_order_1
         assert result[3].id == 2
-        assert 1 in result_same_name_1
-        assert 3 in result_same_name_1
-        assert 5 in result_same_name_1
-        assert 7 in result_same_name_1
+        assert 1 in results_with_same_order_2
+        assert 3 in results_with_same_order_2
+        assert 5 in results_with_same_order_2
+        assert 7 in results_with_same_order_2
 
     @pytest.mark.usefixtures('multiple_bars_with_no_nulls_inserted')
     def test_multiple_sort_fields(self, session):
@@ -242,20 +242,20 @@ class TestSortApplied(object):
         sorted_query = apply_sort(query, sort_spec)
         result = sorted_query.all()
 
-        result_same_name_4 = [result[1].id, result[2].id]
-        result_same_name_1 = [
+        results_with_same_order_1 = [result[1].id, result[2].id]
+        results_with_same_order_2 = [
             result[4].id, result[5].id, result[6].id, result[7].id
         ]
 
         assert len(result) == 8
         assert result[0].id == 8
-        assert 4 in result_same_name_4
-        assert 6 in result_same_name_4
+        assert 4 in results_with_same_order_1
+        assert 6 in results_with_same_order_1
         assert result[3].id == 2
-        assert 1 in result_same_name_1
-        assert 3 in result_same_name_1
-        assert 5 in result_same_name_1
-        assert 7 in result_same_name_1
+        assert 1 in results_with_same_order_2
+        assert 3 in results_with_same_order_2
+        assert 5 in results_with_same_order_2
+        assert 7 in results_with_same_order_2
 
 
 class TestAutoJoin:
