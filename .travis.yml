@@ -5,12 +5,13 @@ python: 3.7
 
 dist: xenial
 
-# Keep DB versions synchronized with the ones in the Makefile for local testing
 services:
-  - mysql
+  - docker
 
-addons:
-  postgresql: "9.6"
+before_install:
+  - docker --version
+  - make docker-mysql-run
+  - make docker-postgres-run
 
 install:
   - pip install tox

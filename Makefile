@@ -1,6 +1,5 @@
 .PHONY: test
 
-# Versions used by Travis CI. Keep them synchronized.
 POSTGRES_VERSION?=9.6
 MYSQL_VERSION?=5.7
 
