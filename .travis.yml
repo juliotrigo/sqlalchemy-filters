@@ -10,10 +10,12 @@ services:
 
 addons:
   apt:
+    update: true
     packages:
       - docker-ce
 
 before_install:
+  - docker --version
   - make docker-mysql-run
   - make docker-postgres-run
 
