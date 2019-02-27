@@ -409,7 +409,7 @@ The following RDBMS are supported (tested):
 Python 2
 --------
 
-There is no active support for python 2, however it is compatiable as of
+There is no active support for python 2, however it is compatible as of
 February 2019, if you install ``funcsigs``.
 
 
