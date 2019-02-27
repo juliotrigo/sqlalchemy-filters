@@ -108,15 +108,15 @@ class TestSortApplied(object):
     """Tests that results are sorted only according to the provided
     filters.
 
-    Excludes nonexplicit sorting from tests: do NOT test how different
-    RDBMS sort rows with the same values being ordered since this is not
-    consistent across RDBMS.
+    Does NOT test how rows with the same values are sorted since this is
+    not consistent across RDBMS.
 
-    Excludes `NULL` sorting from tests: sorting fields containing `NULL`
-    values is NOT tested since different RDBMS behave differently when
-    sorting `NULL` values. SQL defines that `NULL` values should be
-    placed together when sorting, but it does not specify whether they
-    should be placed first or last in the result.
+    Does NOT test whether `NULL` field values are placed first or last
+    when sorting since this may differ across RDBMSs.
+
+    SQL defines that `NULL` values should be placed together when
+    sorting, but it does not specify whether they should be placed first
+    or last.
     """
 
     @pytest.mark.usefixtures('multiple_bars_with_no_nulls_inserted')
