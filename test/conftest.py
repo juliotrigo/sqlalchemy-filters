@@ -12,8 +12,6 @@ SQLITE_TEST_DB_URI = 'SQLITE_TEST_DB_URI'
 MYSQL_TEST_DB_URI = 'MYSQL_TEST_DB_URI'
 POSTGRESQL_TEST_DB_URI = 'POSTGRESQL_TEST_DB_URI'
 
-POSTGRESQL_DB = 'postgresql'
-
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -98,7 +96,7 @@ def db_uri(request, config):
 
 @pytest.fixture(scope='session')
 def is_postgresql(db_uri):
-    if POSTGRESQL_DB in db_uri:
+    if 'postgresql' in db_uri:
         return True
     return False
 
