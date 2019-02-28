@@ -125,22 +125,14 @@ class TestSortApplied(object):
         order_by = [{'field': 'name', 'direction': 'asc'}]
 
         sorted_query = apply_sort(query, order_by)
-        result = sorted_query.all()
+        results = sorted_query.all()
 
-        results_with_same_order_1 = [
-            result[0].id, result[1].id, result[2].id, result[3].id
+        assert [result.name for result in results] == [
+            'name_1', 'name_1', 'name_1', 'name_1',
+            'name_2',
+            'name_4', 'name_4',
+            'name_5',
         ]
-        results_with_same_order_2 = [result[5].id, result[6].id]
-
-        assert len(result) == 8
-        assert 1 in results_with_same_order_1
-        assert 3 in results_with_same_order_1
-        assert 5 in results_with_same_order_1
-        assert 7 in results_with_same_order_1
-        assert result[4].id == 2
-        assert 4 in results_with_same_order_2
-        assert 6 in results_with_same_order_2
-        assert result[7].id == 8
 
     @pytest.mark.usefixtures('multiple_bars_with_no_nulls_inserted')
     def test_single_sort_field_desc(self, session):
@@ -148,22 +140,14 @@ class TestSortApplied(object):
         order_by = [{'field': 'name', 'direction': 'desc'}]
 
         sorted_query = apply_sort(query, order_by)
-        result = sorted_query.all()
+        results = sorted_query.all()
 
-        results_with_same_order_1 = [result[1].id, result[2].id]
-        results_with_same_order_2 = [
-            result[4].id, result[5].id, result[6].id, result[7].id
+        assert [result.name for result in results] == [
+            'name_5',
+            'name_4', 'name_4',
+            'name_2',
+            'name_1', 'name_1', 'name_1', 'name_1',
         ]
-
-        assert len(result) == 8
-        assert result[0].id == 8
-        assert 4 in results_with_same_order_1
-        assert 6 in results_with_same_order_1
-        assert result[3].id == 2
-        assert 1 in results_with_same_order_2
-        assert 3 in results_with_same_order_2
-        assert 5 in results_with_same_order_2
-        assert 7 in results_with_same_order_2
 
     @pytest.mark.usefixtures('multiple_bars_with_no_nulls_inserted')
     def test_multiple_sort_fields(self, session):
@@ -175,17 +159,17 @@ class TestSortApplied(object):
         ]
 
         sorted_query = apply_sort(query, order_by)
-        result = sorted_query.all()
+        results = sorted_query.all()
 
-        assert len(result) == 8
-        assert result[0].id == 1
-        assert result[1].id == 3
-        assert result[2].id == 7
-        assert result[3].id == 5
-        assert result[4].id == 2
-        assert result[5].id == 6
-        assert result[6].id == 4
-        assert result[7].id == 8
+        assert len(results) == 8
+        assert results[0].id == 1
+        assert results[1].id == 3
+        assert results[2].id == 7
+        assert results[3].id == 5
+        assert results[4].id == 2
+        assert results[5].id == 6
+        assert results[6].id == 4
+        assert results[7].id == 8
 
     def test_multiple_models(self, session):
 
@@ -226,13 +210,13 @@ class TestSortApplied(object):
         ]
 
         sorted_query = apply_sort(query, order_by)
-        result = sorted_query.all()
+        results = sorted_query.all()
 
-        assert len(result) == 4
-        assert result[0].id == 3
-        assert result[1].id == 1
-        assert result[2].id == 4
-        assert result[3].id == 2
+        assert len(results) == 4
+        assert results[0].id == 3
+        assert results[1].id == 1
+        assert results[2].id == 4
+        assert results[3].id == 2
 
     @pytest.mark.usefixtures('multiple_bars_with_no_nulls_inserted')
     def test_a_single_dict_can_be_supplied_as_sort_spec(self, session):
@@ -240,22 +224,14 @@ class TestSortApplied(object):
         sort_spec = {'field': 'name', 'direction': 'desc'}
 
         sorted_query = apply_sort(query, sort_spec)
-        result = sorted_query.all()
+        results = sorted_query.all()
 
-        results_with_same_order_1 = [result[1].id, result[2].id]
-        results_with_same_order_2 = [
-            result[4].id, result[5].id, result[6].id, result[7].id
+        assert [result.name for result in results] == [
+            'name_5',
+            'name_4', 'name_4',
+            'name_2',
+            'name_1', 'name_1', 'name_1', 'name_1',
         ]
-
-        assert len(result) == 8
-        assert result[0].id == 8
-        assert 4 in results_with_same_order_1
-        assert 6 in results_with_same_order_1
-        assert result[3].id == 2
-        assert 1 in results_with_same_order_2
-        assert 3 in results_with_same_order_2
-        assert 5 in results_with_same_order_2
-        assert 7 in results_with_same_order_2
 
 
 class TestAutoJoin:
@@ -271,17 +247,17 @@ class TestAutoJoin:
         ]
 
         sorted_query = apply_sort(query, order_by)
-        result = sorted_query.all()
+        results = sorted_query.all()
 
-        assert len(result) == 8
-        assert result[0].id == 5
-        assert result[1].id == 7
-        assert result[2].id == 6
-        assert result[3].id == 8
-        assert result[4].id == 1
-        assert result[5].id == 3
-        assert result[6].id == 2
-        assert result[7].id == 4
+        assert len(results) == 8
+        assert results[0].id == 5
+        assert results[1].id == 7
+        assert results[2].id == 6
+        assert results[3].id == 8
+        assert results[4].id == 1
+        assert results[5].id == 3
+        assert results[6].id == 2
+        assert results[7].id == 4
 
     @pytest.mark.usefixtures('multiple_foos_inserted')
     def test_noop_if_query_contains_named_models(self, session):
@@ -294,17 +270,17 @@ class TestAutoJoin:
         ]
 
         sorted_query = apply_sort(query, order_by)
-        result = sorted_query.all()
+        results = sorted_query.all()
 
-        assert len(result) == 8
-        assert result[0].id == 5
-        assert result[1].id == 7
-        assert result[2].id == 6
-        assert result[3].id == 8
-        assert result[4].id == 1
-        assert result[5].id == 3
-        assert result[6].id == 2
-        assert result[7].id == 4
+        assert len(results) == 8
+        assert results[0].id == 5
+        assert results[1].id == 7
+        assert results[2].id == 6
+        assert results[3].id == 8
+        assert results[4].id == 1
+        assert results[5].id == 3
+        assert results[6].id == 2
+        assert results[7].id == 4
 
     @pytest.mark.usefixtures('multiple_foos_inserted')
     def test_auto_join_to_invalid_model(self, session):
@@ -346,14 +322,14 @@ class TestAutoJoin:
         ]
 
         sorted_query = apply_sort(query, order_by)
-        result = sorted_query.all()
+        results = sorted_query.all()
 
-        assert len(result) == 8
-        assert result[0].id == 5
-        assert result[1].id == 7
-        assert result[2].id == 6
-        assert result[3].id == 8
-        assert result[4].id == 1
-        assert result[5].id == 3
-        assert result[6].id == 2
-        assert result[7].id == 4
+        assert len(results) == 8
+        assert results[0].id == 5
+        assert results[1].id == 7
+        assert results[2].id == 6
+        assert results[3].id == 8
+        assert results[4].id == 1
+        assert results[5].id == 3
+        assert results[6].id == 2
+        assert results[7].id == 4
