@@ -12,7 +12,7 @@ from test.models import Foo, Bar, Qux
 
 
 @pytest.fixture
-def multiple_foos_inserted(session, multiple_bars_with_no_nulls_inserted):
+def multiple_foos_inserted(session):
     foo_1 = Foo(id=1, bar_id=1, name='name_1', count=1)
     foo_2 = Foo(id=2, bar_id=2, name='name_2', count=1)
     foo_3 = Foo(id=3, bar_id=3, name='name_1', count=1)
@@ -161,15 +161,18 @@ class TestSortApplied(object):
         sorted_query = apply_sort(query, order_by)
         results = sorted_query.all()
 
-        assert len(results) == 8
-        assert results[0].id == 1
-        assert results[1].id == 3
-        assert results[2].id == 7
-        assert results[3].id == 5
-        assert results[4].id == 2
-        assert results[5].id == 6
-        assert results[6].id == 4
-        assert results[7].id == 8
+        assert [
+            (result.name, result.count, result.id) for result in results
+        ] == [
+            ('name_1', 5, 1),
+            ('name_1', 3, 3),
+            ('name_1', 2, 7),
+            ('name_1', 2, 5),
+            ('name_2', 10, 2),
+            ('name_4', 15, 6),
+            ('name_4', 12, 4),
+            ('name_5', 1, 8),
+        ]
 
     def test_multiple_models(self, session):
 
@@ -236,9 +239,11 @@ class TestSortApplied(object):
 
 class TestAutoJoin:
 
-    @pytest.mark.usefixtures('multiple_foos_inserted')
+    @pytest.mark.usefixtures(
+        'multiple_bars_with_no_nulls_inserted',
+        'multiple_foos_inserted'
+    )
     def test_auto_join(self, session):
-
         query = session.query(Foo)
         order_by = [
             {'field': 'count', 'direction': 'desc'},
@@ -249,19 +254,24 @@ class TestAutoJoin:
         sorted_query = apply_sort(query, order_by)
         results = sorted_query.all()
 
-        assert len(results) == 8
-        assert results[0].id == 5
-        assert results[1].id == 7
-        assert results[2].id == 6
-        assert results[3].id == 8
-        assert results[4].id == 1
-        assert results[5].id == 3
-        assert results[6].id == 2
-        assert results[7].id == 4
+        assert [
+            (result.count, result.bar.name, result.id) for result in results
+        ] == [
+            (2, 'name_1', 5),
+            (2, 'name_1', 7),
+            (2, 'name_4', 6),
+            (2, 'name_5', 8),
+            (1, 'name_1', 1),
+            (1, 'name_1', 3),
+            (1, 'name_2', 2),
+            (1, 'name_4', 4),
+        ]
 
-    @pytest.mark.usefixtures('multiple_foos_inserted')
+    @pytest.mark.usefixtures(
+        'multiple_bars_with_no_nulls_inserted',
+        'multiple_foos_inserted'
+    )
     def test_noop_if_query_contains_named_models(self, session):
-
         query = session.query(Foo).join(Bar)
         order_by = [
             {'model': 'Foo', 'field': 'count', 'direction': 'desc'},
@@ -272,19 +282,24 @@ class TestAutoJoin:
         sorted_query = apply_sort(query, order_by)
         results = sorted_query.all()
 
-        assert len(results) == 8
-        assert results[0].id == 5
-        assert results[1].id == 7
-        assert results[2].id == 6
-        assert results[3].id == 8
-        assert results[4].id == 1
-        assert results[5].id == 3
-        assert results[6].id == 2
-        assert results[7].id == 4
+        assert [
+            (result.count, result.bar.name, result.id) for result in results
+        ] == [
+            (2, 'name_1', 5),
+            (2, 'name_1', 7),
+            (2, 'name_4', 6),
+            (2, 'name_5', 8),
+            (1, 'name_1', 1),
+            (1, 'name_1', 3),
+            (1, 'name_2', 2),
+            (1, 'name_4', 4),
+        ]
 
-    @pytest.mark.usefixtures('multiple_foos_inserted')
+    @pytest.mark.usefixtures(
+        'multiple_bars_with_no_nulls_inserted',
+        'multiple_foos_inserted'
+    )
     def test_auto_join_to_invalid_model(self, session):
-
         query = session.query(Foo)
         order_by = [
             {'model': 'Foo', 'field': 'count', 'direction': 'desc'},
@@ -297,9 +312,11 @@ class TestAutoJoin:
 
         assert 'The query does not contain model `Qux`.' == err.value.args[0]
 
-    @pytest.mark.usefixtures('multiple_foos_inserted')
+    @pytest.mark.usefixtures(
+        'multiple_bars_with_no_nulls_inserted',
+        'multiple_foos_inserted'
+    )
     def test_ambiguous_query(self, session):
-
         query = session.query(Foo).join(Bar)
         order_by = [
             {'field': 'count', 'direction': 'asc'},  # ambiguous
@@ -310,9 +327,11 @@ class TestAutoJoin:
 
         assert 'Ambiguous spec. Please specify a model.' == err.value.args[0]
 
-    @pytest.mark.usefixtures('multiple_foos_inserted')
+    @pytest.mark.usefixtures(
+        'multiple_bars_with_no_nulls_inserted',
+        'multiple_foos_inserted'
+    )
     def test_eager_load(self, session):
-
         # behaves as if the joinedload wasn't present
         query = session.query(Foo).options(joinedload(Foo.bar))
         order_by = [
@@ -324,12 +343,15 @@ class TestAutoJoin:
         sorted_query = apply_sort(query, order_by)
         results = sorted_query.all()
 
-        assert len(results) == 8
-        assert results[0].id == 5
-        assert results[1].id == 7
-        assert results[2].id == 6
-        assert results[3].id == 8
-        assert results[4].id == 1
-        assert results[5].id == 3
-        assert results[6].id == 2
-        assert results[7].id == 4
+        assert [
+            (result.count, result.bar.name, result.id) for result in results
+        ] == [
+            (2, 'name_1', 5),
+            (2, 'name_1', 7),
+            (2, 'name_4', 6),
+            (2, 'name_5', 8),
+            (1, 'name_1', 1),
+            (1, 'name_1', 3),
+            (1, 'name_2', 2),
+            (1, 'name_4', 4),
+        ]
