@@ -10,6 +10,7 @@ from test.models import Base
 
 SQLITE_TEST_DB_URI = 'SQLITE_TEST_DB_URI'
 MYSQL_TEST_DB_URI = 'MYSQL_TEST_DB_URI'
+POSTGRESQL_TEST_DB_URI = 'POSTGRESQL_TEST_DB_URI'
 
 
 def pytest_addoption(parser):
@@ -39,12 +40,30 @@ def pytest_addoption(parser):
         )
     )
 
+    parser.addoption(
+        '--postgresql-test-db-uri',
+        action='store',
+        dest=POSTGRESQL_TEST_DB_URI,
+        default=(
+            'postgresql+psycopg2://postgres:@localhost:5432'
+            '/test_sqlalchemy_filters?client_encoding=utf8'
+        ),
+        help=(
+            'DB uri for testing (e.g. '
+            '"postgresql+psycopg2://username:password@localhost:5432'
+            '/test_sqlalchemy_filters?client_encoding=utf8")'
+        )
+    )
+
 
 @pytest.fixture(scope='session')
 def config(request):
     return {
         SQLITE_TEST_DB_URI: request.config.getoption(SQLITE_TEST_DB_URI),
         MYSQL_TEST_DB_URI: request.config.getoption(MYSQL_TEST_DB_URI),
+        POSTGRESQL_TEST_DB_URI: request.config.getoption(
+            POSTGRESQL_TEST_DB_URI
+        ),
     }
 
 
@@ -60,6 +79,13 @@ def test_db_keys():
     else:
         test_db_uris.append(MYSQL_TEST_DB_URI)
 
+    try:
+        import psycopg2  # noqa: F401
+    except ImportError:
+        pass
+    else:
+        test_db_uris.append(POSTGRESQL_TEST_DB_URI)
+
     return test_db_uris
 
 
@@ -69,9 +95,26 @@ def db_uri(request, config):
 
 
 @pytest.fixture(scope='session')
-def connection(db_uri):
+def is_postgresql(db_uri):
+    if 'postgresql' in db_uri:
+        return True
+    return False
+
+
+@pytest.fixture(scope='session')
+def db_engine_options(db_uri, is_postgresql):
+    if is_postgresql:
+        return dict(
+            client_encoding='utf8',
+            connect_args={'client_encoding': 'utf8'}
+        )
+    return {}
+
+
+@pytest.fixture(scope='session')
+def connection(db_uri, db_engine_options):
     create_db(db_uri)
-    engine = create_engine(db_uri)
+    engine = create_engine(db_uri, **db_engine_options)
     Base.metadata.create_all(engine)
     connection = engine.connect()
     Base.metadata.bind = engine

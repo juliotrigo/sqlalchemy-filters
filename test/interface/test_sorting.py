@@ -12,7 +12,7 @@ from test.models import Foo, Bar, Qux
 
 
 @pytest.fixture
-def multiple_foos_inserted(session, multiple_bars_inserted):
+def multiple_foos_inserted(session):
     foo_1 = Foo(id=1, bar_id=1, name='name_1', count=1)
     foo_2 = Foo(id=2, bar_id=2, name='name_2', count=1)
     foo_3 = Foo(id=3, bar_id=3, name='name_1', count=1)
@@ -21,25 +21,21 @@ def multiple_foos_inserted(session, multiple_bars_inserted):
     foo_6 = Foo(id=6, bar_id=6, name='name_4', count=2)
     foo_7 = Foo(id=7, bar_id=7, name='name_1', count=2)
     foo_8 = Foo(id=8, bar_id=8, name='name_5', count=2)
-    session.add_all(
-        [foo_1, foo_2, foo_3, foo_4, foo_5, foo_6, foo_7, foo_8]
-    )
+    session.add_all([foo_1, foo_2, foo_3, foo_4, foo_5, foo_6, foo_7, foo_8])
     session.commit()
 
 
 @pytest.fixture
-def multiple_bars_inserted(session):
+def multiple_bars_with_no_nulls_inserted(session):
     bar_1 = Bar(id=1, name='name_1', count=5)
     bar_2 = Bar(id=2, name='name_2', count=10)
-    bar_3 = Bar(id=3, name='name_1', count=None)
+    bar_3 = Bar(id=3, name='name_1', count=3)
     bar_4 = Bar(id=4, name='name_4', count=12)
     bar_5 = Bar(id=5, name='name_1', count=2)
     bar_6 = Bar(id=6, name='name_4', count=15)
     bar_7 = Bar(id=7, name='name_1', count=2)
     bar_8 = Bar(id=8, name='name_5', count=1)
-    session.add_all(
-        [bar_1, bar_2, bar_3, bar_4, bar_5, bar_6, bar_7, bar_8]
-    )
+    session.add_all([bar_1, bar_2, bar_3, bar_4, bar_5, bar_6, bar_7, bar_8])
     session.commit()
 
 
@@ -109,43 +105,51 @@ class TestSortNotApplied(object):
 
 class TestSortApplied(object):
 
-    @pytest.mark.usefixtures('multiple_bars_inserted')
+    """Tests that results are sorted only according to the provided
+    filters.
+
+    Does NOT test how rows with the same values are sorted since this is
+    not consistent across RDBMS.
+
+    Does NOT test whether `NULL` field values are placed first or last
+    when sorting since this may differ across RDBMSs.
+
+    SQL defines that `NULL` values should be placed together when
+    sorting, but it does not specify whether they should be placed first
+    or last.
+    """
+
+    @pytest.mark.usefixtures('multiple_bars_with_no_nulls_inserted')
     def test_single_sort_field_asc(self, session):
         query = session.query(Bar)
         order_by = [{'field': 'name', 'direction': 'asc'}]
 
         sorted_query = apply_sort(query, order_by)
-        result = sorted_query.all()
+        results = sorted_query.all()
 
-        assert len(result) == 8
-        assert result[0].id == 1
-        assert result[1].id == 3
-        assert result[2].id == 5
-        assert result[3].id == 7
-        assert result[4].id == 2
-        assert result[5].id == 4
-        assert result[6].id == 6
-        assert result[7].id == 8
+        assert [result.name for result in results] == [
+            'name_1', 'name_1', 'name_1', 'name_1',
+            'name_2',
+            'name_4', 'name_4',
+            'name_5',
+        ]
 
-    @pytest.mark.usefixtures('multiple_bars_inserted')
+    @pytest.mark.usefixtures('multiple_bars_with_no_nulls_inserted')
     def test_single_sort_field_desc(self, session):
         query = session.query(Bar)
         order_by = [{'field': 'name', 'direction': 'desc'}]
 
         sorted_query = apply_sort(query, order_by)
-        result = sorted_query.all()
+        results = sorted_query.all()
 
-        assert len(result) == 8
-        assert result[0].id == 8
-        assert result[1].id == 4
-        assert result[2].id == 6
-        assert result[3].id == 2
-        assert result[4].id == 1
-        assert result[5].id == 3
-        assert result[6].id == 5
-        assert result[7].id == 7
+        assert [result.name for result in results] == [
+            'name_5',
+            'name_4', 'name_4',
+            'name_2',
+            'name_1', 'name_1', 'name_1', 'name_1',
+        ]
 
-    @pytest.mark.usefixtures('multiple_bars_inserted')
+    @pytest.mark.usefixtures('multiple_bars_with_no_nulls_inserted')
     def test_multiple_sort_fields(self, session):
         query = session.query(Bar)
         order_by = [
@@ -155,27 +159,30 @@ class TestSortApplied(object):
         ]
 
         sorted_query = apply_sort(query, order_by)
-        result = sorted_query.all()
+        results = sorted_query.all()
 
-        assert len(result) == 8
-        assert result[0].id == 1
-        assert result[1].id == 7
-        assert result[2].id == 5
-        assert result[3].id == 3
-        assert result[4].id == 2
-        assert result[5].id == 6
-        assert result[6].id == 4
-        assert result[7].id == 8
+        assert [
+            (result.name, result.count, result.id) for result in results
+        ] == [
+            ('name_1', 5, 1),
+            ('name_1', 3, 3),
+            ('name_1', 2, 7),
+            ('name_1', 2, 5),
+            ('name_2', 10, 2),
+            ('name_4', 15, 6),
+            ('name_4', 12, 4),
+            ('name_5', 1, 8),
+        ]
 
     def test_multiple_models(self, session):
 
-        bar_1 = Bar(id=1, name='name_1', count=5)
+        bar_1 = Bar(id=1, name='name_1', count=15)
         bar_2 = Bar(id=2, name='name_2', count=10)
-        bar_3 = Bar(id=3, name='name_1', count=None)
-        bar_4 = Bar(id=4, name='name_1', count=12)
+        bar_3 = Bar(id=3, name='name_1', count=20)
+        bar_4 = Bar(id=4, name='name_1', count=10)
 
         qux_1 = Qux(
-            id=1, name='name_1', count=5,
+            id=1, name='name_1', count=15,
             created_at=datetime.date(2016, 7, 12),
             execution_time=datetime.datetime(2016, 7, 12, 1, 5, 9)
         )
@@ -185,11 +192,11 @@ class TestSortApplied(object):
             execution_time=datetime.datetime(2016, 7, 13, 2, 5, 9)
         )
         qux_3 = Qux(
-            id=3, name='name_1', count=None,
+            id=3, name='name_1', count=10,
             created_at=None, execution_time=None
         )
         qux_4 = Qux(
-            id=4, name='name_1', count=15,
+            id=4, name='name_1', count=20,
             created_at=datetime.date(2016, 7, 14),
             execution_time=datetime.datetime(2016, 7, 14, 3, 5, 9)
         )
@@ -202,42 +209,41 @@ class TestSortApplied(object):
         query = session.query(Bar).join(Qux, Bar.id == Qux.id)
         order_by = [
             {'model': 'Bar', 'field': 'name', 'direction': 'asc'},
-            {'model': 'Qux', 'field': 'count', 'direction': 'asc'}
+            {'model': 'Qux', 'field': 'count', 'direction': 'asc'},
         ]
 
         sorted_query = apply_sort(query, order_by)
-        result = sorted_query.all()
+        results = sorted_query.all()
 
-        assert len(result) == 4
-        assert result[0].id == 3
-        assert result[1].id == 1
-        assert result[2].id == 4
-        assert result[3].id == 2
+        assert len(results) == 4
+        assert results[0].id == 3
+        assert results[1].id == 1
+        assert results[2].id == 4
+        assert results[3].id == 2
 
-    @pytest.mark.usefixtures('multiple_bars_inserted')
+    @pytest.mark.usefixtures('multiple_bars_with_no_nulls_inserted')
     def test_a_single_dict_can_be_supplied_as_sort_spec(self, session):
         query = session.query(Bar)
         sort_spec = {'field': 'name', 'direction': 'desc'}
 
         sorted_query = apply_sort(query, sort_spec)
-        result = sorted_query.all()
+        results = sorted_query.all()
 
-        assert len(result) == 8
-        assert result[0].id == 8
-        assert result[1].id == 4
-        assert result[2].id == 6
-        assert result[3].id == 2
-        assert result[4].id == 1
-        assert result[5].id == 3
-        assert result[6].id == 5
-        assert result[7].id == 7
+        assert [result.name for result in results] == [
+            'name_5',
+            'name_4', 'name_4',
+            'name_2',
+            'name_1', 'name_1', 'name_1', 'name_1',
+        ]
 
 
 class TestAutoJoin:
 
-    @pytest.mark.usefixtures('multiple_foos_inserted')
+    @pytest.mark.usefixtures(
+        'multiple_bars_with_no_nulls_inserted',
+        'multiple_foos_inserted'
+    )
     def test_auto_join(self, session):
-
         query = session.query(Foo)
         order_by = [
             {'field': 'count', 'direction': 'desc'},
@@ -246,21 +252,26 @@ class TestAutoJoin:
         ]
 
         sorted_query = apply_sort(query, order_by)
-        result = sorted_query.all()
+        results = sorted_query.all()
 
-        assert len(result) == 8
-        assert result[0].id == 5
-        assert result[1].id == 7
-        assert result[2].id == 6
-        assert result[3].id == 8
-        assert result[4].id == 1
-        assert result[5].id == 3
-        assert result[6].id == 2
-        assert result[7].id == 4
+        assert [
+            (result.count, result.bar.name, result.id) for result in results
+        ] == [
+            (2, 'name_1', 5),
+            (2, 'name_1', 7),
+            (2, 'name_4', 6),
+            (2, 'name_5', 8),
+            (1, 'name_1', 1),
+            (1, 'name_1', 3),
+            (1, 'name_2', 2),
+            (1, 'name_4', 4),
+        ]
 
-    @pytest.mark.usefixtures('multiple_foos_inserted')
+    @pytest.mark.usefixtures(
+        'multiple_bars_with_no_nulls_inserted',
+        'multiple_foos_inserted'
+    )
     def test_noop_if_query_contains_named_models(self, session):
-
         query = session.query(Foo).join(Bar)
         order_by = [
             {'model': 'Foo', 'field': 'count', 'direction': 'desc'},
@@ -269,21 +280,26 @@ class TestAutoJoin:
         ]
 
         sorted_query = apply_sort(query, order_by)
-        result = sorted_query.all()
+        results = sorted_query.all()
 
-        assert len(result) == 8
-        assert result[0].id == 5
-        assert result[1].id == 7
-        assert result[2].id == 6
-        assert result[3].id == 8
-        assert result[4].id == 1
-        assert result[5].id == 3
-        assert result[6].id == 2
-        assert result[7].id == 4
+        assert [
+            (result.count, result.bar.name, result.id) for result in results
+        ] == [
+            (2, 'name_1', 5),
+            (2, 'name_1', 7),
+            (2, 'name_4', 6),
+            (2, 'name_5', 8),
+            (1, 'name_1', 1),
+            (1, 'name_1', 3),
+            (1, 'name_2', 2),
+            (1, 'name_4', 4),
+        ]
 
-    @pytest.mark.usefixtures('multiple_foos_inserted')
+    @pytest.mark.usefixtures(
+        'multiple_bars_with_no_nulls_inserted',
+        'multiple_foos_inserted'
+    )
     def test_auto_join_to_invalid_model(self, session):
-
         query = session.query(Foo)
         order_by = [
             {'model': 'Foo', 'field': 'count', 'direction': 'desc'},
@@ -296,9 +312,11 @@ class TestAutoJoin:
 
         assert 'The query does not contain model `Qux`.' == err.value.args[0]
 
-    @pytest.mark.usefixtures('multiple_foos_inserted')
+    @pytest.mark.usefixtures(
+        'multiple_bars_with_no_nulls_inserted',
+        'multiple_foos_inserted'
+    )
     def test_ambiguous_query(self, session):
-
         query = session.query(Foo).join(Bar)
         order_by = [
             {'field': 'count', 'direction': 'asc'},  # ambiguous
@@ -309,9 +327,11 @@ class TestAutoJoin:
 
         assert 'Ambiguous spec. Please specify a model.' == err.value.args[0]
 
-    @pytest.mark.usefixtures('multiple_foos_inserted')
+    @pytest.mark.usefixtures(
+        'multiple_bars_with_no_nulls_inserted',
+        'multiple_foos_inserted'
+    )
     def test_eager_load(self, session):
-
         # behaves as if the joinedload wasn't present
         query = session.query(Foo).options(joinedload(Foo.bar))
         order_by = [
@@ -321,14 +341,17 @@ class TestAutoJoin:
         ]
 
         sorted_query = apply_sort(query, order_by)
-        result = sorted_query.all()
+        results = sorted_query.all()
 
-        assert len(result) == 8
-        assert result[0].id == 5
-        assert result[1].id == 7
-        assert result[2].id == 6
-        assert result[3].id == 8
-        assert result[4].id == 1
-        assert result[5].id == 3
-        assert result[6].id == 2
-        assert result[7].id == 4
+        assert [
+            (result.count, result.bar.name, result.id) for result in results
+        ] == [
+            (2, 'name_1', 5),
+            (2, 'name_1', 7),
+            (2, 'name_4', 6),
+            (2, 'name_5', 8),
+            (1, 'name_1', 1),
+            (1, 'name_1', 3),
+            (1, 'name_2', 2),
+            (1, 'name_4', 4),
+        ]

@@ -10,7 +10,7 @@ Version 0.8.0
 
 Released 2018-06-25
 
-* Adds support for `ilike` (case-insensitive) string comparison.
+* Adds support for ``ilike`` (case-insensitive) string comparison.
 
 
 Version 0.7.0
@@ -51,7 +51,8 @@ Released 2017-05-22
 * Adds support for boolean functions within filters
 * Adds the possibility of supplying a single dictionary as filters when
   only one filter is provided
-* Makes the `op` filter attribute optional: `==` is the default operator
+* Makes the ``op`` filter attribute optional: ``==`` is the default
+  operator
 
 Version 0.2.0
 -------------

@@ -1,8 +1,16 @@
 sudo: false
+
 language: python
+python: 3.7
+
+dist: xenial
 
 services:
-  - mysql
+  - docker
+
+before_install:
+  - make docker-mysql-run
+  - make docker-postgres-run
 
 install:
   - pip install tox
@@ -28,7 +36,6 @@ matrix:
     - stage: test
       python: 3.7
       env: TOX_ENV=py37
-      dist: xenial
 
     - stage: deploy
       script: skip

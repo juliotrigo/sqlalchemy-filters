@@ -35,6 +35,9 @@ setup(
         'mysql': [
             'mysql-connector-python-rf==2.2.2',
         ],
+        'postgresql': [
+            'psycopg2==2.7.7'
+        ],
         'python2': [
             "funcsigs>=1.0.2"
         ]
