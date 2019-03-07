@@ -176,7 +176,7 @@ This is because a joined eager load does not add the joined model to the
 original query, as explained
 `here <http://docs.sqlalchemy.org/en/latest/orm/loading_relationships.html#the-zen-of-joined-eager-loading>`_
 
-The following would not prevent all columns from Bar being eagerly
+The following would not prevent all columns from ``Bar`` being eagerly
 loaded:
 
 .. code-block:: python

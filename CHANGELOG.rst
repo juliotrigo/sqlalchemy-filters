@@ -5,12 +5,26 @@ Here you can see the full list of changes between sqlalchemy-filters
 versions, where semantic versioning is used: *major.minor.patch*.
 
 
+Version 0.9.0
+-------------
+
+Released 2019-03-07
+
+* Add compatibility (no official support) with Python 2.7 (#23 which
+  addresses #18 thanks to @itdependsnetworks)
+* Add support for Python 3.7 (#25)
+* Add support (tests) for PostgreSQL (#28)
+* Fix and improve documentation (#21 thanks to @daviskirk, #28)
+
+
 Version 0.8.0
 -------------
 
 Released 2018-06-25
 
-* Adds support for ``ilike`` (case-insensitive) string comparison.
+* Adds support for ``ilike`` (case-insensitive) string comparison (#19
+  thanks to @rockwelln)
+* Drop support for Python 3.3 (#20)
 
 
 Version 0.7.0
