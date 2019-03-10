@@ -1,4 +1,4 @@
-SQLAlchemy-filters
+SQLAlchemy filters
 ==================
 
 .. pull-quote::
@@ -11,6 +11,9 @@ SQLAlchemy-filters
     :target: https://pypi.org/project/sqlalchemy-filters/
 
 .. image:: https://img.shields.io/pypi/pyversions/sqlalchemy-filters.svg
+    :target: https://pypi.org/project/sqlalchemy-filters/
+
+.. image:: https://img.shields.io/pypi/format/sqlalchemy-filters.svg
     :target: https://pypi.org/project/sqlalchemy-filters/
 
 .. image:: https://travis-ci.org/juliotrigo/sqlalchemy-filters.svg?branch=master
@@ -413,7 +416,15 @@ There is no active support for python 2, however it is compatible as of
 February 2019, if you install ``funcsigs``.
 
 
+Changelog
+---------
+
+Consult the `CHANGELOG <https://github.com/juliotrigo/sqlalchemy-filters/blob/master/CHANGELOG.rst>`_
+document for fixes and enhancements of each version.
+
+
 License
 -------
 
-Apache 2.0. See LICENSE for details.
+Apache 2.0. See `LICENSE <https://github.com/juliotrigo/sqlalchemy-filters/blob/master/LICENSE>`_
+for details.
