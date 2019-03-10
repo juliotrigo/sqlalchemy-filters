@@ -11,6 +11,14 @@ from test import error_value
 from test.models import Foo, Bar, Qux
 
 
+NULLSFIRST_NOT_SUPPORTED = (
+    "'nullsfirst' only supported by PostgreSQL in the current tests"
+)
+NULLSLAST_NOT_SUPPORTED = (
+    "'nullslast' only supported by PostgreSQL in the current tests"
+)
+
+
 @pytest.fixture
 def multiple_foos_inserted(session):
     foo_1 = Foo(id=1, bar_id=1, name='name_1', count=1)
@@ -36,6 +44,22 @@ def multiple_bars_with_no_nulls_inserted(session):
     bar_7 = Bar(id=7, name='name_1', count=2)
     bar_8 = Bar(id=8, name='name_5', count=1)
     session.add_all([bar_1, bar_2, bar_3, bar_4, bar_5, bar_6, bar_7, bar_8])
+    session.commit()
+
+
+@pytest.fixture
+def multiple_bars_with_nulls_inserted(session):
+    bar_1 = Bar(id=1, name='name_1', count=5)
+    bar_2 = Bar(id=2, name='name_2', count=20)
+    bar_3 = Bar(id=3, name='name_1', count=None)
+    bar_4 = Bar(id=4, name='name_4', count=10)
+    bar_5 = Bar(id=5, name='name_1', count=40)
+    bar_6 = Bar(id=6, name='name_4', count=None)
+    bar_7 = Bar(id=7, name='name_1', count=30)
+    bar_8 = Bar(id=8, name='name_5', count=50)
+    session.add_all(
+        [bar_1, bar_2, bar_3, bar_4, bar_5, bar_6, bar_7, bar_8]
+    )
     session.commit()
 
 
@@ -354,4 +378,196 @@ class TestAutoJoin:
             (1, 'name_1', 3),
             (1, 'name_2', 2),
             (1, 'name_4', 4),
+        ]
+
+
+class TestSortNullsFirst(object):
+
+    """Tests `nullsfirst`.
+
+    This is currently not supported by MySQL and SQLite. Only tested for
+    PostgreSQL.
+    """
+
+    @pytest.mark.usefixtures('multiple_bars_with_nulls_inserted')
+    def test_single_sort_field_asc_nulls_first(self, session, is_postgresql):
+        if not is_postgresql:
+            pytest.skip(NULLSFIRST_NOT_SUPPORTED)
+
+        query = session.query(Bar)
+        order_by = [
+            {'field': 'count', 'direction': 'asc', 'nullsfirst': True}
+        ]
+
+        sorted_query = apply_sort(query, order_by)
+        results = sorted_query.all()
+
+        assert [result.count for result in results] == [
+            None, None, 5, 10, 20, 30, 40, 50,
+        ]
+
+    @pytest.mark.usefixtures('multiple_bars_with_nulls_inserted')
+    def test_single_sort_field_desc_nulls_first(self, session, is_postgresql):
+        if not is_postgresql:
+            pytest.skip(NULLSFIRST_NOT_SUPPORTED)
+
+        query = session.query(Bar)
+        order_by = [
+            {'field': 'count', 'direction': 'desc', 'nullsfirst': True}
+        ]
+
+        sorted_query = apply_sort(query, order_by)
+        results = sorted_query.all()
+
+        assert [result.count for result in results] == [
+            None, None, 50, 40, 30, 20, 10, 5,
+        ]
+
+    @pytest.mark.usefixtures('multiple_bars_with_nulls_inserted')
+    def test_multiple_sort_fields_asc_nulls_first(
+        self, session, is_postgresql
+    ):
+        if not is_postgresql:
+            pytest.skip(NULLSFIRST_NOT_SUPPORTED)
+
+        query = session.query(Bar)
+        order_by = [
+            {'field': 'name', 'direction': 'asc'},
+            {'field': 'count', 'direction': 'asc', 'nullsfirst': True},
+        ]
+
+        sorted_query = apply_sort(query, order_by)
+        results = sorted_query.all()
+
+        assert [(result.name, result.count) for result in results] == [
+            ('name_1', None),
+            ('name_1', 5),
+            ('name_1', 30),
+            ('name_1', 40),
+            ('name_2', 20),
+            ('name_4', None),
+            ('name_4', 10),
+            ('name_5', 50),
+        ]
+
+    @pytest.mark.usefixtures('multiple_bars_with_nulls_inserted')
+    def test_multiple_sort_fields_desc_nulls_first(
+        self, session, is_postgresql
+    ):
+        if not is_postgresql:
+            pytest.skip(NULLSFIRST_NOT_SUPPORTED)
+
+        query = session.query(Bar)
+        order_by = [
+            {'field': 'name', 'direction': 'asc'},
+            {'field': 'count', 'direction': 'desc', 'nullsfirst': True},
+        ]
+
+        sorted_query = apply_sort(query, order_by)
+        results = sorted_query.all()
+
+        assert [(result.name, result.count) for result in results] == [
+            ('name_1', None),
+            ('name_1', 40),
+            ('name_1', 30),
+            ('name_1', 5),
+            ('name_2', 20),
+            ('name_4', None),
+            ('name_4', 10),
+            ('name_5', 50),
+        ]
+
+
+class TestSortNullsLast(object):
+
+    """Tests `nullslast`.
+
+    This is currently not supported by MySQL and SQLite. Only tested for
+    PostgreSQL.
+    """
+
+    @pytest.mark.usefixtures('multiple_bars_with_nulls_inserted')
+    def test_single_sort_field_asc_nulls_last(self, session, is_postgresql):
+        if not is_postgresql:
+            pytest.skip(NULLSLAST_NOT_SUPPORTED)
+
+        query = session.query(Bar)
+        order_by = [
+            {'field': 'count', 'direction': 'asc', 'nullslast': True}
+        ]
+
+        sorted_query = apply_sort(query, order_by)
+        results = sorted_query.all()
+
+        assert [result.count for result in results] == [
+            5, 10, 20, 30, 40, 50, None, None,
+        ]
+
+    @pytest.mark.usefixtures('multiple_bars_with_nulls_inserted')
+    def test_single_sort_field_desc_nulls_last(self, session, is_postgresql):
+        if not is_postgresql:
+            pytest.skip(NULLSLAST_NOT_SUPPORTED)
+
+        query = session.query(Bar)
+        order_by = [
+            {'field': 'count', 'direction': 'desc', 'nullslast': True}
+        ]
+
+        sorted_query = apply_sort(query, order_by)
+        results = sorted_query.all()
+
+        assert [result.count for result in results] == [
+            50, 40, 30, 20, 10, 5, None, None,
+        ]
+
+    @pytest.mark.usefixtures('multiple_bars_with_nulls_inserted')
+    def test_multiple_sort_fields_asc_nulls_last(self, session, is_postgresql):
+        if not is_postgresql:
+            pytest.skip(NULLSLAST_NOT_SUPPORTED)
+
+        query = session.query(Bar)
+        order_by = [
+            {'field': 'name', 'direction': 'asc'},
+            {'field': 'count', 'direction': 'asc', 'nullslast': True},
+        ]
+
+        sorted_query = apply_sort(query, order_by)
+        results = sorted_query.all()
+
+        assert [(result.name, result.count) for result in results] == [
+            ('name_1', 5),
+            ('name_1', 30),
+            ('name_1', 40),
+            ('name_1', None),
+            ('name_2', 20),
+            ('name_4', 10),
+            ('name_4', None),
+            ('name_5', 50),
+        ]
+
+    @pytest.mark.usefixtures('multiple_bars_with_nulls_inserted')
+    def test_multiple_sort_fields_desc_nulls_last(
+        self, session, is_postgresql
+    ):
+        if not is_postgresql:
+            pytest.skip(NULLSLAST_NOT_SUPPORTED)
+
+        query = session.query(Bar)
+        order_by = [
+            {'field': 'name', 'direction': 'asc'},
+            {'field': 'count', 'direction': 'desc', 'nullslast': True},
+        ]
+
+        sorted_query = apply_sort(query, order_by)
+        results = sorted_query.all()
+
+        assert [(result.name, result.count) for result in results] == [
+            ('name_1', 40),
+            ('name_1', 30),
+            ('name_1', 5),
+            ('name_1', None),
+            ('name_2', 20),
+            ('name_4', 10),
+            ('name_4', None),
+            ('name_5', 50),
         ]

@@ -348,6 +348,37 @@ provided ``direction``.
 The ``model`` key is optional if the original query being sorted only
 applies to one model.
 
+nullsfirst / nullslast
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+    sort_spec = [
+        {'model': 'Baz', 'field': 'count', 'direction': 'asc', 'nullsfirst': True},
+        {'model': 'Qux', 'field': 'city', 'direction': 'desc', 'nullslast': True},
+        # ...
+    ]
+
+``nullsfirst`` is an optional attribute that will place ``NULL`` values first
+if set to ``True``, according to the `SQLAlchemy documentation <https://docs.sqlalchemy.org/en/latest/core/sqlelement.html#sqlalchemy.sql.expression.nullsfirst>`__.
+
+``nullslast`` is an optional attribute that will place ``NULL`` values last
+if set to ``True``, according to the `SQLAlchemy documentation <https://docs.sqlalchemy.org/en/latest/core/sqlelement.html#sqlalchemy.sql.expression.nullslast>`__.
+
+If none of them are provided, then ``NULL`` values will be sorted according
+to the RDBMS being used. SQL defines that ``NULL`` values should be placed
+together when sorting, but it does not specify whether they should be placed
+first or last.
+
+Even though both ``nullsfirst`` and ``nullslast`` are part of SQLAlchemy,
+they will raise an unexpected exception if the RDBMS that is being used does
+not support them.
+
+At the moment they are
+`supported by PostgreSQL <https://www.postgresql.org/docs/current/queries-order.html>`_,
+but they are **not** supported by SQLite and MySQL.
+
+
 
 Running tests
 -------------
