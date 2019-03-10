@@ -15,6 +15,7 @@ setup(
     version='0.9.0',
     description='A library to filter SQLAlchemy queries.',
     long_description=readme,
+    long_description_content_type='text/x-rst',
     author='Student.com',
     author_email='wearehiring@student.com',
     url='https://github.com/juliotrigo/sqlalchemy-filters',
