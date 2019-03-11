@@ -5,6 +5,14 @@ Here you can see the full list of changes between sqlalchemy-filters
 versions, where semantic versioning is used: *major.minor.patch*.
 
 
+Version 0.10.0
+--------------
+
+Released 2019-03-12
+
+* Add ``nullsfirst`` and ``nullslast`` sorting options (#30)
+
+
 Version 0.9.0
 -------------
 
