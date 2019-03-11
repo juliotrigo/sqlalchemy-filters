@@ -28,7 +28,7 @@ setup(
         'dev': [
             'pytest==4.3.0',
             'flake8==3.7.7',
-            'coverage==4.5.2',
+            'coverage==4.5.3',
             'sqlalchemy-utils==0.33.11',
             'restructuredtext-lint==1.2.2',
             'Pygments==2.3.1',
