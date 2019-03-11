@@ -29,6 +29,8 @@ class Sort(object):
 
         self.field_name = field_name
         self.direction = direction
+        self.nullsfirst = sort_spec.get('nullsfirst')
+        self.nullslast = sort_spec.get('nullslast')
 
     def get_named_models(self):
         if "model" in self.sort_spec:
@@ -46,9 +48,16 @@ class Sort(object):
         sqlalchemy_field = field.get_sqlalchemy_field()
 
         if direction == SORT_ASCENDING:
-            return sqlalchemy_field.asc()
+            sort_fnc = sqlalchemy_field.asc
         elif direction == SORT_DESCENDING:
-            return sqlalchemy_field.desc()
+            sort_fnc = sqlalchemy_field.desc
+
+        if self.nullsfirst:
+            return sort_fnc().nullsfirst()
+        elif self.nullslast:
+            return sort_fnc().nullslast()
+        else:
+            return sort_fnc()
 
 
 def get_named_models(sorts):
@@ -70,6 +79,18 @@ def apply_sort(query, sort_spec):
             sort_spec = [
                 {'model': 'Foo', 'field': 'name', 'direction': 'asc'},
                 {'model': 'Bar', 'field': 'id', 'direction': 'desc'},
+                {
+                    'model': 'Qux',
+                    'field': 'surname',
+                    'direction': 'desc',
+                    'nullslast': True,
+                },
+                {
+                    'model': 'Baz',
+                    'field': 'count',
+                    'direction': 'asc',
+                    'nullsfirst': True,
+                },
             ]
 
         If the query being modified refers to a single model, the `model` key
