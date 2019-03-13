@@ -12,7 +12,7 @@ with open(os.path.join(here, 'README.rst'), 'r', 'utf-8') as handle:
 
 setup(
     name='sqlalchemy-filters',
-    version='0.9.0',
+    version='0.10.0',
     description='A library to filter SQLAlchemy queries.',
     long_description=readme,
     long_description_content_type='text/x-rst',
@@ -28,7 +28,7 @@ setup(
         'dev': [
             'pytest==4.3.0',
             'flake8==3.7.7',
-            'coverage==4.5.2',
+            'coverage==4.5.3',
             'sqlalchemy-utils==0.33.11',
             'restructuredtext-lint==1.2.2',
             'Pygments==2.3.1',
