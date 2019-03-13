@@ -8,7 +8,7 @@ versions, where semantic versioning is used: *major.minor.patch*.
 Version 0.10.0
 --------------
 
-Released 2019-03-12
+Released 2019-03-13
 
 * Add ``nullsfirst`` and ``nullslast`` sorting options (#30)
 
