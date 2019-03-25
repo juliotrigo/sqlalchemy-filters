@@ -12,6 +12,9 @@ class Field(object):
 
     def get_sqlalchemy_field(self):
         orm_descriptors = inspect(self.model).all_orm_descriptors.keys()
+        orm_descriptors.remove('metadata')
+        orm_descriptors.remove('query')
+        orm_descriptors.remove('query_class')
         if self.field_name not in orm_descriptors:
             raise FieldNotFound(
                 'Model {} has no column `{}`.'.format(
