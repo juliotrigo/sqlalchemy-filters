@@ -3,12 +3,17 @@
 from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.hybrid import hybrid_property
 
 
 class Base(object):
     id = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False)
     count = Column(Integer, nullable=True)
+
+    @hybrid_property
+    def count_square(self):
+        return self.count * self.count
 
 
 Base = declarative_base(cls=Base)
