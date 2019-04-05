@@ -11,7 +11,13 @@ class Field(object):
         self.field_name = field_name
 
     def get_sqlalchemy_field(self):
+<<<<<<< HEAD
         if self.field_name not in self._get_valid_field_names():
+=======
+        orm_descriptors = inspect(self.model).all_orm_descriptors.keys()
+        orm_descriptors.remove('__mapper__')
+        if self.field_name not in orm_descriptors:
+>>>>>>> cca8323e8eb3664b2b68eb9d966376636509043d
             raise FieldNotFound(
                 'Model {} has no column `{}`.'.format(
                     self.model, self.field_name
