@@ -179,6 +179,37 @@ class TestMultipleModels:
         assert {qux.id for qux in quxs} == {1, 3}
         assert {qux.name for qux in quxs} == {"name_1"}
 
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    @pytest.mark.usefixtures('multiple_quxs_inserted')
+    def test_multiple_model_hybrid_fields(self, session):
+        query = session.query(Bar, Qux)
+        filters = [
+            {
+                'model': 'Bar',
+                'field': 'count_square',
+                'op': '==',
+                'value': 100
+            },
+            {
+                'model': 'Qux',
+                'field': 'count_square',
+                'op': '>=',
+                'value': 25
+            },
+        ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 3
+        bars, quxs = zip(*result)
+        assert set(map(type, bars)) == {Bar}
+        assert {bar.id for bar in bars} == {2}
+        assert {bar.name for bar in bars} == {"name_2"}
+        assert set(map(type, quxs)) == {Qux}
+        assert {qux.id for qux in quxs} == {1, 2, 4}
+        assert {qux.name for qux in quxs} == {'name_1', 'name_2', 'name_4'}
+
 
 class TestAutoJoin:
 
