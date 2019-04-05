@@ -1,6 +1,6 @@
 from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.inspection import inspect
-
+from sqlalchemy.util.langhelpers import symbol
 from .exceptions import BadQuery, FieldNotFound, BadSpec
 
 
@@ -11,14 +11,27 @@ class Field(object):
         self.field_name = field_name
 
     def get_sqlalchemy_field(self):
-        orm_descriptors = inspect(self.model).all_orm_descriptors.keys()
-        if self.field_name not in orm_descriptors:
+        if self.field_name not in self._get_valid_field_names():
             raise FieldNotFound(
                 'Model {} has no column `{}`.'.format(
                     self.model, self.field_name
                 )
             )
         return getattr(self.model, self.field_name)
+
+    def _get_valid_field_names(self):
+        inspect_mapper = inspect(self.model)
+        columns = inspect_mapper.columns
+        orm_descriptors = inspect_mapper.all_orm_descriptors
+
+        column_names = columns.keys()
+        hybrid_names = [
+            key for key, item in orm_descriptors.items()
+            if item.extension_type == symbol('HYBRID_PROPERTY') or
+            item.extension_type == symbol('HYBRID_METHOD')
+        ]
+
+        return set(column_names) | set(hybrid_names)
 
 
 def get_query_models(query):
