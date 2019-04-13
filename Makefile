@@ -9,14 +9,14 @@ rst-lint:
 	rst-lint CHANGELOG.rst
 
 flake8:
-	flake8 sqlalchemy_filters test
+	flake8 sqlalchemy_filters test setup.py
 
 test: flake8
 	pytest test $(ARGS)
 
 coverage: flake8 rst-lint
 	coverage run --source sqlalchemy_filters -m pytest test $(ARGS)
-	coverage report -m --fail-under 100
+	coverage report --show-missing --fail-under 100
 
 
 # Docker test containers
