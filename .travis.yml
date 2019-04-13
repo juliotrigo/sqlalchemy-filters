@@ -29,17 +29,6 @@ matrix:
     - python: 2.7
       env: TOX_ENV="py27-sqlalchemylatest"
 
-    - python: 3.4
-      env: TOX_ENV="py34-sqlalchemy1.0"
-    - python: 3.4
-      env: TOX_ENV="py34-sqlalchemy1.1"
-    - python: 3.4
-      env: TOX_ENV="py34-sqlalchemy1.2"
-    - python: 3.4
-      env: TOX_ENV="py34-sqlalchemy1.3"
-    - python: 3.4
-      env: TOX_ENV="py34-sqlalchemylatest"
-
     - python: 3.5
       env: TOX_ENV="py35-sqlalchemy1.0"
     - python: 3.5
