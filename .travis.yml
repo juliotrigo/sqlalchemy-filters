@@ -9,8 +9,8 @@ services:
   - docker
 
 before_install:
-  - make docker-mysql-run
-  - make docker-postgres-run
+  - make mysql-container
+  - make postgres-container
 
 install:
   - pip install tox

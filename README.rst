@@ -402,8 +402,8 @@ There are Makefile targets to run docker containers locally for both
 
 .. code-block:: shell
 
-    $ make docker-mysql-run
-    $ make docker-postgres-run
+    $ make mysql-container
+    $ make postgres-container
 
 To run the tests locally:
 

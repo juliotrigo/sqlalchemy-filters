@@ -21,12 +21,12 @@ coverage: flake8 rst-lint
 
 # Docker test containers
 
-docker-mysql-run:
+mysql-container:
 	docker run -d --rm --name mysql-sqlalchemy-filters -p 3306:3306 \
 		-e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
 		mysql:$(MYSQL_VERSION)
 
-docker-postgres-run:
+postgres-container:
 	docker run -d --rm --name postgres-sqlalchemy-filters -p 5432:5432 \
 		-e POSTGRES_USER=postgres \
 		-e POSTGRES_PASSWORD= \
