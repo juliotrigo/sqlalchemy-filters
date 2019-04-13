@@ -3,8 +3,8 @@ SQLAlchemy filters
 
 .. pull-quote::
 
-    Filter, sort and paginate SQLAlchemy_ query objects.
-    Ideal for exposing these actions over a REST API.
+    Filter, sort and paginate SQLAlchemy query objects. Ideal for
+    exposing these actions over a REST API.
 
 
 .. image:: https://img.shields.io/pypi/v/sqlalchemy-filters.svg
