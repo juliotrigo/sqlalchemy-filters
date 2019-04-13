@@ -54,6 +54,7 @@ Then we can apply filters to that ``query`` object (multiple times):
 
     from sqlalchemy_filters import apply_filters
 
+
     # `query` should be a SQLAlchemy query object
 
     filter_spec = [{'field': 'name', 'op': '==', 'value': 'name_1'}]
@@ -72,6 +73,7 @@ including joins:
     class Bar(Base):
 
         __tablename__ = 'bar'
+
         foo_id = Column(Integer, ForeignKey('foo.id'))
 
 
@@ -218,6 +220,7 @@ Sort
 
     from sqlalchemy_filters import apply_sort
 
+
     # `query` should be a SQLAlchemy query object
 
     sort_spec = [
@@ -243,6 +246,7 @@ Pagination
 .. code-block:: python
 
     from sqlalchemy_filters import apply_pagination
+
 
     # `query` should be a SQLAlchemy query object
 
@@ -415,8 +419,12 @@ To run the tests locally:
 
 There are some other Makefile targets that can be used to run the tests:
 
+There are other Makefile targets to run the tests, but extra
+dependencies will have to be installed:
+
 .. code-block:: shell
 
+    $ pip install -U --editable ".[dev,mysql,postgresql]"
     $ # using default settings
     $ make test
     $ make coverage
@@ -443,8 +451,9 @@ The following RDBMS are supported (tested):
 Python 2
 --------
 
-There is no active support for python 2, however it is compatible as of
-February 2019, if you install ``funcsigs``.
+There is no active support for Python 2. However, it is compatible as of
+February 2019, if you install ``funcsigs``, included in the `python2`
+extra requirements.
 
 
 SQLAlchemy support
