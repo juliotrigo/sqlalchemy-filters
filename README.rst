@@ -3,7 +3,7 @@ SQLAlchemy filters
 
 .. pull-quote::
 
-    Filter, sort and paginate SQLAlchemy query objects.
+    Filter, sort and paginate SQLAlchemy_ query objects.
     Ideal for exposing these actions over a REST API.
 
 
@@ -23,7 +23,7 @@ SQLAlchemy filters
 Filtering
 ---------
 
-Assuming that we have a SQLAlchemy ``query`` object:
+Assuming that we have a SQLAlchemy_ ``query`` object:
 
 .. code-block:: python
 
@@ -113,7 +113,7 @@ blocks is identical:
     ]
     filtered_query = apply_filters(query, filter_spec)
 
-The automatic join is only possible if sqlalchemy can implictly
+The automatic join is only possible if SQLAlchemy_ can implictly
 determine the condition for the join, for example because of a foreign
 key relationship.
 
@@ -137,7 +137,7 @@ functions:
 Restricted Loads
 ----------------
 
-You can restrict the fields that SQLAlchemy loads from the database by
+You can restrict the fields that SQLAlchemy_ loads from the database by
 using the ``apply_loads`` function:
 
 .. code-block:: python
@@ -159,7 +159,7 @@ loaded during normal query execution.
 Effect on joined queries
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The default SQLAlchemy join is lazy, meaning that columns from the
+The default SQLAlchemy_ join is lazy, meaning that columns from the
 joined table are loaded only when required. Therefore ``apply_loads``
 has limited effect in the following scenario:
 
@@ -370,7 +370,7 @@ to the RDBMS being used. SQL defines that ``NULL`` values should be placed
 together when sorting, but it does not specify whether they should be placed
 first or last.
 
-Even though both ``nullsfirst`` and ``nullslast`` are part of SQLAlchemy,
+Even though both ``nullsfirst`` and ``nullslast`` are part of SQLAlchemy_,
 they will raise an unexpected exception if the RDBMS that is being used does
 not support them.
 
@@ -447,6 +447,13 @@ There is no active support for python 2, however it is compatible as of
 February 2019, if you install ``funcsigs``.
 
 
+SQLAlchemy support
+------------------
+
+The following SQLAlchemy_ versions are supported: ``1.0``, ``1.1``,
+``1.2``, ``1.3``.
+
+
 Changelog
 ---------
 
@@ -459,3 +466,6 @@ License
 
 Apache 2.0. See `LICENSE <https://github.com/juliotrigo/sqlalchemy-filters/blob/master/LICENSE>`_
 for details.
+
+
+.. _SQLAlchemy: https://www.sqlalchemy.org/
