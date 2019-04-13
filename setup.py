@@ -26,18 +26,18 @@ setup(
     ],
     extras_require={
         'dev': [
-            'pytest==4.3.0',
-            'flake8==3.7.7',
+            'pytest==4.4.0',
             'coverage==4.5.3',
             'sqlalchemy-utils==0.33.11',
-            'restructuredtext-lint==1.2.2',
+            'flake8==3.7.7',
+            'restructuredtext-lint==1.3.0',
             'Pygments==2.3.1',
         ],
         'mysql': [
             'mysql-connector-python-rf==2.2.2',
         ],
         'postgresql': [
-            'psycopg2==2.7.7'
+            'psycopg2==2.8.1'
         ],
         'python2': [
             "funcsigs>=1.0.2"
