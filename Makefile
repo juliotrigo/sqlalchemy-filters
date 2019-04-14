@@ -9,24 +9,24 @@ rst-lint:
 	rst-lint CHANGELOG.rst
 
 flake8:
-	flake8 sqlalchemy_filters test
+	flake8 sqlalchemy_filters test setup.py
 
 test: flake8
 	pytest test $(ARGS)
 
 coverage: flake8 rst-lint
 	coverage run --source sqlalchemy_filters -m pytest test $(ARGS)
-	coverage report -m --fail-under 100
+	coverage report --show-missing --fail-under 100
 
 
 # Docker test containers
 
-docker-mysql-run:
+mysql-container:
 	docker run -d --rm --name mysql-sqlalchemy-filters -p 3306:3306 \
 		-e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
 		mysql:$(MYSQL_VERSION)
 
-docker-postgres-run:
+postgres-container:
 	docker run -d --rm --name postgres-sqlalchemy-filters -p 5432:5432 \
 		-e POSTGRES_USER=postgres \
 		-e POSTGRES_PASSWORD= \

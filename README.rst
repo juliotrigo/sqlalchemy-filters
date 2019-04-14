@@ -3,8 +3,8 @@ SQLAlchemy filters
 
 .. pull-quote::
 
-    Filter, sort and paginate SQLAlchemy query objects.
-    Ideal for exposing these actions over a REST API.
+    Filter, sort and paginate SQLAlchemy query objects. Ideal for
+    exposing these actions over a REST API.
 
 
 .. image:: https://img.shields.io/pypi/v/sqlalchemy-filters.svg
@@ -23,7 +23,7 @@ SQLAlchemy filters
 Filtering
 ---------
 
-Assuming that we have a SQLAlchemy ``query`` object:
+Assuming that we have a SQLAlchemy_ ``query`` object:
 
 .. code-block:: python
 
@@ -54,6 +54,7 @@ Then we can apply filters to that ``query`` object (multiple times):
 
     from sqlalchemy_filters import apply_filters
 
+
     # `query` should be a SQLAlchemy query object
 
     filter_spec = [{'field': 'name', 'op': '==', 'value': 'name_1'}]
@@ -72,6 +73,7 @@ including joins:
     class Bar(Base):
 
         __tablename__ = 'bar'
+
         foo_id = Column(Integer, ForeignKey('foo.id'))
 
 
@@ -113,7 +115,7 @@ blocks is identical:
     ]
     filtered_query = apply_filters(query, filter_spec)
 
-The automatic join is only possible if sqlalchemy can implictly
+The automatic join is only possible if SQLAlchemy_ can implictly
 determine the condition for the join, for example because of a foreign
 key relationship.
 
@@ -137,7 +139,7 @@ functions:
 Restricted Loads
 ----------------
 
-You can restrict the fields that SQLAlchemy loads from the database by
+You can restrict the fields that SQLAlchemy_ loads from the database by
 using the ``apply_loads`` function:
 
 .. code-block:: python
@@ -159,7 +161,7 @@ loaded during normal query execution.
 Effect on joined queries
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The default SQLAlchemy join is lazy, meaning that columns from the
+The default SQLAlchemy_ join is lazy, meaning that columns from the
 joined table are loaded only when required. Therefore ``apply_loads``
 has limited effect in the following scenario:
 
@@ -218,6 +220,7 @@ Sort
 
     from sqlalchemy_filters import apply_sort
 
+
     # `query` should be a SQLAlchemy query object
 
     sort_spec = [
@@ -243,6 +246,7 @@ Pagination
 .. code-block:: python
 
     from sqlalchemy_filters import apply_pagination
+
 
     # `query` should be a SQLAlchemy query object
 
@@ -370,7 +374,7 @@ to the RDBMS being used. SQL defines that ``NULL`` values should be placed
 together when sorting, but it does not specify whether they should be placed
 first or last.
 
-Even though both ``nullsfirst`` and ``nullslast`` are part of SQLAlchemy,
+Even though both ``nullsfirst`` and ``nullslast`` are part of SQLAlchemy_,
 they will raise an unexpected exception if the RDBMS that is being used does
 not support them.
 
@@ -402,8 +406,8 @@ There are Makefile targets to run docker containers locally for both
 
 .. code-block:: shell
 
-    $ make docker-mysql-run
-    $ make docker-postgres-run
+    $ make mysql-container
+    $ make postgres-container
 
 To run the tests locally:
 
@@ -415,8 +419,12 @@ To run the tests locally:
 
 There are some other Makefile targets that can be used to run the tests:
 
+There are other Makefile targets to run the tests, but extra
+dependencies will have to be installed:
+
 .. code-block:: shell
 
+    $ pip install -U --editable ".[dev,mysql,postgresql]"
     $ # using default settings
     $ make test
     $ make coverage
@@ -443,8 +451,16 @@ The following RDBMS are supported (tested):
 Python 2
 --------
 
-There is no active support for python 2, however it is compatible as of
-February 2019, if you install ``funcsigs``.
+There is no active support for Python 2. However, it is compatible as of
+February 2019, if you install ``funcsigs``, included in the ``python2``
+extra requirements.
+
+
+SQLAlchemy support
+------------------
+
+The following SQLAlchemy_ versions are supported: ``1.0``, ``1.1``,
+``1.2``, ``1.3``.
 
 
 Changelog
@@ -459,3 +475,6 @@ License
 
 Apache 2.0. See `LICENSE <https://github.com/juliotrigo/sqlalchemy-filters/blob/master/LICENSE>`_
 for details.
+
+
+.. _SQLAlchemy: https://www.sqlalchemy.org/
