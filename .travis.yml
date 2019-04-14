@@ -1,5 +1,3 @@
-sudo: false
-
 language: python
 python: 3.7
 
@@ -9,8 +7,8 @@ services:
   - docker
 
 before_install:
-  - make docker-mysql-run
-  - make docker-postgres-run
+  - make mysql-container
+  - make postgres-container
 
 install:
   - pip install tox
@@ -19,23 +17,48 @@ matrix:
   include:
     - stage: test
       python: 2.7
-      env: TOX_ENV=py27
+      env: TOX_ENV="py27-sqlalchemy1.0"
+    - python: 2.7
+      env: TOX_ENV="py27-sqlalchemy1.1"
+    - python: 2.7
+      env: TOX_ENV="py27-sqlalchemy1.2"
+    - python: 2.7
+      env: TOX_ENV="py27-sqlalchemy1.3"
+    - python: 2.7
+      env: TOX_ENV="py27-sqlalchemylatest"
 
-    - stage: test
-      python: 3.4
-      env: TOX_ENV=py34
+    - python: 3.5
+      env: TOX_ENV="py35-sqlalchemy1.0"
+    - python: 3.5
+      env: TOX_ENV="py35-sqlalchemy1.1"
+    - python: 3.5
+      env: TOX_ENV="py35-sqlalchemy1.2"
+    - python: 3.5
+      env: TOX_ENV="py35-sqlalchemy1.3"
+    - python: 3.5
+      env: TOX_ENV="py35-sqlalchemylatest"
 
-    - stage: test
-      python: 3.5
-      env: TOX_ENV=py35
+    - python: 3.6
+      env: TOX_ENV="py36-sqlalchemy1.0"
+    - python: 3.6
+      env: TOX_ENV="py36-sqlalchemy1.1"
+    - python: 3.6
+      env: TOX_ENV="py36-sqlalchemy1.2"
+    - python: 3.6
+      env: TOX_ENV="py36-sqlalchemy1.3"
+    - python: 3.6
+      env: TOX_ENV="py36-sqlalchemylatest"
 
-    - stage: test
-      python: 3.6
-      env: TOX_ENV=py36
-
-    - stage: test
-      python: 3.7
-      env: TOX_ENV=py37
+    - python: 3.7
+      env: TOX_ENV="py37-sqlalchemy1.0"
+    - python: 3.7
+      env: TOX_ENV="py37-sqlalchemy1.1"
+    - python: 3.7
+      env: TOX_ENV="py37-sqlalchemy1.2"
+    - python: 3.7
+      env: TOX_ENV="py37-sqlalchemy1.3"
+    - python: 3.7
+      env: TOX_ENV="py37-sqlalchemylatest"
 
     - stage: deploy
       script: skip
