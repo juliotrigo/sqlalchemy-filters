@@ -3,6 +3,7 @@
 from sqlalchemy import (
     Column, Date, DateTime, ForeignKey, Integer, String, Time
 )
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -14,6 +15,7 @@ class Base(object):
 
 
 Base = declarative_base(cls=Base)
+BasePostgresqlSpecific = declarative_base(cls=Base)
 
 
 class Foo(Base):
@@ -44,3 +46,10 @@ class Qux(Base):
     created_at = Column(Date)
     execution_time = Column(DateTime)
     expiration_time = Column(Time)
+
+
+class Corge(BasePostgresqlSpecific):
+
+    __tablename__ = 'corge'
+
+    tags = Column(ARRAY(String, dimensions=1))
