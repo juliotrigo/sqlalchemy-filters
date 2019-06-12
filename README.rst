@@ -119,9 +119,10 @@ The automatic join is only possible if SQLAlchemy_ can implictly
 determine the condition for the join, for example because of a foreign
 key relationship.
 
-Automatic joins allow flexibility for clients to filter and sort by
-related objects without specifying all possible joins on the server
-beforehand.
+Automatic joins allow flexibility for clients to filter and sort by related
+objects without specifying all possible joins on the server beforehand. Feature
+can be explicitly disabled by passing ``do_auto_join=False`` argument to the
+``apply_filters`` call.
 
 Note that first filter of the second block does not specify a model.
 It is implictly applied to the ``Foo`` model because that is the only
