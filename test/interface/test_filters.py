@@ -200,6 +200,20 @@ class TestAutoJoin:
         assert result[0].bar.count is None
 
     @pytest.mark.usefixtures('multiple_foos_inserted')
+    def test_do_not_auto_join(self, session):
+
+        query = session.query(Foo)
+        filters = [
+            {'field': 'name', 'op': '==', 'value': 'name_1'},
+            {'model': 'Bar', 'field': 'count', 'op': 'is_null'},
+        ]
+
+        with pytest.raises(BadSpec) as exc:
+            apply_filters(query, filters, do_auto_join=False)
+
+        assert 'The query does not contain model `Bar`' in str(exc)
+
+    @pytest.mark.usefixtures('multiple_foos_inserted')
     def test_noop_if_query_contains_named_models(self, session):
 
         query = session.query(Foo).join(Bar)
