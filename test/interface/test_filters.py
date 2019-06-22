@@ -726,7 +726,6 @@ class TestDateFields:
         result = filtered_query.all()
 
         assert len(result) == 1
-        assert result[0].id == 4
         assert result[0].created_at == datetime.date(2016, 7, 14)
 
     @pytest.mark.parametrize(
@@ -749,9 +748,7 @@ class TestDateFields:
         result = filtered_query.all()
 
         assert len(result) == 2
-        assert result[0].id == 2
         assert result[0].created_at == datetime.date(2016, 7, 13)
-        assert result[1].id == 4
         assert result[1].created_at == datetime.date(2016, 7, 14)
 
     @pytest.mark.usefixtures('multiple_quxs_inserted')
@@ -763,7 +760,6 @@ class TestDateFields:
         result = filtered_query.all()
 
         assert len(result) == 1
-        assert result[0].id == 3
         assert result[0].created_at is None
 
 
@@ -854,7 +850,6 @@ class TestDateTimeFields:
         result = filtered_query.all()
 
         assert len(result) == 1
-        assert result[0].id == 4
         assert result[0].execution_time == datetime.datetime(
             2016, 7, 14, 3, 5, 9
         )
@@ -883,11 +878,9 @@ class TestDateTimeFields:
         result = filtered_query.all()
 
         assert len(result) == 2
-        assert result[0].id == 2
         assert result[0].execution_time == datetime.datetime(
             2016, 7, 13, 2, 5, 9
         )
-        assert result[1].id == 4
         assert result[1].execution_time == datetime.datetime(
             2016, 7, 14, 3, 5, 9
         )
@@ -901,7 +894,6 @@ class TestDateTimeFields:
         result = filtered_query.all()
 
         assert len(result) == 1
-        assert result[0].id == 3
         assert result[0].execution_time is None
 
 
