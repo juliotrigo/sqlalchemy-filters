@@ -3,6 +3,7 @@
 import datetime
 
 import pytest
+from six import string_types
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
@@ -12,6 +13,12 @@ from sqlalchemy_filters.exceptions import (
 )
 
 from test.models import Foo, Bar, Qux
+
+
+STRING_DATE_TIME_NOT_SUPPORTED = (
+    "TODO: String Time / DateTime values currently not working as filters by "
+    "SQLite"
+)
 
 
 @pytest.fixture
@@ -39,21 +46,24 @@ def multiple_quxs_inserted(session):
     qux_1 = Qux(
         id=1, name='name_1', count=5,
         created_at=datetime.date(2016, 7, 12),
-        execution_time=datetime.datetime(2016, 7, 12, 1, 5, 9)
+        execution_time=datetime.datetime(2016, 7, 12, 1, 5, 9),
+        expiration_time=datetime.time(1, 5, 9)
     )
     qux_2 = Qux(
         id=2, name='name_2', count=10,
         created_at=datetime.date(2016, 7, 13),
-        execution_time=datetime.datetime(2016, 7, 13, 2, 5, 9)
+        execution_time=datetime.datetime(2016, 7, 13, 2, 5, 9),
+        expiration_time=datetime.time(2, 5, 9)
     )
     qux_3 = Qux(
         id=3, name='name_1', count=None,
-        created_at=None, execution_time=None
+        created_at=None, execution_time=None, expiration_time=None
     )
     qux_4 = Qux(
         id=4, name='name_4', count=15,
         created_at=datetime.date(2016, 7, 14),
-        execution_time=datetime.datetime(2016, 7, 14, 3, 5, 9)
+        execution_time=datetime.datetime(2016, 7, 14, 3, 5, 9),
+        expiration_time=datetime.time(3, 5, 9)
     )
     session.add_all([qux_1, qux_2, qux_3, qux_4])
     session.commit()
@@ -757,18 +767,82 @@ class TestDateFields:
         assert result[0].created_at is None
 
 
+class TestTimeFields:
+
+    @pytest.mark.parametrize(
+        'value',
+        [
+            datetime.time(3, 5, 9),
+            datetime.time(3, 5, 9).isoformat()  # '03:05:09'
+        ]
+    )
+    @pytest.mark.usefixtures('multiple_quxs_inserted')
+    def test_filter_time_equality(self, session, is_sqlite, value):
+        if isinstance(value, string_types) and is_sqlite:
+            pytest.skip(STRING_DATE_TIME_NOT_SUPPORTED)
+
+        query = session.query(Qux)
+        filters = [{'field': 'expiration_time', 'op': '==', 'value': value}]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 1
+        assert result[0].expiration_time == datetime.time(3, 5, 9)
+
+    @pytest.mark.parametrize(
+        'value',
+        [
+            datetime.time(2, 5, 9),
+            datetime.time(2, 5, 9).isoformat()  # '02:05:09'
+        ]
+    )
+    @pytest.mark.usefixtures('multiple_quxs_inserted')
+    def test_filter_multiple_times(self, session, is_sqlite, value):
+        if isinstance(value, string_types) and is_sqlite:
+            pytest.skip(STRING_DATE_TIME_NOT_SUPPORTED)
+
+        query = session.query(Qux)
+        filters = [{
+            'field': 'expiration_time',
+            'op': '>=',
+            'value': value
+        }]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 2
+        assert result[0].expiration_time == datetime.time(2, 5, 9)
+        assert result[1].expiration_time == datetime.time(3, 5, 9)
+
+    @pytest.mark.usefixtures('multiple_quxs_inserted')
+    def test_null_time(self, session):
+        query = session.query(Qux)
+        filters = [{'field': 'expiration_time', 'op': 'is_null'}]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 1
+        assert result[0].expiration_time is None
+
+
 class TestDateTimeFields:
 
     @pytest.mark.parametrize(
         'value',
         [
             datetime.datetime(2016, 7, 14, 3, 5, 9),
-            # TODO: make the following test pass with SQLite and add it back
-            # datetime.datetime(2016, 7, 14, 3, 5, 9).isoformat()
+            # '2016-07-14T03:05:09'
+            datetime.datetime(2016, 7, 14, 3, 5, 9).isoformat()
         ]
     )
     @pytest.mark.usefixtures('multiple_quxs_inserted')
-    def test_filter_datetime_equality(self, session, value):
+    def test_filter_datetime_equality(self, session, is_sqlite, value):
+        if isinstance(value, string_types) and is_sqlite:
+            pytest.skip(STRING_DATE_TIME_NOT_SUPPORTED)
+
         query = session.query(Qux)
         filters = [{
             'field': 'execution_time',
@@ -789,12 +863,15 @@ class TestDateTimeFields:
         'value',
         [
             datetime.datetime(2016, 7, 13, 2, 5, 9),
-            # TODO: make the following test pass with SQLite and add it back
-            # datetime.datetime(2016, 7, 13, 2, 5, 9).isoformat()
+            # '2016-07-13T02:05:09'
+            datetime.datetime(2016, 7, 13, 2, 5, 9).isoformat()
         ]
     )
     @pytest.mark.usefixtures('multiple_quxs_inserted')
-    def test_filter_multiple_datetimes(self, session, value):
+    def test_filter_multiple_datetimes(self, session, is_sqlite, value):
+        if isinstance(value, string_types) and is_sqlite:
+            pytest.skip(STRING_DATE_TIME_NOT_SUPPORTED)
+
         query = session.query(Qux)
         filters = [{
             'field': 'execution_time',
