@@ -5,6 +5,15 @@ Here you can see the full list of changes between sqlalchemy-filters
 versions, where semantic versioning is used: *major.minor.patch*.
 
 
+Unreleased
+----------
+
+* Add new parameter to ``apply_filters`` to disable ``auto_join`` on
+  demand (#35) thanks to @bodik
+* Add multiple SQLAlchemy versions support: ``1.0``, ``1.1``, ``1.2``,
+  ``1.3`` (#33)
+* Drop support for Python 3.4 (#33)
+
 0.10.0
 ------
 
