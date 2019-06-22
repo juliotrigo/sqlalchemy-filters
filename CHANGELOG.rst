@@ -5,16 +5,15 @@ Here you can see the full list of changes between sqlalchemy-filters
 versions, where semantic versioning is used: *major.minor.patch*.
 
 
-Version 0.10.0
---------------
+0.10.0
+------
 
 Released 2019-03-13
 
 * Add ``nullsfirst`` and ``nullslast`` sorting options (#30)
 
-
-Version 0.9.0
--------------
+0.9.0
+-----
 
 Released 2019-03-07
 
@@ -24,9 +23,8 @@ Released 2019-03-07
 * Add support (tests) for PostgreSQL (#28)
 * Fix and improve documentation (#21 thanks to @daviskirk, #28)
 
-
-Version 0.8.0
--------------
+0.8.0
+-----
 
 Released 2018-06-25
 
@@ -34,39 +32,38 @@ Released 2018-06-25
   thanks to @rockwelln)
 * Drop support for Python 3.3 (#20)
 
-
-Version 0.7.0
--------------
+0.7.0
+-----
 
 Released 2018-02-12
 
 * Filters and sorts on related models now result in an "automatic join"
   if the query being filtered does not already contain the related model
 
-Version 0.6.0
--------------
+0.6.0
+-----
 
 Released 2017-11-30
 
 * Adds support for restricting the columns that are loaded from the
   database.
 
-Version 0.5.0
--------------
+0.5.0
+-----
 
 Released 2017-11-15
 
 * Adds support for queries against multiple models, e.g. joins.
 
-Version 0.4.0
--------------
+0.4.0
+-----
 
 Released 2017-06-21
 
 * Adds support for queries based on model fields or aggregate functions.
 
-Version 0.3.0
--------------
+0.3.0
+-----
 
 Released 2017-05-22
 
@@ -76,8 +73,8 @@ Released 2017-05-22
 * Makes the ``op`` filter attribute optional: ``==`` is the default
   operator
 
-Version 0.2.0
--------------
+0.2.0
+-----
 
 Released 2017-01-06
 
@@ -87,8 +84,8 @@ Released 2017-01-06
 * Starts using Tox
 * Refactors Makefile and conftest
 
-Version 0.1.0
--------------
+0.1.0
+-----
 
 Released 2016-09-08
 
