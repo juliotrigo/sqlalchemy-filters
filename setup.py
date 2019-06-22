@@ -20,28 +20,19 @@ setup(
     author_email='wearehiring@student.com',
     url='https://github.com/juliotrigo/sqlalchemy-filters',
     packages=find_packages(exclude=['test', 'test.*']),
-    install_requires=[
-        'sqlalchemy>=1.0.16',
-        'six>=1.10.0',
-    ],
+    install_requires=['sqlalchemy>=1.0.16', 'six>=1.10.0'],
     extras_require={
         'dev': [
-            'pytest==4.4.0',
+            'pytest==4.6.3',
             'coverage==4.5.3',
-            'sqlalchemy-utils==0.33.11',
+            'sqlalchemy-utils==0.34.0',
             'flake8==3.7.7',
             'restructuredtext-lint==1.3.0',
-            'Pygments==2.3.1',
+            'Pygments==2.4.2',
         ],
-        'mysql': [
-            'mysql-connector-python-rf==2.2.2',
-        ],
-        'postgresql': [
-            'psycopg2==2.8.1'
-        ],
-        'python2': [
-            "funcsigs>=1.0.2"
-        ]
+        'mysql': ['mysql-connector-python-rf==2.2.2'],
+        'postgresql': ['psycopg2==2.8.3'],
+        'python2': ['funcsigs>=1.0.2'],
     },
     zip_safe=True,
     license='Apache License, Version 2.0',
