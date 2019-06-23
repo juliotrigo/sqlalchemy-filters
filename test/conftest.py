@@ -102,6 +102,13 @@ def is_postgresql(db_uri):
 
 
 @pytest.fixture(scope='session')
+def is_sqlite(db_uri):
+    if 'sqlite' in db_uri:
+        return True
+    return False
+
+
+@pytest.fixture(scope='session')
 def db_engine_options(db_uri, is_postgresql):
     if is_postgresql:
         return dict(

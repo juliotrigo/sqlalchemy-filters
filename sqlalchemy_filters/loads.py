@@ -12,9 +12,7 @@ class LoadOnly(object):
         try:
             field_names = load_spec['fields']
         except KeyError:
-            raise BadLoadFormat(
-                '`fields` is a mandatory attribute.'
-            )
+            raise BadLoadFormat('`fields` is a mandatory attribute.')
         except TypeError:
             raise BadLoadFormat(
                 'Load spec `{}` should be a dictionary.'.format(load_spec)
@@ -32,9 +30,7 @@ class LoadOnly(object):
         field_names = self.field_names
 
         model = get_model_from_spec(load_spec, query, default_model)
-        fields = [
-            Field(model, field_name) for field_name in field_names
-        ]
+        fields = [Field(model, field_name) for field_name in field_names]
 
         return Load(model).load_only(
             *[field.get_sqlalchemy_field() for field in fields]

@@ -31,9 +31,7 @@ def get_query_models(query):
     """
     models = [col_desc['entity'] for col_desc in query.column_descriptions]
     models.extend(mapper.class_ for mapper in query._join_entities)
-    return {
-        model.__name__: model for model in models
-    }
+    return {model.__name__: model for model in models}
 
 
 def get_model_from_spec(spec, query, default_model=None):
@@ -78,9 +76,7 @@ def get_model_from_spec(spec, query, default_model=None):
         elif default_model is not None:
             return default_model
         else:
-            raise BadSpec(
-                "Ambiguous spec. Please specify a model."
-            )
+            raise BadSpec("Ambiguous spec. Please specify a model.")
 
     return model
 
