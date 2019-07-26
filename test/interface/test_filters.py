@@ -627,7 +627,7 @@ class TestApplyLikeFilter:
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_one_filter_applied_to_a_single_model(self, session):
         query = session.query(Bar)
-        filters = [{'field': 'name', 'op': 'like', 'value': '%me_1'}]
+        filters = [{'field': 'name', 'op': 'like', 'value': '%me_1%'}]
 
         filtered_query = apply_filters(query, filters)
         result = filtered_query.all()
@@ -642,7 +642,7 @@ class TestApplyILikeFilter:
     @pytest.mark.usefixtures('multiple_bars_inserted')
     def test_one_filter_applied_to_a_single_model(self, session):
         query = session.query(Bar)
-        filters = [{'field': 'name', 'op': 'ilike', 'value': '%ME_1'}]
+        filters = [{'field': 'name', 'op': 'ilike', 'value': '%ME_1%'}]
 
         filtered_query = apply_filters(query, filters)
         result = filtered_query.all()
