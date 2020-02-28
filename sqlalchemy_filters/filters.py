@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
-from collections import Iterable, namedtuple
+from collections import namedtuple
+try:
+    from collections.abc import Iterable
+except ImportError:  # pragma: no cover
+    # For python2 capability.
+    from collections import Iterable
 try:
     from inspect import signature
 except ImportError:  # pragma: no cover
