@@ -23,7 +23,7 @@ setup(
     install_requires=['sqlalchemy>=1.0.16', 'six>=1.10.0'],
     extras_require={
         'dev': [
-            'pytest~=4.6.9',
+            'pytest>=4.6.9',
             'coverage~=5.0.4',
             'sqlalchemy-utils~=0.36.3',
             'flake8',
