@@ -53,6 +53,7 @@ class Operator(object):
         'le': lambda f, a: f <= a,
         'like': lambda f, a: f.like(a),
         'ilike': lambda f, a: f.ilike(a),
+        'not_ilike': lambda f, a: ~f.ilike(a),
         'in': lambda f, a: f.in_(a),
         'not_in': lambda f, a: ~f.in_(a),
     }

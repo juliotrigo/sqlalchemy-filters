@@ -652,6 +652,21 @@ class TestApplyILikeFilter:
         assert result[1].id == 3
 
 
+class TestApplyNotILikeFilter:
+
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_one_filter_applied_to_a_single_model(self, session):
+        query = session.query(Bar)
+        filters = [{'field': 'name', 'op': 'not_ilike', 'value': '%ME_1'}]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 2
+        assert result[0].id == 2
+        assert result[1].id == 4
+
+
 class TestApplyInFilter:
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
