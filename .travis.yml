@@ -60,6 +60,17 @@ matrix:
     - python: 3.7
       env: TOX_ENV="py37-sqlalchemylatest"
 
+    - python: 3.8
+      env: TOX_ENV="py38-sqlalchemy1.0"
+    - python: 3.8
+      env: TOX_ENV="py38-sqlalchemy1.1"
+    - python: 3.8
+      env: TOX_ENV="py38-sqlalchemy1.2"
+    - python: 3.8
+      env: TOX_ENV="py38-sqlalchemy1.3"
+    - python: 3.8
+      env: TOX_ENV="py38-sqlalchemylatest"
+
     - stage: deploy
       script: skip
       deploy:
