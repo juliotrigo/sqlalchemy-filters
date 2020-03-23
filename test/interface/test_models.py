@@ -26,6 +26,13 @@ class TestGetQueryModels(object):
 
         assert {'Bar': Bar} == entities
 
+    def test_query_with_select_from_model(self, session):
+        query = session.query().select_from(Bar)
+
+        entities = get_query_models(query)
+
+        assert {'Bar': Bar} == entities
+
     def test_query_with_multiple_models(self, session):
         query = session.query(Bar, Qux)
 

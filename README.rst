@@ -128,13 +128,14 @@ Note that first filter of the second block does not specify a model.
 It is implictly applied to the ``Foo`` model because that is the only
 model in the original query passed to ``apply_filters``.
 
-It is also possible to apply filters to queries defined by fields or
-functions:
+It is also possible to apply filters to queries defined by fields, functions or
+``select_from`` clause:
 
 .. code-block:: python
 
     query_alt_1 = session.query(Foo.id, Foo.name)
     query_alt_2 = session.query(func.count(Foo.id))
+    query_alt_3 = session.query().select_from(Foo).add_column(Foo.id)
 
 
 Restricted Loads
