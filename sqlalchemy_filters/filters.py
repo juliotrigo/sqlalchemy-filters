@@ -15,7 +15,7 @@ except ImportError:  # pragma: no cover
 from itertools import chain
 
 from six import string_types
-from sqlalchemy import and_, or_, not_
+from sqlalchemy import and_, or_, not_, func
 
 from .exceptions import BadFilterFormat
 from .models import Field, auto_join, get_model_from_spec, get_default_model
@@ -56,6 +56,8 @@ class Operator(object):
         'not_ilike': lambda f, a: ~f.ilike(a),
         'in': lambda f, a: f.in_(a),
         'not_in': lambda f, a: ~f.in_(a),
+        'any': lambda f, a: f.any(a),
+        'not_any': lambda f, a: func.not_(f.any(a)),
     }
 
     def __init__(self, operator=None):

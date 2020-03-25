@@ -305,6 +305,14 @@ This is the list of operators that can be used:
 - ``not_ilike``
 - ``in``
 - ``not_in``
+- ``any``
+- ``not_any``
+
+any / not_any
+^^^^^^^^^^^^^
+
+PostgreSQL specific operators allow to filter queries on columns of type ``ARRAY``.
+Use ``any`` to filter if a value is present in an array and ``not_any`` if it's not.
 
 Boolean Functions
 ^^^^^^^^^^^^^^^^^
