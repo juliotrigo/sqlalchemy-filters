@@ -4,15 +4,23 @@ Release Notes
 Here you can see the full list of changes between sqlalchemy-filters
 versions, where semantic versioning is used: *major.minor.patch*.
 
+0.11.0
+------
 
-Unreleased
-----------
+Released 2020-03-31
 
+* Add support for the ``not_ilike`` operator (#40) thanks to @bodik
+* Add support for the ``any`` and ``not_any`` operators (#36) thanks
+  to @bodik
+* Add ability to use the ``select_from`` clause to apply filters
+  (#34) thanks to @bodik
 * Add new parameter to ``apply_filters`` to disable ``auto_join`` on
   demand (#35) thanks to @bodik
+* Add support for Python 3.8 (#43)
+* Drop support for Python 3.4 (#33)
+* Fix Python 3.7 deprecations (#41) thanks to @bodik
 * Add multiple SQLAlchemy versions support: ``1.0``, ``1.1``, ``1.2``,
   ``1.3`` (#33)
-* Drop support for Python 3.4 (#33)
 
 0.10.0
 ------
