@@ -36,6 +36,14 @@ Assuming that we have a SQLAlchemy_ ``query`` object:
         name = Column(String(50), nullable=False)
         count = Column(Integer, nullable=True)
 
+        @hybrid_property
+        def count_square(self):
+            return self.count * self.count
+
+        @hybrid_method
+        def three_times_count(self):
+            return self.count * 3
+
 
     Base = declarative_base(cls=Base)
 
@@ -136,6 +144,21 @@ It is also possible to apply filters to queries defined by fields, functions or
     query_alt_1 = session.query(Foo.id, Foo.name)
     query_alt_2 = session.query(func.count(Foo.id))
     query_alt_3 = session.query().select_from(Foo).add_column(Foo.id)
+
+Hybrid attributes
+^^^^^^^^^^^^^^^^^
+
+You can filter by a `hybrid attribute`_: a `hybrid property`_ or a `hybrid method`_.
+
+.. code-block:: python
+
+    query = session.query(Foo)
+
+    filter_spec = [{'field': 'count_square', 'op': '>=', 'value': 25}]
+    filter_spec = [{'field': 'three_times_count', 'op': '>=', 'value': 15}]
+
+    filtered_query = apply_filters(query, filter_spec)
+    result = filtered_query.all()
 
 
 Restricted Loads
@@ -240,6 +263,11 @@ The behaviour is the same as in ``apply_filters``.
 
 This allows flexibility for clients to sort by fields on related objects
 without specifying all possible joins on the server beforehand.
+
+Hybrid attributes
+^^^^^^^^^^^^^^^^^
+
+You can sort by a `hybrid attribute`_: a `hybrid property`_ or a `hybrid method`_.
 
 
 Pagination
@@ -489,3 +517,6 @@ for details.
 
 
 .. _SQLAlchemy: https://www.sqlalchemy.org/
+.. _hybrid attribute: https://docs.sqlalchemy.org/en/13/orm/extensions/hybrid.html
+.. _hybrid property: https://docs.sqlalchemy.org/en/13/orm/extensions/hybrid.html#sqlalchemy.ext.hybrid.hybrid_property
+.. _hybrid method: https://docs.sqlalchemy.org/en/13/orm/extensions/hybrid.html#sqlalchemy.ext.hybrid.hybrid_method
