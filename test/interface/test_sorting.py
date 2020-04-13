@@ -571,3 +571,68 @@ class TestSortNullsLast(object):
             ('name_4', None),
             ('name_5', 50),
         ]
+
+
+class TestSortHybridAttributes(object):
+
+    """Tests that results are sorted only according to the provided
+    filters.
+
+    Does NOT test how rows with the same values are sorted since this is
+    not consistent across RDBMS.
+
+    Does NOT test whether `NULL` field values are placed first or last
+    when sorting since this may differ across RDBMSs.
+
+    SQL defines that `NULL` values should be placed together when
+    sorting, but it does not specify whether they should be placed first
+    or last.
+    """
+
+    @pytest.mark.usefixtures('multiple_bars_with_no_nulls_inserted')
+    def test_single_sort_hybrid_property_asc(self, session):
+        query = session.query(Bar)
+        order_by = [{'field': 'count_square', 'direction': 'asc'}]
+
+        sorted_query = apply_sort(query, order_by)
+        results = sorted_query.all()
+
+        assert [result.count_square for result in results] == [
+            1, 4, 4, 9, 25, 100, 144, 225
+        ]
+
+    @pytest.mark.usefixtures('multiple_bars_with_no_nulls_inserted')
+    def test_single_sort_hybrid_property_desc(self, session):
+        query = session.query(Bar)
+        order_by = [{'field': 'count_square', 'direction': 'desc'}]
+
+        sorted_query = apply_sort(query, order_by)
+        results = sorted_query.all()
+
+        assert [result.count_square for result in results] == [
+            225, 144, 100, 25, 9, 4, 4, 1
+        ]
+
+    @pytest.mark.usefixtures('multiple_bars_with_no_nulls_inserted')
+    def test_single_sort_hybrid_method_asc(self, session):
+        query = session.query(Bar)
+        order_by = [{'field': 'three_times_count', 'direction': 'asc'}]
+
+        sorted_query = apply_sort(query, order_by)
+        results = sorted_query.all()
+
+        assert [result.three_times_count() for result in results] == [
+            3, 6, 6, 9, 15, 30, 36, 45
+        ]
+
+    @pytest.mark.usefixtures('multiple_bars_with_no_nulls_inserted')
+    def test_single_sort_hybrid_method_desc(self, session):
+        query = session.query(Bar)
+        order_by = [{'field': 'three_times_count', 'direction': 'desc'}]
+
+        sorted_query = apply_sort(query, order_by)
+        results = sorted_query.all()
+
+        assert [result.three_times_count() for result in results] == [
+            45, 36, 30, 15, 9, 6, 6, 3
+        ]

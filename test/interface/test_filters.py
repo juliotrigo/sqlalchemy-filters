@@ -1215,3 +1215,98 @@ class TestApplyArrayFilters:
         assert len(result) == 2
         assert result[0].id == 1
         assert result[1].id == 4
+
+
+class TestHybridAttributes:
+
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    @pytest.mark.parametrize(
+        ('field, expected_error'),
+        [
+            ('foos', "Model <class 'test.models.Bar'> has no column `foos`."),
+            ('__mapper__', "Model <class 'test.models.Bar'> has no column `__mapper__`."),
+            ('not_valid', "Model <class 'test.models.Bar'> has no column `not_valid`."),
+        ]
+    )
+    def test_orm_descriptors_not_valid_hybrid_attributes(
+        self, session, field, expected_error
+    ):
+        query = session.query(Bar)
+        filters = [
+            {
+                'model': 'Bar',
+                'field': field,
+                'op': '==',
+                'value': 100
+            }
+        ]
+        with pytest.raises(FieldNotFound) as exc:
+            apply_filters(query, filters)
+
+        assert expected_error in str(exc)
+
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    @pytest.mark.usefixtures('multiple_quxs_inserted')
+    def test_filter_by_hybrid_properties(self, session):
+        query = session.query(Bar, Qux)
+        filters = [
+            {
+                'model': 'Bar',
+                'field': 'count_square',
+                'op': '==',
+                'value': 100
+            },
+            {
+                'model': 'Qux',
+                'field': 'count_square',
+                'op': '>=',
+                'value': 26
+            },
+        ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 2
+        bars, quxs = zip(*result)
+
+        assert set(map(type, bars)) == {Bar}
+        assert {bar.id for bar in bars} == {2}
+        assert {bar.count_square for bar in bars} == {100}
+
+        assert set(map(type, quxs)) == {Qux}
+        assert {qux.id for qux in quxs} == {2, 4}
+        assert {qux.count_square for qux in quxs} == {100, 225}
+
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    @pytest.mark.usefixtures('multiple_quxs_inserted')
+    def test_filter_by_hybrid_methods(self, session):
+        query = session.query(Bar, Qux)
+        filters = [
+            {
+                'model': 'Bar',
+                'field': 'three_times_count',
+                'op': '==',
+                'value': 30
+            },
+            {
+                'model': 'Qux',
+                'field': 'three_times_count',
+                'op': '>=',
+                'value': 31
+            },
+        ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 1
+        bars, quxs = zip(*result)
+
+        assert set(map(type, bars)) == {Bar}
+        assert {bar.id for bar in bars} == {2}
+        assert {bar.three_times_count() for bar in bars} == {30}
+
+        assert set(map(type, quxs)) == {Qux}
+        assert {qux.id for qux in quxs} == {4}
+        assert {qux.three_times_count() for qux in quxs} == {45}

@@ -1,6 +1,8 @@
 from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm.mapper import Mapper
+from sqlalchemy.util import symbol
+import types
 
 from .exceptions import BadQuery, FieldNotFound, BadSpec
 
@@ -12,13 +14,41 @@ class Field(object):
         self.field_name = field_name
 
     def get_sqlalchemy_field(self):
-        if self.field_name not in inspect(self.model).columns.keys():
+        if self.field_name not in self._get_valid_field_names():
             raise FieldNotFound(
                 'Model {} has no column `{}`.'.format(
                     self.model, self.field_name
                 )
             )
-        return getattr(self.model, self.field_name)
+        sqlalchemy_field = getattr(self.model, self.field_name)
+
+        # If it's a hybrid method, then call it so that we can work with
+        # the result of the execution and not with the method object itself
+        if isinstance(sqlalchemy_field, types.MethodType):
+            sqlalchemy_field = sqlalchemy_field()
+
+        return sqlalchemy_field
+
+    def _get_valid_field_names(self):
+        inspect_mapper = inspect(self.model)
+        columns = inspect_mapper.columns
+        orm_descriptors = inspect_mapper.all_orm_descriptors
+
+        column_names = columns.keys()
+        hybrid_names = [
+            key for key, item in orm_descriptors.items()
+            if _is_hybrid_property(item) or _is_hybrid_method(item)
+        ]
+
+        return set(column_names) | set(hybrid_names)
+
+
+def _is_hybrid_property(orm_descriptor):
+    return orm_descriptor.extension_type == symbol('HYBRID_PROPERTY')
+
+
+def _is_hybrid_method(orm_descriptor):
+    return orm_descriptor.extension_type == symbol('HYBRID_METHOD')
 
 
 def get_query_models(query):

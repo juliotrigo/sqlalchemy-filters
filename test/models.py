@@ -5,6 +5,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import relationship
 
 
@@ -12,6 +13,14 @@ class Base(object):
     id = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False)
     count = Column(Integer, nullable=True)
+
+    @hybrid_property
+    def count_square(self):
+        return self.count * self.count
+
+    @hybrid_method
+    def three_times_count(self):
+        return self.count * 3
 
 
 Base = declarative_base(cls=Base)
