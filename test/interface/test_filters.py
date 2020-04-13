@@ -1224,8 +1224,14 @@ class TestHybridAttributes:
         ('field, expected_error'),
         [
             ('foos', "Model <class 'test.models.Bar'> has no column `foos`."),
-            ('__mapper__', "Model <class 'test.models.Bar'> has no column `__mapper__`."),
-            ('not_valid', "Model <class 'test.models.Bar'> has no column `not_valid`."),
+            (
+                '__mapper__',
+                "Model <class 'test.models.Bar'> has no column `__mapper__`.",
+            ),
+            (
+                'not_valid',
+                "Model <class 'test.models.Bar'> has no column `not_valid`.",
+            ),
         ]
     )
     def test_orm_descriptors_not_valid_hybrid_attributes(
