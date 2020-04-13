@@ -22,7 +22,7 @@ class Field(object):
             )
         sqlalchemy_field = getattr(self.model, self.field_name)
 
-        # If it's a hybrid method, then call it so that we can work with
+        # If it's a hybrid method, then we call it so that we can work with
         # the result of the execution and not with the method object itself
         if isinstance(sqlalchemy_field, types.MethodType):
             sqlalchemy_field = sqlalchemy_field()
