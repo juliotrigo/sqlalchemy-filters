@@ -7,7 +7,7 @@ versions, where semantic versioning is used: *major.minor.patch*.
 0.11.0
 ------
 
-Released 2020-03-31
+Released 2020-04-25
 
 * Add support for the ``not_ilike`` operator (#40) thanks to @bodik
 * Add support for the ``any`` and ``not_any`` operators (#36) thanks
