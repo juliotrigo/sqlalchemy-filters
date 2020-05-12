@@ -4,8 +4,10 @@ Release Notes
 Here you can see the full list of changes between sqlalchemy-filters
 versions, where semantic versioning is used: *major.minor.patch*.
 
-Unreleased
-----------
+0.12.0
+------
+
+Released 2020-05-12
 
 * Add support for hybrid attributes (properties and methods): filtering
   and sorting (#45) as a continuation of the work started here (#32)
