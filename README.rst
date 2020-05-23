@@ -90,8 +90,8 @@ including joins:
     query = session.query(Foo).join(Bar)
 
     filter_spec = [
-        {'model': 'Foo', field': 'name', 'op': '==', 'value': 'name_1'},
-        {'model': 'Bar', field': 'count', 'op': '>=', 'value': 5},
+        {'model': 'Foo', 'field': 'name', 'op': '==', 'value': 'name_1'},
+        {'model': 'Bar', 'field': 'count', 'op': '>=', 'value': 5},
     ]
     filtered_query = apply_filters(query, filter_spec)
 
@@ -108,8 +108,8 @@ blocks is identical:
     query = session.query(Foo).join(Bar)  # join pre-applied to query
 
     filter_spec = [
-        {'model': 'Foo', field': 'name', 'op': '==', 'value': 'name_1'},
-        {'model': 'Bar', field': 'count', 'op': '>=', 'value': 5},
+        {'model': 'Foo', 'field': 'name', 'op': '==', 'value': 'name_1'},
+        {'model': 'Bar', 'field': 'count', 'op': '>=', 'value': 5},
     ]
     filtered_query = apply_filters(query, filter_spec)
 
@@ -119,7 +119,7 @@ blocks is identical:
 
     filter_spec = [
         {field': 'name', 'op': '==', 'value': 'name_1'},
-        {'model': 'Bar', field': 'count', 'op': '>=', 'value': 5},
+        {'model': 'Bar', 'field': 'count', 'op': '>=', 'value': 5},
     ]
     filtered_query = apply_filters(query, filter_spec)
 
@@ -249,8 +249,8 @@ Sort
     # `query` should be a SQLAlchemy query object
 
     sort_spec = [
-        {'model': 'Foo', field': 'name', 'direction': 'asc'},
-        {'model': 'Bar', field': 'id', 'direction': 'desc'},
+        {'model': 'Foo', 'field': 'name', 'direction': 'asc'},
+        {'model': 'Bar', 'field': 'id', 'direction': 'desc'},
     ]
     sorted_query = apply_sort(query, sort_spec)
 
