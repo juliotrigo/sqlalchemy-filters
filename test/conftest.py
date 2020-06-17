@@ -110,12 +110,11 @@ def is_sqlite(db_uri):
 
 @pytest.fixture(scope='session')
 def is_sqlalchemy_1_3_or_higer():
-    try:
-        from sqlalchemy import JSON  # noqa: F401
-    except ImportError:
-        return False
-    else:
+    import sqlalchemy
+    if sqlalchemy.__version__ >= '1.3.0':
         return True
+    else:
+        return False
 
 
 @pytest.fixture(scope='session')
