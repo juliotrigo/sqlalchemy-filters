@@ -109,6 +109,16 @@ def is_sqlite(db_uri):
 
 
 @pytest.fixture(scope='session')
+def is_sqlalchemy_1_3_or_higer():
+    try:
+        from sqlalchemy import JSON  # noqa: F401
+    except ImportError:
+        return False
+    else:
+        return True
+
+
+@pytest.fixture(scope='session')
 def db_engine_options(db_uri, is_postgresql):
     if is_postgresql:
         return dict(

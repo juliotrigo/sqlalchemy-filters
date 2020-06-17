@@ -86,13 +86,15 @@ def multiple_corges_inserted(session, is_postgresql):
 
 
 @pytest.fixture
-def multiple_tils_inserted(session):
-    til_1 = Til(id=1, name='name_1', refer_info=[])
-    til_2 = Til(id=2, name='name_2', refer_info=[1])
-    til_3 = Til(id=3, name='name_3', refer_info=[2, 3])
-    til_4 = Til(id=4, name='name_4', refer_info=['foo', 'baz'])
-    session.add_all([til_1, til_2, til_3, til_4])
-    session.commit()
+def multiple_tils_inserted(session, is_sqlalchemy_1_3_or_higer):
+    if is_sqlalchemy_1_3_or_higer:
+
+        til_1 = Til(id=1, name='name_1', refer_info=[])
+        til_2 = Til(id=2, name='name_2', refer_info=[1])
+        til_3 = Til(id=3, name='name_3', refer_info=[2, 3])
+        til_4 = Til(id=4, name='name_4', refer_info=['foo', 'baz'])
+        session.add_all([til_1, til_2, til_3, til_4])
+        session.commit()
 
 
 class TestFiltersNotApplied:
@@ -1331,11 +1333,16 @@ class TestHybridAttributes:
 class TestApplyJsonContainsFilter:
 
     @pytest.mark.usefixtures('multiple_tils_inserted')
-    def test_til_not_contains_value(self, session, is_sqlite, is_postgresql):
+    def test_til_not_contains_value(
+        self, session, is_sqlite, is_postgresql, is_sqlalchemy_1_3_or_higer
+    ):
         if is_sqlite:
             pytest.skip()
 
         if is_postgresql:
+            pytest.skip()
+
+        if not is_sqlalchemy_1_3_or_higer:
             pytest.skip()
 
         query = session.query(Til)
@@ -1349,11 +1356,16 @@ class TestApplyJsonContainsFilter:
         assert len(result) == 0
 
     @pytest.mark.usefixtures('multiple_tils_inserted')
-    def test_til_contains_int_value(self, session, is_sqlite, is_postgresql):
+    def test_til_contains_int_value(
+        self, session, is_sqlite, is_postgresql, is_sqlalchemy_1_3_or_higer
+    ):
         if is_sqlite:
             pytest.skip()
 
         if is_postgresql:
+            pytest.skip()
+
+        if not is_sqlalchemy_1_3_or_higer:
             pytest.skip()
 
         query = session.query(Til)
@@ -1368,11 +1380,16 @@ class TestApplyJsonContainsFilter:
         assert result[0].id == 2
 
     @pytest.mark.usefixtures('multiple_tils_inserted')
-    def test_til_contains_str_value(self, session, is_sqlite, is_postgresql):
+    def test_til_contains_str_value(
+        self, session, is_sqlite, is_postgresql, is_sqlalchemy_1_3_or_higer
+    ):
         if is_sqlite:
             pytest.skip()
 
         if is_postgresql:
+            pytest.skip()
+
+        if not is_sqlalchemy_1_3_or_higer:
             pytest.skip()
 
         query = session.query(Til)

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from sqlalchemy import (
-    Column, Date, DateTime, ForeignKey, Integer, String, Time, JSON
+    Column, Date, DateTime, ForeignKey, Integer, String, Time
 )
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
@@ -64,8 +64,15 @@ class Corge(BasePostgresqlSpecific):
     tags = Column(ARRAY(String, dimensions=1))
 
 
-class Til(Base):
+try:
+    from sqlalchemy import JSON
+except ImportError:
+    class Til(Base):
 
-    __tablename__ = 'til'
+        __tablename__ = 'til'
+else:
+    class Til(Base):
 
-    refer_info = Column(JSON)
+        __tablename__ = 'til'
+
+        refer_info = Column(JSON)
