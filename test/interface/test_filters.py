@@ -1331,8 +1331,11 @@ class TestHybridAttributes:
 class TestApplyJsonContainsFilter:
 
     @pytest.mark.usefixtures('multiple_tils_inserted')
-    def test_til_not_contains_value(self, session, is_sqlite):
+    def test_til_not_contains_value(self, session, is_sqlite, is_postgresql):
         if is_sqlite:
+            pytest.skip()
+
+        if is_postgresql:
             pytest.skip()
 
         query = session.query(Til)
@@ -1346,8 +1349,11 @@ class TestApplyJsonContainsFilter:
         assert len(result) == 0
 
     @pytest.mark.usefixtures('multiple_tils_inserted')
-    def test_til_contains_int_value(self, session, is_sqlite):
+    def test_til_contains_int_value(self, session, is_sqlite, is_postgresql):
         if is_sqlite:
+            pytest.skip()
+
+        if is_postgresql:
             pytest.skip()
 
         query = session.query(Til)
@@ -1362,8 +1368,11 @@ class TestApplyJsonContainsFilter:
         assert result[0].id == 2
 
     @pytest.mark.usefixtures('multiple_tils_inserted')
-    def test_til_contains_str_value(self, session, is_sqlite):
+    def test_til_contains_str_value(self, session, is_sqlite, is_postgresql):
         if is_sqlite:
+            pytest.skip()
+
+        if is_postgresql:
             pytest.skip()
 
         query = session.query(Til)
