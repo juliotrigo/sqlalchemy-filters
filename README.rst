@@ -282,7 +282,7 @@ Pagination
 
     query, pagination = apply_pagination(query, page_number=1, page_size=10)
 
-    page_size, page_number, num_pages, total_results = pagination
+    page_number, page_size, num_pages, total_results = pagination
 
     assert 10 == len(query)
     assert 10 == page_size == pagination.page_size
