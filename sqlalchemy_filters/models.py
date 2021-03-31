@@ -152,7 +152,7 @@ def auto_join(query, *model_names):
     """
     # every model has access to the registry, so we can use any from the query
     query_models = get_query_models(query).values()
-    model_registry = list(query_models)[-1]._sa_registry._class_registry
+    model_registry = list(query_models)[-1].registry._class_registry
 
     for name in model_names:
         model = get_model_class_by_name(model_registry, name)
