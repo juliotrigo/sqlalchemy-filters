@@ -61,7 +61,7 @@ def get_query_models(query):
         A dictionary with all the models included in the query.
     """
     models = [col_desc['entity'] for col_desc in query.column_descriptions]
-    models.extend(mapper.class_ for mapper in query._join_entities)
+    models.extend(mapper.class_ for mapper in query._compile_state()._join_entities)
 
     # account also query.select_from entities
     if (
@@ -152,7 +152,7 @@ def auto_join(query, *model_names):
     """
     # every model has access to the registry, so we can use any from the query
     query_models = get_query_models(query).values()
-    model_registry = list(query_models)[-1]._decl_class_registry
+    model_registry = list(query_models)[-1]._sa_registry._class_registry
 
     for name in model_names:
         model = get_model_class_by_name(model_registry, name)
