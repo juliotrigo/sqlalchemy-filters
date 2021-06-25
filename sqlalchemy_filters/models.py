@@ -62,6 +62,7 @@ def get_query_models(query):
     """
     models = [col_desc['entity'] for col_desc in query.column_descriptions]
     models.extend(mapper.class_ for mapper in query._join_entities)
+    if None in models: models.remove(None)
 
     # account also query.select_from entities
     if (
