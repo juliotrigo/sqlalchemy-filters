@@ -5,7 +5,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy_filters.exceptions import BadSpec, BadQuery
 from sqlalchemy_filters.models import (
     auto_join, get_default_model, get_query_models, get_model_class_by_name,
-    get_model_from_spec
+    get_model_from_spec, sqlalchemy_version_lt
 )
 from test.models import Base, Bar, Foo, Qux
 
@@ -132,7 +132,11 @@ class TestGetModelClassByName:
 
     @pytest.fixture
     def registry(self):
-        return Base._decl_class_registry
+        return (
+            Base._decl_class_registry
+            if sqlalchemy_version_lt('1.4')
+            else Base.registry._class_registry
+        )
 
     def test_exists(self, registry):
         assert get_model_class_by_name(registry, 'Foo') == Foo
