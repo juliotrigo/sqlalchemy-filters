@@ -58,6 +58,16 @@ def _is_hybrid_method(orm_descriptor):
     return orm_descriptor.extension_type == symbol('HYBRID_METHOD')
 
 
+def get_model_from_table(table):  # pragma: nocover
+    """Resolve model class from table object"""
+
+    for registry in mapperlib._all_registries():
+        for mapper in registry.mappers:
+            if table in mapper.tables:
+                return mapper.class_
+    return None
+
+
 def get_query_models(query):
     """Get models from query.
 
@@ -68,31 +78,37 @@ def get_query_models(query):
         A dictionary with all the models included in the query.
     """
     models = [col_desc['entity'] for col_desc in query.column_descriptions]
-    try:
-        join_entities = (
-            query._join_entities
-            if sqlalchemy_version_lt('1.4')
-            else query._compile_state()._join_entities
-        )
-        models.extend(mapper.class_ for mapper in join_entities)
-    except InvalidRequestError:  # pragma: nocover
-        pass  # handle compilation errors in sqla 1.4
+
+    # account joined entities
+    if sqlalchemy_version_lt('1.4'):  # pragma: nocover
+        models.extend(mapper.class_ for mapper in query._join_entities)
+    else:  # pragma: nocover
+        try:
+            models.extend(
+                mapper.class_
+                for mapper
+                in query._compile_state()._join_entities
+            )
+        except InvalidRequestError:
+            # query might not contain columns yet, hence cannot be compiled
+            # try to infer the models from various internals
+            for table_tuple in query._setup_joins + query._legacy_setup_joins:
+                model_class = get_model_from_table(table_tuple[0])
+                if model_class:
+                    models.append(model_class)
 
     # account also query.select_from entities
     model_class = None
-    if sqlalchemy_version_lt('1.4'):  # pragma: nocover ; sqlalchemy<1.4
+    if sqlalchemy_version_lt('1.4'):  # pragma: nocover
         if query._select_from_entity:
             model_class = (
                 query._select_from_entity
                 if sqlalchemy_version_lt('1.1')
                 else query._select_from_entity.class_
             )
-    else:  # pragma: nocover ; sqlalchemy>=1.4
+    else:  # pragma: nocover
         if query._from_obj:
-            for registry in mapperlib._all_registries():
-                for mapper in registry.mappers:
-                    if query._from_obj[0] in mapper.tables:
-                        model_class = mapper.class_
+            model_class = get_model_from_table(query._from_obj[0])
     if model_class and (model_class not in models):
         models.append(model_class)
 
