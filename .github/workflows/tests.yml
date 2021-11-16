@@ -1,0 +1,72 @@
+name: Tests CI
+on:
+  - push
+  - pull_request
+
+jobs:
+  tests:
+    name: ${{ matrix.tox }}
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mariadb:latest
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+
+      postgres:
+        image: postgres
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: test_sqlalchemy_filters
+          POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=en_US.utf8 --lc-ctype=en_US.utf8"
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {python: '2.7', tox: "py27-sqlalchemy1.0"}
+          - {python: '2.7', tox: "py27-sqlalchemy1.1"}
+          - {python: '2.7', tox: "py27-sqlalchemy1.2"}
+          - {python: '2.7', tox: "py27-sqlalchemy1.3"}
+
+          - {python: '3.5', tox: "py35-sqlalchemy1.0"}
+          - {python: '3.5', tox: "py35-sqlalchemy1.1"}
+          - {python: '3.5', tox: "py35-sqlalchemy1.2"}
+          - {python: '3.5', tox: "py35-sqlalchemy1.3"}
+          - {python: '3.5', tox: "py35-sqlalchemylatest"}
+
+          - {python: '3.6', tox: "py36-sqlalchemy1.0"}
+          - {python: '3.6', tox: "py36-sqlalchemy1.1"}
+          - {python: '3.6', tox: "py36-sqlalchemy1.2"}
+          - {python: '3.6', tox: "py36-sqlalchemy1.3"}
+          - {python: '3.6', tox: "py36-sqlalchemylatest"}
+
+          - {python: '3.7', tox: "py37-sqlalchemy1.0"}
+          - {python: '3.7', tox: "py37-sqlalchemy1.1"}
+          - {python: '3.7', tox: "py37-sqlalchemy1.2"}
+          - {python: '3.7', tox: "py37-sqlalchemy1.3"}
+          - {python: '3.7', tox: "py37-sqlalchemylatest"}
+
+          - {python: '3.8', tox: "py38-sqlalchemy1.0"}
+          - {python: '3.8', tox: "py38-sqlalchemy1.1"}
+          - {python: '3.8', tox: "py38-sqlalchemy1.2"}
+          - {python: '3.8', tox: "py38-sqlalchemy1.3"}
+          - {python: '3.8', tox: "py38-sqlalchemylatest"}
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - run: pip install tox
+      - run: tox -e ${{ matrix.tox }}
