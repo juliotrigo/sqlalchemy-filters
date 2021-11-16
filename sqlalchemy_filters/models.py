@@ -202,7 +202,13 @@ def auto_join(query, *model_names):
         if model and (model not in get_query_models(query).values()):
             try:
                 tmp = query.join(model)
-                if sqlalchemy_version_cmp('>=', '1.4'):  # pragma: nocover
+                if (
+                    sqlalchemy_version_cmp('>=', '1.4')
+                    and hasattr(tmp, '_compile_state')
+                ):  # pragma: nocover
+                    # https://docs.sqlalchemy.org/en/14/changelog/migration_14.html
+                    # Many Core and ORM statement objects now perform much of
+                    # their construction and validation in the compile phase
                     tmp._compile_state()
                 query = tmp
             except InvalidRequestError:
