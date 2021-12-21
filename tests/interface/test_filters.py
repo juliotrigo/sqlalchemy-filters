@@ -12,7 +12,7 @@ from sqlalchemy_filters.exceptions import (
     BadFilterFormat, BadSpec, FieldNotFound
 )
 
-from test.models import Foo, Bar, Qux, Corge
+from tests.models import Foo, Bar, Qux, Corge
 
 
 ARRAY_NOT_SUPPORTED = (
@@ -158,7 +158,7 @@ class TestFiltersNotApplied:
             apply_filters(query, filters)
 
         expected_error = (
-            "Model <class 'test.models.Bar'> has no column `invalid_field`."
+            "Model <class 'tests.models.Bar'> has no column `invalid_field`."
         )
         assert expected_error == err.value.args[0]
 
@@ -174,7 +174,7 @@ class TestFiltersNotApplied:
             apply_filters(query, filters)
 
         expected_error = (
-            "Model <class 'test.models.Bar'> has no column `{}`.".format(
+            "Model <class 'tests.models.Bar'> has no column `{}`.".format(
                 attr_name
             )
         )
@@ -1223,14 +1223,14 @@ class TestHybridAttributes:
     @pytest.mark.parametrize(
         ('field, expected_error'),
         [
-            ('foos', "Model <class 'test.models.Bar'> has no column `foos`."),
+            ('foos', "Model <class 'tests.models.Bar'> has no column `foos`."),
             (
                 '__mapper__',
-                "Model <class 'test.models.Bar'> has no column `__mapper__`.",
+                "Model <class 'tests.models.Bar'> has no column `__mapper__`.",
             ),
             (
                 'not_valid',
-                "Model <class 'test.models.Bar'> has no column `not_valid`.",
+                "Model <class 'tests.models.Bar'> has no column `not_valid`.",
             ),
         ]
     )

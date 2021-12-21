@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import create_database, drop_database, database_exists
 
-from test.models import Base, BasePostgresqlSpecific
+from tests.models import Base, BasePostgresqlSpecific
 
 
 SQLITE_TEST_DB_URI = 'SQLITE_TEST_DB_URI'

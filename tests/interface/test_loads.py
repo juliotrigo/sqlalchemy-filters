@@ -4,8 +4,8 @@ from sqlalchemy.orm import joinedload
 
 from sqlalchemy_filters import apply_loads
 from sqlalchemy_filters.exceptions import BadLoadFormat, BadSpec, FieldNotFound
-from test.models import Foo, Bar
-from test import error_value
+from tests.models import Foo, Bar
+from tests import error_value
 
 
 @pytest.fixture
@@ -59,7 +59,7 @@ class TestLoadNotApplied(object):
             apply_loads(query, load_spec)
 
         expected_error = (
-            "Model <class 'test.models.Bar'> has no column `invalid_field`."
+            "Model <class 'tests.models.Bar'> has no column `invalid_field`."
         )
         assert expected_error == error_value(err)
 

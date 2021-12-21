@@ -7,8 +7,8 @@ import pytest
 from sqlalchemy.orm import joinedload
 from sqlalchemy_filters.exceptions import BadSortFormat, BadSpec, FieldNotFound
 from sqlalchemy_filters.sorting import apply_sort
-from test import error_value
-from test.models import Foo, Bar, Qux
+from tests import error_value
+from tests.models import Foo, Bar, Qux
 
 
 NULLSFIRST_NOT_SUPPORTED = (
@@ -102,7 +102,7 @@ class TestSortNotApplied(object):
             apply_sort(query, order_by)
 
         expected_error = (
-            "Model <class 'test.models.Bar'> has no column `invalid_field`."
+            "Model <class 'tests.models.Bar'> has no column `invalid_field`."
         )
         assert expected_error == error_value(err)
 
