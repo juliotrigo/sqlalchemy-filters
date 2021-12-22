@@ -216,9 +216,10 @@ class TestAutoJoin:
             {'field': 'name', 'op': '==', 'value': 'name_1'},
             {'model': 'Bar', 'field': 'count', 'op': 'is_null'},
         ]
-
         filtered_query = apply_filters(query, filters)
         result = filtered_query.all()
+
+        # [<tests.models.Foo object at 0x7f970cd004f0>, <tests.models.Foo object at 0x7f970cd00430>]
 
         assert len(result) == 1
         assert result[0].id == 3

@@ -1,3 +1,4 @@
+from logging import exception
 from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm.mapper import Mapper
@@ -154,26 +155,38 @@ def get_default_model(query):
 
 
 def auto_join(query, *model_names):
+    if is_this_version_smaller('sqlalchemy', "1.4"):
+        return auto_join_sqlalchemy_13(query, model_names)
+    else:
+        return auto_join_sqlalchemy_14(query, model_names)
+
+def auto_join_sqlalchemy_13(query, *model_names):
     """ Automatically join models to `query` if they're not already present
     and the join can be done implicitly.
     """
     # every model has access to the registry, so we can use any from the query
     query_models = get_query_models(query).values()
-    if is_this_version_smaller('sqlalchemy', "1.4"):
-        model_registry = list(query_models)[-1]._decl_class_registry
-    else:
-        model_registry = list(query_models)[-1]._sa_registry._class_registry
+    model_registry = list(query_models)[-1]._decl_class_registry
 
     for name in model_names:
         model = get_model_class_by_name(model_registry, name)
         if model not in get_query_models(query).values():
             try:
-                if is_this_version_smaller("sqlalchemy", "1.4"):
-                    query = query.join(model)
-                else:
-                    query = query.subquery().join(model)
-
+                query = query.join(model)
             except InvalidRequestError:
                 pass  # can't be autojoined
-    breakpoint()
+    return query
+
+def auto_join_sqlalchemy_14(query, model_names):
+    query_models = get_query_models(query).values()
+    model_registry = list(query_models)[-1]._sa_registry._class_registry
+
+
+    for name in model_names:
+        model = get_model_class_by_name(model_registry, name)
+        if model not in get_query_models(query).values():
+            try:
+                query = query.outerjoin(model)
+            except InvalidRequestError:
+                pass  # can't be autojoined
     return query
