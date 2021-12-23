@@ -2,4 +2,5 @@ pytest
 coverage
 pytest-cov
 sqlalchemy-utils
+sqlalchemy ~=1.4
 

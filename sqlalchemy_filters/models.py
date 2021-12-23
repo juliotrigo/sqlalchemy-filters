@@ -5,8 +5,6 @@ from sqlalchemy.orm.mapper import Mapper
 from sqlalchemy.util import symbol
 import types
 
-from sqlalchemy_filters.utils import is_this_version_smaller
-
 from .exceptions import BadQuery, FieldNotFound, BadSpec
 
 
@@ -65,11 +63,8 @@ def get_query_models(query):
     """
     models = [col_desc['entity'] for col_desc in query.column_descriptions]
 
-    if is_this_version_smaller("sqlalchemy", "1.4"):
-        models.extend(mapper.class_ for mapper in query._join_entities)
-    else:
-        if hasattr(query._last_joined_entity, "class_"):
-            models.extend(mapper.class_ for mapper in tuple([query._last_joined_entity]))
+    if hasattr(query._last_joined_entity, "class_"):
+        models.extend(mapper.class_ for mapper in tuple([query._last_joined_entity]))
 
     # account also query.select_from entities
     if (
@@ -155,29 +150,10 @@ def get_default_model(query):
 
 
 def auto_join(query, *model_names):
-    if is_this_version_smaller('sqlalchemy', "1.4"):
-        return auto_join_sqlalchemy_13(query, model_names)
-    else:
-        return auto_join_sqlalchemy_14(query, model_names)
-
-def auto_join_sqlalchemy_13(query, *model_names):
     """ Automatically join models to `query` if they're not already present
     and the join can be done implicitly.
     """
     # every model has access to the registry, so we can use any from the query
-    query_models = get_query_models(query).values()
-    model_registry = list(query_models)[-1]._decl_class_registry
-
-    for name in model_names:
-        model = get_model_class_by_name(model_registry, name)
-        if model not in get_query_models(query).values():
-            try:
-                query = query.join(model)
-            except InvalidRequestError:
-                pass  # can't be autojoined
-    return query
-
-def auto_join_sqlalchemy_14(query, model_names):
     query_models = get_query_models(query).values()
     model_registry = list(query_models)[-1]._sa_registry._class_registry
 
@@ -186,6 +162,8 @@ def auto_join_sqlalchemy_14(query, model_names):
         model = get_model_class_by_name(model_registry, name)
         if model not in get_query_models(query).values():
             try:
+                if model is None:
+                    continue
                 query = query.outerjoin(model)
             except InvalidRequestError:
                 pass  # can't be autojoined

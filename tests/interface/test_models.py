@@ -1,6 +1,5 @@
 import pytest
 from sqlalchemy import func
-import sqlalchemy
 from sqlalchemy.orm import joinedload
 
 from sqlalchemy_filters.exceptions import BadSpec, BadQuery
@@ -8,7 +7,6 @@ from sqlalchemy_filters.models import (
     auto_join, get_default_model, get_query_models, get_model_class_by_name,
     get_model_from_spec
 )
-from sqlalchemy_filters.utils import is_this_version_smaller
 from tests.models import Base, Bar, Foo, Qux
 
 
@@ -28,7 +26,6 @@ class TestGetQueryModels(object):
 
         assert {'Bar': Bar} == entities
 
-    @pytest.mark.skipif(not is_this_version_smaller("sqlalchemy", "1.4"), reason="unsupported use in sqlalchemy > 1.4")
     def test_query_with_select_from_model(self, session):
         query = session.query().select_from(Bar)
 
@@ -79,7 +76,6 @@ class TestGetQueryModels(object):
         assert {'Foo': Foo, 'Bar': Bar} == entities
 
 
-    @pytest.mark.skipif(not is_this_version_smaller("sqlalchemy", "1.4"), reason="unsupported use in sqlalchemy > 1.4")
     def test_query_with_multiple_joins(self, session):
         query = session.query(Foo).join(Bar).join(Qux, Bar.id == Qux.id)
 
@@ -137,10 +133,7 @@ class TestGetModelClassByName:
 
     @pytest.fixture
     def registry(self):
-        if is_this_version_smaller('sqlalchemy', "1.4"):
-            return Base._decl_class_registry
-        else:
-            return Base._sa_registry._class_registry
+        return Base._sa_registry._class_registry
 
     def test_exists(self, registry):
         assert get_model_class_by_name(registry, 'Foo') == Foo
@@ -170,23 +163,12 @@ class TestAutoJoin:
         query = session.query(Foo)
         query = auto_join(query, 'Bar')
 
-        join_type = "INNER JOIN" if "mysql" in db_uri else "JOIN"
-
         expected = (
-            "SELECT "
-            "foo.id AS foo_id, foo.name AS foo_name, "
-            "foo.count AS foo_count, foo.bar_id AS foo_bar_id \n"
-            "FROM foo {join} bar ON bar.id = foo.bar_id".format(join=join_type)
-        )
-        expected_14 = (
             '(SELECT foo.id AS id, foo.name AS name, '
             'foo.count AS count, foo.bar_id AS bar_id \n'
             'FROM foo) AS anon_1 JOIN bar ON bar.id = anon_1.bar_id'
         )
-        if is_this_version_smaller("sqlalchemy", "1.4"):
-            assert str(query) == expected
-        else:
-            assert str(query) == expected_14
+        assert str(query) == expected
 
     def test_model_already_present(self, session):
         query = session.query(Foo, Bar)
@@ -223,8 +205,6 @@ class TestAutoJoin:
     def test_model_eager_joined(self, session, db_uri):
         query = session.query(Foo).options(joinedload(Foo.bar))
 
-        join_type = "INNER JOIN" if "mysql" in db_uri else "JOIN"
-
         expected_eager = (
             "SELECT "
             "foo.id AS foo_id, foo.name AS foo_name, "
@@ -236,28 +216,13 @@ class TestAutoJoin:
         assert str(query) == expected_eager
 
         expected_joined = (
-            "SELECT "
-            "foo.id AS foo_id, foo.name AS foo_name, "
-            "foo.count AS foo_count, foo.bar_id AS foo_bar_id, "
-            "bar_1.id AS bar_1_id, bar_1.name AS bar_1_name, "
-            "bar_1.count AS bar_1_count \n"
-            "FROM foo {join} bar ON bar.id = foo.bar_id "
-            "LEFT OUTER JOIN bar AS bar_1 ON bar_1.id = foo.bar_id".format(
-                join=join_type
-            )
-        )
-
-        expected_joined_14 = (
             '(SELECT foo.id AS id, foo.name AS name, '
             'foo.count AS count, foo.bar_id AS bar_id \n'
             'FROM foo) AS anon_1 JOIN bar ON bar.id = anon_1.bar_id'
         )
 
         query = auto_join(query, 'Bar')
-        if is_this_version_smaller("sqlalchemy", "1.4"):
-            assert str(query) == expected_joined
-        else:
-            assert str(query) == expected_joined_14
+        assert str(query) == expected_joined
 
     def test_model_does_not_exist(self, session, db_uri):
         query = session.query(Foo)
