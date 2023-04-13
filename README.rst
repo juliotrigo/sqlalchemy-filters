@@ -16,8 +16,8 @@ SQLAlchemy filters
 .. image:: https://img.shields.io/pypi/format/sqlalchemy-filters.svg
     :target: https://pypi.org/project/sqlalchemy-filters/
 
-.. image:: https://travis-ci.org/juliotrigo/sqlalchemy-filters.svg?branch=master
-    :target: https://travis-ci.org/juliotrigo/sqlalchemy-filters
+.. image:: https://github.com/juliotrigo/sqlalchemy-filters/actions/workflows/tests.yml/badge.svg
+    :target: https://github.com/juliotrigo/sqlalchemy-filters/actions
 
 
 Filtering
