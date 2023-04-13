@@ -30,6 +30,7 @@ setup(
             'flake8',
             'restructuredtext-lint',
             'Pygments',
+            'coverage-conditional-plugin',
         ],
         'mysql': ['mysql-connector-python-rf==2.2.2'],
         'postgresql': ['psycopg2==2.8.4'],

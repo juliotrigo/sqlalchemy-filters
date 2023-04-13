@@ -58,7 +58,7 @@ def _is_hybrid_method(orm_descriptor):
     return orm_descriptor.extension_type == symbol('HYBRID_METHOD')
 
 
-def get_model_from_table(table):  # pragma: nocover
+def get_model_from_table(table):  # pragma: sqlalchemy_gte_1_4
     """Resolve model class from table object"""
 
     for registry in mapperlib._all_registries():
@@ -80,9 +80,9 @@ def get_query_models(query):
     models = [col_desc['entity'] for col_desc in query.column_descriptions]
 
     # account joined entities
-    if sqlalchemy_version_lt('1.4'):  # pragma: nocover
+    if sqlalchemy_version_lt('1.4'):  # pragma: sqlalchemy_lt_1_4
         models.extend(mapper.class_ for mapper in query._join_entities)
-    else:  # pragma: nocover
+    else:  # pragma: sqlalchemy_gte_1_4
         try:
             models.extend(
                 mapper.class_
@@ -99,14 +99,14 @@ def get_query_models(query):
 
     # account also query.select_from entities
     model_class = None
-    if sqlalchemy_version_lt('1.4'):  # pragma: nocover
+    if sqlalchemy_version_lt('1.4'):  # pragma: sqlalchemy_lt_1_4
         if query._select_from_entity:
             model_class = (
                 query._select_from_entity
                 if sqlalchemy_version_lt('1.1')
                 else query._select_from_entity.class_
             )
-    else:  # pragma: nocover
+    else:  # pragma: sqlalchemy_gte_1_4
         if query._from_obj:
             model_class = get_model_from_table(query._from_obj[0])
     if model_class and (model_class not in models):
@@ -198,10 +198,10 @@ def auto_join(query, *model_names):
     for name in model_names:
         model = get_model_class_by_name(model_registry, name)
         if model and (model not in get_query_models(query).values()):
-            try:  # pragma: nocover
-                if sqlalchemy_version_lt('1.4'):
+            try:
+                if sqlalchemy_version_lt('1.4'):  # pragma: sqlalchemy_lt_1_4
                     query = query.join(model)
-                else:
+                else:  # pragma: sqlalchemy_gte_1_4
                     # https://docs.sqlalchemy.org/en/14/changelog/migration_14.html
                     # Many Core and ORM statement objects now perform much of
                     # their construction and validation in the compile phase
