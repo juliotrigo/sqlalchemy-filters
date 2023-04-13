@@ -487,14 +487,6 @@ The following RDBMS are supported (tested):
 - PostgreSQL
 
 
-Python 2
---------
-
-There is no active support for Python 2. However, it is compatible as of
-February 2019, if you install ``funcsigs``, included in the ``python2``
-extra requirements.
-
-
 SQLAlchemy support
 ------------------
 

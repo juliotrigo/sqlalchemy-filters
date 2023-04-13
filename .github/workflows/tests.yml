@@ -33,25 +33,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {python: '2.7', tox: "py27-sqlalchemy1.0"}
-          - {python: '2.7', tox: "py27-sqlalchemy1.1"}
-          - {python: '2.7', tox: "py27-sqlalchemy1.2"}
-          - {python: '2.7', tox: "py27-sqlalchemy1.3"}
-
-          - {python: '3.5', tox: "py35-sqlalchemy1.0"}
-          - {python: '3.5', tox: "py35-sqlalchemy1.1"}
-          - {python: '3.5', tox: "py35-sqlalchemy1.2"}
-          - {python: '3.5', tox: "py35-sqlalchemy1.3"}
-          - {python: '3.5', tox: "py35-sqlalchemy1.4"}
-          - {python: '3.5', tox: "py35-sqlalchemylatest"}
-
-          - {python: '3.6', tox: "py36-sqlalchemy1.0"}
-          - {python: '3.6', tox: "py36-sqlalchemy1.1"}
-          - {python: '3.6', tox: "py36-sqlalchemy1.2"}
-          - {python: '3.6', tox: "py36-sqlalchemy1.3"}
-          - {python: '3.6', tox: "py36-sqlalchemy1.4"}
-          - {python: '3.6', tox: "py36-sqlalchemylatest"}
-
           - {python: '3.7', tox: "py37-sqlalchemy1.0"}
           - {python: '3.7', tox: "py37-sqlalchemy1.1"}
           - {python: '3.7', tox: "py37-sqlalchemy1.2"}
@@ -72,6 +53,13 @@ jobs:
           - {python: '3.9', tox: "py39-sqlalchemy1.3"}
           - {python: '3.9', tox: "py39-sqlalchemy1.4"}
           - {python: '3.9', tox: "py39-sqlalchemylatest"}
+
+          - {python: '3.10', tox: "py39-sqlalchemy1.0"}
+          - {python: '3.10', tox: "py39-sqlalchemy1.1"}
+          - {python: '3.10', tox: "py39-sqlalchemy1.2"}
+          - {python: '3.10', tox: "py39-sqlalchemy1.3"}
+          - {python: '3.10', tox: "py39-sqlalchemy1.4"}
+          - {python: '3.10', tox: "py39-sqlalchemylatest"}
 
     steps:
       - uses: actions/checkout@v2
