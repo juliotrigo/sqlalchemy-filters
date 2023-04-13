@@ -1,0 +1,8 @@
+[coverage:run]
+plugins =
+  coverage_conditional_plugin
+
+[coverage:coverage_conditional_plugin]
+rules =
+  "package_version('sqlalchemy') < (1, 4)": no_cover_sqlalchemy_lt_1_4
+  "package_version('sqlalchemy') >= (1, 4)": no_cover_sqlalchemy_gte_1_4
