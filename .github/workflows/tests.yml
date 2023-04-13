@@ -54,8 +54,8 @@ jobs:
           - {python: '3.9', tox: "py39-sqlalchemy1.4"}
           - {python: '3.9', tox: "py39-sqlalchemylatest"}
 
-          - {python: '3.10', tox: "py310-sqlalchemy1.0"}
-          - {python: '3.10', tox: "py310-sqlalchemy1.1"}
+          # sqlalchemy <= 1.1 error with:
+          # AttributeError: module 'collections' has no attribute 'MutableMapping'
           - {python: '3.10', tox: "py310-sqlalchemy1.2"}
           - {python: '3.10', tox: "py310-sqlalchemy1.3"}
           - {python: '3.10', tox: "py310-sqlalchemy1.4"}
