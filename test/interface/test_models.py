@@ -5,12 +5,21 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy_filters.exceptions import BadSpec, BadQuery
 from sqlalchemy_filters.models import (
     auto_join, get_default_model, get_query_models, get_model_class_by_name,
-    get_model_from_spec, sqlalchemy_version_lt
+    get_model_from_spec, sqlalchemy_version_lt, get_model_from_table
 )
 from test.models import Base, Bar, Foo, Qux
 
 
 class TestGetQueryModels(object):
+    def test_returns_none_for_unknown_table(self):
+
+        class FakeUnmappedTable:
+            pass
+
+        table = FakeUnmappedTable()
+
+        result = get_model_from_table(table)
+        assert result is None
 
     def test_query_with_no_models(self, session):
         query = session.query()
