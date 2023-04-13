@@ -25,8 +25,7 @@ setup(
         'dev': [
             'pytest>=4.6.9',
             'coverage~=5.0.4',
-            # for sqlalchemy1.4 >= 0.37 is required
-            'sqlalchemy-utils>=0.36.3',
+            'sqlalchemy-utils>=0.37',
             'flake8',
             'restructuredtext-lint',
             'Pygments',
