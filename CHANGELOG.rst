@@ -4,6 +4,14 @@ Release Notes
 Here you can see the full list of changes between sqlalchemy-filters
 versions, where semantic versioning is used: *major.minor.patch*.
 
+0.13.0
+------
+
+Released 2023-04-13
+
+* Add support for SQLAlchemy 1.4 (#69) thanks to @bodik
+* Add support for Python 3.9 & Python 3.10
+* Drop support for Python 2.7, 3.5 & 3.6
 
 0.12.0
 ------

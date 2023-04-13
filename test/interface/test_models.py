@@ -5,12 +5,24 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy_filters.exceptions import BadSpec, BadQuery
 from sqlalchemy_filters.models import (
     auto_join, get_default_model, get_query_models, get_model_class_by_name,
-    get_model_from_spec
+    get_model_from_spec, sqlalchemy_version_lt, get_model_from_table
 )
 from test.models import Base, Bar, Foo, Qux
 
 
 class TestGetQueryModels(object):
+    @pytest.mark.skipif(
+        sqlalchemy_version_lt('1.4'), reason='tests sqlalchemy 1.4 code'
+    )
+    def test_returns_none_for_unknown_table(self):
+
+        class FakeUnmappedTable:
+            pass
+
+        table = FakeUnmappedTable()
+
+        result = get_model_from_table(table)
+        assert result is None
 
     def test_query_with_no_models(self, session):
         query = session.query()
@@ -32,6 +44,13 @@ class TestGetQueryModels(object):
         entities = get_query_models(query)
 
         assert {'Bar': Bar} == entities
+
+    def test_query_with_select_from_and_join_model(self, session):
+        query = session.query().select_from(Bar).join(Foo)
+
+        entities = get_query_models(query)
+
+        assert {'Bar': Bar, 'Foo': Foo} == entities
 
     def test_query_with_multiple_models(self, session):
         query = session.query(Bar, Qux)
@@ -132,7 +151,11 @@ class TestGetModelClassByName:
 
     @pytest.fixture
     def registry(self):
-        return Base._decl_class_registry
+        return (
+            Base._decl_class_registry
+            if sqlalchemy_version_lt('1.4')
+            else Base.registry._class_registry
+        )
 
     def test_exists(self, registry):
         assert get_model_class_by_name(registry, 'Foo') == Foo

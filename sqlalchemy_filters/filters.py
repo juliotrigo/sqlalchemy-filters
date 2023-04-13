@@ -1,17 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import namedtuple
-try:
-    from collections.abc import Iterable
-except ImportError:  # pragma: no cover
-    # For python2 capability.
-    from collections import Iterable
-try:
-    from inspect import signature
-except ImportError:  # pragma: no cover
-    # For python2 capability. NOTE: This is in not handled in install_requires
-    # but rather in extras_require. You can install with
-    # 'pip install sqlalchemy-filters[python2]'
-    from funcsigs import signature
+from collections.abc import Iterable
+from inspect import signature
 from itertools import chain
 
 from six import string_types

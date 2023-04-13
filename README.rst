@@ -16,8 +16,8 @@ SQLAlchemy filters
 .. image:: https://img.shields.io/pypi/format/sqlalchemy-filters.svg
     :target: https://pypi.org/project/sqlalchemy-filters/
 
-.. image:: https://travis-ci.org/juliotrigo/sqlalchemy-filters.svg?branch=master
-    :target: https://travis-ci.org/juliotrigo/sqlalchemy-filters
+.. image:: https://github.com/juliotrigo/sqlalchemy-filters/actions/workflows/tests.yml/badge.svg
+    :target: https://github.com/juliotrigo/sqlalchemy-filters/actions
 
 
 Filtering
@@ -487,19 +487,11 @@ The following RDBMS are supported (tested):
 - PostgreSQL
 
 
-Python 2
---------
-
-There is no active support for Python 2. However, it is compatible as of
-February 2019, if you install ``funcsigs``, included in the ``python2``
-extra requirements.
-
-
 SQLAlchemy support
 ------------------
 
 The following SQLAlchemy_ versions are supported: ``1.0``, ``1.1``,
-``1.2``, ``1.3``.
+``1.2``, ``1.3``, ``1.4``.
 
 
 Changelog
