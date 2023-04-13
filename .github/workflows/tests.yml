@@ -33,33 +33,32 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # sqlalchemylatest (i.e. > 2.0.0) is not yet supported
+          # for any version of python
+
           - {python: '3.7', tox: "py37-sqlalchemy1.0"}
           - {python: '3.7', tox: "py37-sqlalchemy1.1"}
           - {python: '3.7', tox: "py37-sqlalchemy1.2"}
           - {python: '3.7', tox: "py37-sqlalchemy1.3"}
           - {python: '3.7', tox: "py37-sqlalchemy1.4"}
-          - {python: '3.7', tox: "py37-sqlalchemylatest"}
 
           - {python: '3.8', tox: "py38-sqlalchemy1.0"}
           - {python: '3.8', tox: "py38-sqlalchemy1.1"}
           - {python: '3.8', tox: "py38-sqlalchemy1.2"}
           - {python: '3.8', tox: "py38-sqlalchemy1.3"}
           - {python: '3.8', tox: "py38-sqlalchemy1.4"}
-          - {python: '3.8', tox: "py38-sqlalchemylatest"}
 
           - {python: '3.9', tox: "py39-sqlalchemy1.0"}
           - {python: '3.9', tox: "py39-sqlalchemy1.1"}
           - {python: '3.9', tox: "py39-sqlalchemy1.2"}
           - {python: '3.9', tox: "py39-sqlalchemy1.3"}
           - {python: '3.9', tox: "py39-sqlalchemy1.4"}
-          - {python: '3.9', tox: "py39-sqlalchemylatest"}
 
-          # sqlalchemy <= 1.1 error with:
+          # python3.10 with sqlalchemy <= 1.1 errors with:
           # AttributeError: module 'collections' has no attribute 'MutableMapping'
           - {python: '3.10', tox: "py310-sqlalchemy1.2"}
           - {python: '3.10', tox: "py310-sqlalchemy1.3"}
           - {python: '3.10', tox: "py310-sqlalchemy1.4"}
-          - {python: '3.10', tox: "py310-sqlalchemylatest"}
 
     steps:
       - uses: actions/checkout@v2
