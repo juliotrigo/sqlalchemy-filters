@@ -11,6 +11,9 @@ from test.models import Base, Bar, Foo, Qux
 
 
 class TestGetQueryModels(object):
+    @pytest.mark.skipif(
+        sqlalchemy_version_lt('1.4'), reason='tests sqlalchemy 1.4 code'
+    )
     def test_returns_none_for_unknown_table(self):
 
         class FakeUnmappedTable:
