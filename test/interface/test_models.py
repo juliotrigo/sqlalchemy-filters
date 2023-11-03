@@ -5,14 +5,14 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy_filters.exceptions import BadSpec, BadQuery
 from sqlalchemy_filters.models import (
     auto_join, get_default_model, get_query_models, get_model_class_by_name,
-    get_model_from_spec, sqlalchemy_version_lt, get_model_from_table
+    get_model_from_spec, get_model_from_table, sqlalchemy_version_cmp
 )
 from test.models import Base, Bar, Foo, Qux
 
 
 class TestGetQueryModels(object):
     @pytest.mark.skipif(
-        sqlalchemy_version_lt('1.4'), reason='tests sqlalchemy 1.4 code'
+        sqlalchemy_version_cmp('<', '1.4'), reason='tests sqlalchemy 1.4 code'
     )
     def test_returns_none_for_unknown_table(self):
 
@@ -153,7 +153,7 @@ class TestGetModelClassByName:
     def registry(self):
         return (
             Base._decl_class_registry
-            if sqlalchemy_version_lt('1.4')
+            if sqlalchemy_version_cmp('<', '1.4')
             else Base.registry._class_registry
         )
 
