@@ -100,7 +100,11 @@ def get_query_models(query):  # pragma: nocover
             # or query might be a sqla2.0 select statement
             pass
         # also try to infer the models from various internals
-        for table_tuple in query._setup_joins + query._legacy_setup_joins:
+        all_joins = query._setup_joins
+        if hasattr(query, "_legacy_setup_joins"):
+            all_joins += query._legacy_setup_joins
+
+        for table_tuple in all_joins:
             models.append(get_model_from_table(table_tuple[0]))
 
     # account also query.select_from entities
