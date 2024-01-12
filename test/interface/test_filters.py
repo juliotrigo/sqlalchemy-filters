@@ -1217,6 +1217,20 @@ class TestApplyArrayFilters:
         assert result[1].id == 4
 
 
+class TestApplyContainsFilter:
+    @pytest.mark.usefixtures('multiple_bars_inserted')
+    def test_field_contains_value(self, session):
+        query = session.query(Bar)
+        filters = [{'field': 'name', 'op': 'contains', 'value': '_1'}]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 2
+        assert result[0].id == 1
+        assert result[1].id == 3
+
+
 class TestHybridAttributes:
 
     @pytest.mark.usefixtures('multiple_bars_inserted')
