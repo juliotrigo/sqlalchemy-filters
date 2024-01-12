@@ -12,7 +12,7 @@ from sqlalchemy_filters.exceptions import (
     BadFilterFormat, BadSpec, FieldNotFound
 )
 
-from test.models import Foo, Bar, Qux, Corge
+from test.models import Foo, Bar, Qux, Corge, Til
 
 
 ARRAY_NOT_SUPPORTED = (
@@ -82,6 +82,18 @@ def multiple_corges_inserted(session, is_postgresql):
         corge_3 = Corge(id=3, name='name_3', tags=['foo', 'bar'])
         corge_4 = Corge(id=4, name='name_4', tags=['bar', 'baz'])
         session.add_all([corge_1, corge_2, corge_3, corge_4])
+        session.commit()
+
+
+@pytest.fixture
+def multiple_tils_inserted(session, is_sqlalchemy_1_3_or_higer):
+    if is_sqlalchemy_1_3_or_higer:
+
+        til_1 = Til(id=1, name='name_1', refer_info=[])
+        til_2 = Til(id=2, name='name_2', refer_info=[1])
+        til_3 = Til(id=3, name='name_3', refer_info=[2, 3])
+        til_4 = Til(id=4, name='name_4', refer_info=['foo', 'baz'])
+        session.add_all([til_1, til_2, til_3, til_4])
         session.commit()
 
 
@@ -1316,3 +1328,77 @@ class TestHybridAttributes:
         assert set(map(type, quxs)) == {Qux}
         assert {qux.id for qux in quxs} == {4}
         assert {qux.three_times_count() for qux in quxs} == {45}
+
+
+class TestApplyJsonContainsFilter:
+
+    @pytest.mark.usefixtures('multiple_tils_inserted')
+    def test_til_not_contains_value(
+        self, session, is_sqlite, is_postgresql, is_sqlalchemy_1_3_or_higer
+    ):
+        if is_sqlite:
+            pytest.skip()
+
+        if is_postgresql:
+            pytest.skip()
+
+        if not is_sqlalchemy_1_3_or_higer:
+            pytest.skip()
+
+        query = session.query(Til)
+        filters = [
+            {'field': 'refer_info', 'op': 'json_contains', 'value': 'invalid'}
+        ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 0
+
+    @pytest.mark.usefixtures('multiple_tils_inserted')
+    def test_til_contains_int_value(
+        self, session, is_sqlite, is_postgresql, is_sqlalchemy_1_3_or_higer
+    ):
+        if is_sqlite:
+            pytest.skip()
+
+        if is_postgresql:
+            pytest.skip()
+
+        if not is_sqlalchemy_1_3_or_higer:
+            pytest.skip()
+
+        query = session.query(Til)
+        filters = [
+            {'field': 'refer_info', 'op': 'json_contains', 'value': 1}
+        ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 1
+        assert result[0].id == 2
+
+    @pytest.mark.usefixtures('multiple_tils_inserted')
+    def test_til_contains_str_value(
+        self, session, is_sqlite, is_postgresql, is_sqlalchemy_1_3_or_higer
+    ):
+        if is_sqlite:
+            pytest.skip()
+
+        if is_postgresql:
+            pytest.skip()
+
+        if not is_sqlalchemy_1_3_or_higer:
+            pytest.skip()
+
+        query = session.query(Til)
+        filters = [
+            {'field': 'refer_info', 'op': 'json_contains', 'value': "foo"}
+        ]
+
+        filtered_query = apply_filters(query, filters)
+        result = filtered_query.all()
+
+        assert len(result) == 1
+        assert result[0].id == 4
