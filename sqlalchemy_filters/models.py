@@ -112,7 +112,7 @@ def get_query_models(query):
     if model_class and (model_class not in models):
         models.append(model_class)
 
-    return {model.__name__: model for model in models}
+    return {model.__name__: model for model in models if model is not None}
 
 
 def get_model_from_spec(spec, query, default_model=None):
