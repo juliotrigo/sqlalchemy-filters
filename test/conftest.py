@@ -131,7 +131,7 @@ def connection(db_uri, db_engine_options, is_postgresql):
 
     yield connection
 
-    Base.metadata.drop_all()
+    Base.metadata.drop_all(engine)
     destroy_database(db_uri)
 
 
