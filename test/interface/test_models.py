@@ -181,6 +181,16 @@ class TestGetDefaultModel:
 
 class TestAutoJoin:
 
+    def _get_select_columns(self):
+        foo_select_columns = "foo.id AS foo_id, foo.name AS foo_name, foo.count AS foo_count"
+        base_select_columns = "foo.bar_id AS foo_bar_id"
+        if sqlalchemy_version_cmp(">=", "2"):
+            select_columns = f"{base_select_columns}, {foo_select_columns}"
+        else:
+            select_columns = f"{foo_select_columns}, {base_select_columns}"
+
+        return select_columns
+
     def test_model_not_present(self, session, db_uri):
         query = session.query(Foo)
         query = auto_join(query, 'Bar')
@@ -188,9 +198,7 @@ class TestAutoJoin:
         join_type = "INNER JOIN" if "mysql" in db_uri else "JOIN"
 
         expected = (
-            "SELECT "
-            "foo.id AS foo_id, foo.name AS foo_name, "
-            "foo.count AS foo_count, foo.bar_id AS foo_bar_id \n"
+            f"SELECT {self._get_select_columns()} \n"
             "FROM foo {join} bar ON bar.id = foo.bar_id".format(join=join_type)
         )
         assert str(query) == expected
@@ -200,9 +208,7 @@ class TestAutoJoin:
 
         # no join applied
         expected = (
-            "SELECT "
-            "foo.id AS foo_id, foo.name AS foo_name, "
-            "foo.count AS foo_count, foo.bar_id AS foo_bar_id, "
+            f"SELECT {self._get_select_columns()}, "
             "bar.id AS bar_id, bar.name AS bar_name, bar.count AS bar_count \n"
             "FROM foo, bar"
         )
@@ -217,9 +223,7 @@ class TestAutoJoin:
         join_type = "INNER JOIN" if "mysql" in db_uri else "JOIN"
 
         expected = (
-            "SELECT "
-            "foo.id AS foo_id, foo.name AS foo_name, "
-            "foo.count AS foo_count, foo.bar_id AS foo_bar_id \n"
+            f"SELECT {self._get_select_columns()} \n"
             "FROM foo {join} bar ON bar.id = foo.bar_id".format(join=join_type)
         )
         assert str(query) == expected
@@ -233,9 +237,7 @@ class TestAutoJoin:
         join_type = "INNER JOIN" if "mysql" in db_uri else "JOIN"
 
         expected_eager = (
-            "SELECT "
-            "foo.id AS foo_id, foo.name AS foo_name, "
-            "foo.count AS foo_count, foo.bar_id AS foo_bar_id, "
+            f"SELECT {self._get_select_columns()}, "
             "bar_1.id AS bar_1_id, bar_1.name AS bar_1_name, "
             "bar_1.count AS bar_1_count \n"
             "FROM foo LEFT OUTER JOIN bar AS bar_1 ON bar_1.id = foo.bar_id"
@@ -243,9 +245,7 @@ class TestAutoJoin:
         assert str(query) == expected_eager
 
         expected_joined = (
-            "SELECT "
-            "foo.id AS foo_id, foo.name AS foo_name, "
-            "foo.count AS foo_count, foo.bar_id AS foo_bar_id, "
+            f"SELECT {self._get_select_columns()}, "
             "bar_1.id AS bar_1_id, bar_1.name AS bar_1_name, "
             "bar_1.count AS bar_1_count \n"
             "FROM foo {join} bar ON bar.id = foo.bar_id "
@@ -261,9 +261,7 @@ class TestAutoJoin:
         query = session.query(Foo)
 
         expected = (
-            "SELECT "
-            "foo.id AS foo_id, foo.name AS foo_name, "
-            "foo.count AS foo_count, foo.bar_id AS foo_bar_id \n"
+            f"SELECT {self._get_select_columns()} \n"
             "FROM foo"
         )
         assert str(query) == expected
