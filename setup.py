@@ -33,8 +33,8 @@ setup(
             'coverage-conditional-plugin',
             'tox~=3.28'
         ],
-        'mysql': ['mysql-connector-python-rf==2.2.2'],
-        'postgresql': ['psycopg2==2.8.4'],
+        'mysql': ['mysql-connector-python-rf>=2.2.2'],
+        'postgresql': ['psycopg2>=2.8.4'],
     },
     zip_safe=True,
     license='Apache License, Version 2.0',
