@@ -14,5 +14,4 @@ __pycache__/
 venv
 .venv
 .idea
-.python-version
 build
