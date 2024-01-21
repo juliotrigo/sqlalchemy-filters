@@ -31,6 +31,7 @@ setup(
             'restructuredtext-lint',
             'Pygments',
             'coverage-conditional-plugin',
+            'tox~=3.28'
         ],
         'mysql': ['mysql-connector-python-rf==2.2.2'],
         'postgresql': ['psycopg2==2.8.4'],
