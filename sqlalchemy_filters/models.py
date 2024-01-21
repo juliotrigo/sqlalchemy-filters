@@ -4,7 +4,6 @@ from sqlalchemy import __version__ as sqlalchemy_version
 from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.orm import mapperlib
 from sqlalchemy.inspection import inspect
-from sqlalchemy.util import symbol
 import types
 
 from .exceptions import BadQuery, FieldNotFound, BadSpec
@@ -57,12 +56,15 @@ class Field(object):
 
 
 def _is_hybrid_property(orm_descriptor):
-    return orm_descriptor.extension_type == symbol('HYBRID_PROPERTY')
+    # SQLAlchemy 2 treats extension_type as an enum, not a symbol(). Enum is at sqlalchemy.ext.hybrid.HybridExtensionType
+
+    return str(orm_descriptor.extension_type) in ("symbol('HYBRID_PROPERTY')", 'HybridExtensionType.HYBRID_PROPERTY')
 
 
 def _is_hybrid_method(orm_descriptor):
-    return orm_descriptor.extension_type == symbol('HYBRID_METHOD')
+    # SQLAlchemy 2 treats extension_type as an enum, not a symbol(). Enum is at sqlalchemy.ext.hybrid.HybridExtensionType
 
+    return str(orm_descriptor.extension_type) in ("symbol('HYBRID_METHOD')", 'HybridExtensionType.HYBRID_METHOD')
 
 def get_model_from_table(table):  # pragma: no_cover_sqlalchemy_lt_1_4
     """Resolve model class from table object"""
