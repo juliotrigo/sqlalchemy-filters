@@ -182,12 +182,12 @@ class TestGetDefaultModel:
 class TestAutoJoin:
 
     def _get_select_columns(self):
-        foo_select_columns = "foo.id AS foo_id, foo.name AS foo_name, foo.count AS foo_count"
-        base_select_columns = "foo.bar_id AS foo_bar_id"
+        foo_columns = "foo.id AS foo_id, foo.name AS foo_name, foo.count AS foo_count"
+        base_columns = "foo.bar_id AS foo_bar_id"
         if sqlalchemy_version_cmp(">=", "2"):
-            select_columns = f"{base_select_columns}, {foo_select_columns}"
+            select_columns = f"{base_columns}, {foo_columns}"
         else:
-            select_columns = f"{foo_select_columns}, {base_select_columns}"
+            select_columns = f"{foo_columns}, {base_columns}"
 
         return select_columns
 
