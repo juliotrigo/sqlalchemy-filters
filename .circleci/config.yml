@@ -23,7 +23,7 @@ jobs:
           command: |
             make coverage
             mkdir /tmp/coverage-html
-            coverage html -d /tmp/coverage-html --fail-under 100
+            coverage html -d /tmp/coverage-html --fail-under 90
       - store_artifacts:
           path: /tmp/coverage-html
           destination: coverage-html

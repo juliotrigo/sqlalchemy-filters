@@ -109,15 +109,6 @@ def is_sqlite(db_uri):
 
 
 @pytest.fixture(scope='session')
-def is_sqlalchemy_1_3_or_higer():
-    import sqlalchemy
-    if sqlalchemy.__version__ >= '1.3.0':
-        return True
-    else:
-        return False
-
-
-@pytest.fixture(scope='session')
 def db_engine_options(db_uri, is_postgresql):
     if is_postgresql:
         return dict(
