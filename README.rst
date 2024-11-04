@@ -118,7 +118,7 @@ blocks is identical:
     query = session.query(Foo)  # join to Bar will be automatically applied
 
     filter_spec = [
-        {field': 'name', 'op': '==', 'value': 'name_1'},
+        {'field': 'name', 'op': '==', 'value': 'name_1'},
         {'model': 'Bar', 'field': 'count', 'op': '>=', 'value': 5},
     ]
     filtered_query = apply_filters(query, filter_spec)
