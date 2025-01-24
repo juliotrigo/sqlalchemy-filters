@@ -89,10 +89,13 @@ def get_query_models(query):
                 for mapper
                 in query._compile_state()._join_entities
             )
-        except InvalidRequestError:
+        except (InvalidRequestError, AttributeError):
             # query might not contain columns yet, hence cannot be compiled
             # try to infer the models from various internals
-            for table_tuple in query._setup_joins + query._legacy_setup_joins:
+            table_tuple_list = query._setup_joins
+            if hasattr(query, "_legacy_setup_joins"):
+                table_tuple_list = table_tuple_list + query._legacy_setup_joins
+            for table_tuple in table_tuple_list:
                 model_class = get_model_from_table(table_tuple[0])
                 if model_class:
                     models.append(model_class)
