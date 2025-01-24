@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sqlalchemy
 from sqlalchemy import (
     Column, Date, DateTime, ForeignKey, Integer, String, Time
 )
@@ -62,3 +63,16 @@ class Corge(BasePostgresqlSpecific):
     __tablename__ = 'corge'
 
     tags = Column(ARRAY(String, dimensions=1))
+
+
+if sqlalchemy.__version__ >= '1.3.0':
+
+    from sqlalchemy import JSON
+
+    class Til(Base):
+
+        __tablename__ = 'til'
+
+        refer_info = Column(JSON)
+else:
+    Til = None
