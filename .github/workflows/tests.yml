@@ -7,7 +7,66 @@ on:
 jobs:
   tests:
     name: ${{ matrix.tox }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
+
+    services:
+      mariadb:
+        image: mariadb:10
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+
+      postgres:
+        image: postgres
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: test_sqlalchemy_filters
+          POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=en_US.utf8 --lc-ctype=en_US.utf8"
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # sqlalchemylatest (i.e. > 2.0.0) is not yet supported
+          # for any version of python
+
+          - {python: '3.8', tox: "py38-sqlalchemy1.0"}
+          - {python: '3.8', tox: "py38-sqlalchemy1.1"}
+          - {python: '3.8', tox: "py38-sqlalchemy1.2"}
+          - {python: '3.8', tox: "py38-sqlalchemy1.3"}
+          - {python: '3.8', tox: "py38-sqlalchemy1.4"}
+
+          - {python: '3.9', tox: "py39-sqlalchemy1.0"}
+          - {python: '3.9', tox: "py39-sqlalchemy1.1"}
+          - {python: '3.9', tox: "py39-sqlalchemy1.2"}
+          - {python: '3.9', tox: "py39-sqlalchemy1.3"}
+          - {python: '3.9', tox: "py39-sqlalchemy1.4"}
+
+          # python3.10 with sqlalchemy <= 1.1 errors with:
+          # AttributeError: module 'collections' has no attribute 'MutableMapping'
+          - {python: '3.10', tox: "py310-sqlalchemy1.2"}
+          - {python: '3.10', tox: "py310-sqlalchemy1.3"}
+          - {python: '3.10', tox: "py310-sqlalchemy1.4"}
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python }}
+
+      - run: pip install tox~=3.28
+      - run: tox -e ${{ matrix.tox }}
+
+  tests:
+    name: ${{ matrix.tox }}
+    runs-on: ubuntu-24.04
 
     services:
       mariadb:
@@ -43,29 +102,30 @@ jobs:
           - {python: '3.7', tox: "py37-sqlalchemy1.3"}
           - {python: '3.7', tox: "py37-sqlalchemy1.4"}
 
-          - {python: '3.8', tox: "py38-sqlalchemy1.0"}
-          - {python: '3.8', tox: "py38-sqlalchemy1.1"}
-          - {python: '3.8', tox: "py38-sqlalchemy1.2"}
-          - {python: '3.8', tox: "py38-sqlalchemy1.3"}
-          - {python: '3.8', tox: "py38-sqlalchemy1.4"}
-
-          - {python: '3.9', tox: "py39-sqlalchemy1.0"}
-          - {python: '3.9', tox: "py39-sqlalchemy1.1"}
-          - {python: '3.9', tox: "py39-sqlalchemy1.2"}
-          - {python: '3.9', tox: "py39-sqlalchemy1.3"}
-          - {python: '3.9', tox: "py39-sqlalchemy1.4"}
-
-          # python3.10 with sqlalchemy <= 1.1 errors with:
-          # AttributeError: module 'collections' has no attribute 'MutableMapping'
-          - {python: '3.10', tox: "py310-sqlalchemy1.2"}
-          - {python: '3.10', tox: "py310-sqlalchemy1.3"}
-          - {python: '3.10', tox: "py310-sqlalchemy1.4"}
-
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python }}
 
-      - run: pip install tox~=3.28
-      - run: tox -e ${{ matrix.tox }}
+    - uses: actions/cache@v4
+      id: cache-python_bin
+      with: {"path": "/target/usr/local/"}
+
+      - run:
+      if: steps.cache-python_bin.outputs.cache-hit != 'true'
+          apt-get install -y build-essential \
+            gdb lcov pkg-config \
+            libbz2-dev libffi-dev libgdbm-dev libgdbm-compat-dev liblzma-dev \
+            libncurses5-dev libreadline6-dev libsqlite3-dev libssl-dev \
+            lzma lzma-dev tk-dev uuid-dev zlib1g-dev libmpdec-dev
+
+          mkdir -p /target
+          cd /target/
+          wget https://github.com/python/cpython/archive/refs/tags/v3.7.17.tar.gz -O python-3.7.17.tgz
+          echo '88c46caf8fcd532f0f3bd6c435d240d9939e803bd341403c7543737c12f66cdad2bffaa26b125ff4d419748e7dc9e37f82ed81d6c25b73d4fd7e31224b2ffb08  python-3.7.17.tgz' | sha512sum --check -
+          tar --strip-components=1 -xvf python-3.7.17.tgz
+          mkdir build
+          cd build
+          ../configure --prefix=/target/usr/local/
+          make -j2 install
+
+      - run: /target/usr/local/bin/pip3 install tox~=3.28
+      - run: /target/usr/local/bin/tox -e ${{ matrix.tox }}
