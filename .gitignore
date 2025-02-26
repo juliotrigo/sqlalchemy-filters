@@ -10,3 +10,8 @@ __pycache__/
 .coverage.*
 .cache
 .tox
+
+venv
+.venv
+.idea
+build

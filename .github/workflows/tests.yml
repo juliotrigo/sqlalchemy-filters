@@ -31,41 +31,20 @@ jobs:
 
 
     strategy:
-      fail-fast: false
       matrix:
-        include:
-          # sqlalchemylatest (i.e. > 2.0.0) is not yet supported
-          # for any version of python
-
-          - {python: '3.7', tox: "py37-sqlalchemy1.0"}
-          - {python: '3.7', tox: "py37-sqlalchemy1.1"}
-          - {python: '3.7', tox: "py37-sqlalchemy1.2"}
-          - {python: '3.7', tox: "py37-sqlalchemy1.3"}
-          - {python: '3.7', tox: "py37-sqlalchemy1.4"}
-
-          - {python: '3.8', tox: "py38-sqlalchemy1.0"}
-          - {python: '3.8', tox: "py38-sqlalchemy1.1"}
-          - {python: '3.8', tox: "py38-sqlalchemy1.2"}
-          - {python: '3.8', tox: "py38-sqlalchemy1.3"}
-          - {python: '3.8', tox: "py38-sqlalchemy1.4"}
-
-          - {python: '3.9', tox: "py39-sqlalchemy1.0"}
-          - {python: '3.9', tox: "py39-sqlalchemy1.1"}
-          - {python: '3.9', tox: "py39-sqlalchemy1.2"}
-          - {python: '3.9', tox: "py39-sqlalchemy1.3"}
-          - {python: '3.9', tox: "py39-sqlalchemy1.4"}
-
-          # python3.10 with sqlalchemy <= 1.1 errors with:
-          # AttributeError: module 'collections' has no attribute 'MutableMapping'
-          - {python: '3.10', tox: "py310-sqlalchemy1.2"}
-          - {python: '3.10', tox: "py310-sqlalchemy1.3"}
-          - {python: '3.10', tox: "py310-sqlalchemy1.4"}
+        python: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install '.[dev]'
+          python -m pip install tox-gh-actions~=2.12.0
+      - name: Test with tox
+        run: tox
 
-      - run: pip install tox~=3.28
-      - run: tox -e ${{ matrix.tox }}
