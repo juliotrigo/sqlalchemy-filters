@@ -193,7 +193,6 @@ class TestLoadsApplied(object):
         )
         assert str(restricted_query) == expected
 
-    @pytest.mark.skip("test fails")
     def test_eager_load(self, session, db_uri):
 
         query = session.query(Foo).options(joinedload(Foo.bar))
@@ -223,7 +222,6 @@ class TestLoadsApplied(object):
 
 class TestAutoJoin:
 
-    @pytest.mark.skip("test fails")
     @pytest.mark.usefixtures('multiple_foos_inserted')
     def test_auto_join(self, session, db_uri):
 

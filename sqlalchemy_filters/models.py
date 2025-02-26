@@ -208,11 +208,15 @@ def auto_join(query, *model_names):
         else last_model.registry._class_registry
     )
 
+    existing_models = set(query_models)
+
     for name in model_names:
         model = get_model_class_by_name(model_registry, name)
-        if model and (model not in get_query_models(query).values()):
+        if model and (model not in query_models):
             try:
                 tmp = query.join(model)
+                tmp = tmp.add_entity(model)  # Explicitly add to SELECT clause
+                existing_models.add(model)  # Keep track of added models
                 if (
                     sqlalchemy_version_cmp('>=', '1.4')
                     and hasattr(tmp, '_compile_state')
